@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -21,10 +22,12 @@ import {
   Trophy,
   Award,
 } from "lucide-react";
+import Logo from "@/public/logo_dojang.png";
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -50,16 +53,16 @@ export default function Home() {
             : "bg-transparent"
         }`}
       >
-        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-white font-bold">
-              J
-            </div>
-            <div className="hidden sm:block">
-              <h1 className="text-xl font-bold text-primary">
-                Joko Tingkir Salatiga
-              </h1>
-              <p className="text-xs text-muted-foreground">Taekwondo Club</p>
+        <nav className="max-w-7xl mx-auto h-16 px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+          <div className="flex items-center h-full">
+            <div className="relative w-24 h-24">
+              <Image
+                src={Logo}
+                alt="Logo Dojang"
+                fill
+                className="object-contain scale-125"
+                priority
+              />
             </div>
           </div>
 
@@ -179,7 +182,7 @@ export default function Home() {
         className="relative h-screen flex items-center justify-center pt-16 overflow-hidden"
       >
         <Image
-          src="/yuji-itadori.jpg"
+          src="/bg.jpg"
           alt="Taekwondo Athletes Training"
           fill
           className="object-cover"
@@ -198,7 +201,7 @@ export default function Home() {
             <Button
               size="lg"
               className="bg-primary text-white hover:bg-primary/90 px-8"
-              onClick={() => scrollToSection("contact")}
+              onClick={() => router.push("/register")}
             >
               Daftar Latihan
             </Button>
@@ -206,7 +209,7 @@ export default function Home() {
               size="lg"
               variant="outline"
               className="border-white text-white hover:bg-white/20 bg-transparent"
-              onClick={() => scrollToSection("contact")}
+              onClick={() => router.push("/")}
             >
               Hubungi Kami
             </Button>
@@ -585,7 +588,7 @@ export default function Home() {
           <Button
             size="lg"
             className="bg-white text-primary hover:bg-gray-100 px-12 font-bold text-lg"
-            onClick={() => scrollToSection("contact")}
+            onClick={() => router.push("/register")}
           >
             Daftar Sekarang
           </Button>
@@ -739,7 +742,7 @@ export default function Home() {
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-primary transition">
+                  <a href="/register" className="hover:text-primary transition">
                     Pendaftaran
                   </a>
                 </li>

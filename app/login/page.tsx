@@ -82,10 +82,10 @@ export default function LoginPage() {
           <CardHeader className="space-y-0 items-center text-center py-3">
             <Link href="/" className="flex justify-center">
               <Image
-                src="/logo_bengkod.svg"
+                src="/logo_dojang.png"
                 alt="Logo Dojang"
-                width={200}
-                height={200}
+                width={150}
+                height={150}
                 priority
               />
             </Link>
@@ -105,7 +105,7 @@ export default function LoginPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="nama@example.com"
+                  placeholder="email@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -220,7 +220,7 @@ export default function LoginPage() {
           </CardContent>
         </Card>
 
-        {/* Footer text */}
+        {/* Footer text
         <p className="text-center text-xs text-muted-foreground mt-3">
           Dengan masuk, Anda menyetujui{" "}
           <Link
@@ -230,7 +230,7 @@ export default function LoginPage() {
             Syarat Layanan
           </Link>{" "}
           kami
-        </p>
+        </p> */}
       </div>
     </div>
   );
