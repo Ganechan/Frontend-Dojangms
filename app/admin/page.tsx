@@ -14,7 +14,6 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
   Legend,
   ResponsiveContainer,
   LabelList,
@@ -44,58 +43,26 @@ const memberGrowthData = [
   { month: "Jun", members: 340 },
 ];
 
-const beltChartConfig = {
+const lineChartConfig = {
+  members: {
+    label: "Jumlah Anggota",
+    color: "hsl(var(--chart-1))",
+  },
+} satisfies ChartConfig;
+
+const pieChartConfig = {
   count: {
     label: "Jumlah Anggota",
     color: "hsl(var(--chart-1))",
   },
 } satisfies ChartConfig;
 
-const ageDistributionData = [
-  { name: "Anak (5-12)", value: 120 },
-  { name: "Remaja (13-18)", value: 145 },
-  { name: "Dewasa (19+)", value: 75 },
-];
-
-const COLORS = ["#3B82F6", "#F59E0B", "#EF4444"];
-
-const recentActivities = [
-  {
-    id: 1,
-    date: "2024-01-15",
-    activity: "Pendaftaran Anggota Baru",
-    user: "Ahmad Ridho",
-    status: "Sukses",
+const beltChartConfig = {
+  count: {
+    label: "Jumlah Anggota",
+    color: "hsl(var(--chart-1))",
   },
-  {
-    id: 2,
-    date: "2024-01-14",
-    activity: "Ujian Sabuk Yellow",
-    user: "Siti Nurhaliza",
-    status: "Lulus",
-  },
-  {
-    id: 3,
-    date: "2024-01-13",
-    activity: "Pendaftaran Kejuaraan",
-    user: "Budi Santoso",
-    status: "Menunggu",
-  },
-  {
-    id: 4,
-    date: "2024-01-12",
-    activity: "Ujian Sabuk Green",
-    user: "Dewi Lestari",
-    status: "Lulus",
-  },
-  {
-    id: 5,
-    date: "2024-01-11",
-    activity: "Pendaftaran Anggota Baru",
-    user: "Rian Pratama",
-    status: "Sukses",
-  },
-];
+} satisfies ChartConfig;
 
 const StatCard = ({
   title,
@@ -156,6 +123,52 @@ interface BeltMaster {
   dan_level: number | null;
   order_level: number;
 }
+
+interface Activity {
+  id: number;
+  date: string;
+  activity: string;
+  user: string;
+  status: string;
+}
+
+const defaultRecentActivities: Activity[] = [
+  {
+    id: 1,
+    date: "2024-01-15",
+    activity: "Pendaftaran Anggota Baru",
+    user: "Ahmad Ridho",
+    status: "Sukses",
+  },
+  {
+    id: 2,
+    date: "2024-01-14",
+    activity: "Ujian Sabuk Yellow",
+    user: "Siti Nurhaliza",
+    status: "Lulus",
+  },
+  {
+    id: 3,
+    date: "2024-01-13",
+    activity: "Pendaftaran Kejuaraan",
+    user: "Budi Santoso",
+    status: "Menunggu",
+  },
+  {
+    id: 4,
+    date: "2024-01-12",
+    activity: "Ujian Sabuk Green",
+    user: "Dewi Lestari",
+    status: "Lulus",
+  },
+  {
+    id: 5,
+    date: "2024-01-11",
+    activity: "Pendaftaran Anggota Baru",
+    user: "Rian Pratama",
+    status: "Sukses",
+  },
+];
 
 export default function Dashboard() {
   const [totalActiveMembers, setTotalActiveMembers] = useState(0);
@@ -290,29 +303,26 @@ export default function Dashboard() {
             <CardDescription>6 Bulan Terakhir</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+            <ChartContainer config={lineChartConfig}>
               <LineChart data={memberGrowthData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="month" stroke="#9ca3af" />
-                <YAxis stroke="#9ca3af" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#ffffff",
-                    border: "1px solid #e5e7eb",
-                    borderRadius: "8px",
-                  }}
+                <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                <XAxis dataKey="month" tickLine={false} axisLine={false} />
+                <YAxis tickLine={false} axisLine={false} />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent />}
                 />
                 <Legend />
                 <Line
                   type="monotone"
                   dataKey="members"
-                  stroke="#DC2626"
+                  stroke="var(--chart-1)"
                   strokeWidth={3}
-                  dot={{ fill: "#DC2626", r: 6 }}
+                  dot={{ fill: "var(--chart-1)", r: 6 }}
                   activeDot={{ r: 8 }}
                 />
               </LineChart>
-            </ResponsiveContainer>
+            </ChartContainer>
           </CardContent>
         </Card>
 
@@ -325,31 +335,52 @@ export default function Dashboard() {
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="h-70">
+          <CardContent className="h-80">
             {isLoading ? (
               <div className="flex h-full items-center justify-center text-muted-foreground">
                 Memuat data...
               </div>
             ) : chartBeltData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
+              <ChartContainer config={pieChartConfig}>
                 <PieChart>
                   <Pie
                     data={chartBeltData.filter((d) => d.count > 0)}
                     dataKey="count"
                     nameKey="belt"
-                    outerRadius={100}
-                    paddingAngle={3}
+                    outerRadius={90}
+                    innerRadius={0}
+                    paddingAngle={2}
+                    label={({ belt, count }) => `${belt}: ${count}`}
                   >
                     {chartBeltData.map((entry, index) => (
                       <Cell key={index} fill={getBeltColor(entry.belt)} />
                     ))}
                   </Pie>
-
-                  <Tooltip
-                    formatter={(value, name) => [`${value} anggota`, name]}
+                  <ChartTooltip
+                    cursor={true}
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="bg-white p-2 border border-gray-200 rounded shadow-lg">
+                            <p className="font-semibold text-sm">
+                              {payload[0].payload.belt}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {payload[0].value} anggota
+                            </p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Legend
+                    verticalAlign="bottom"
+                    height={36}
+                    wrapperStyle={{ paddingTop: "20px" }}
                   />
                 </PieChart>
-              </ResponsiveContainer>
+              </ChartContainer>
             ) : (
               <div className="flex h-full items-center justify-center text-muted-foreground">
                 Tidak ada data
@@ -451,7 +482,7 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {recentActivities.map((activity) => (
+                  {defaultRecentActivities.map((activity) => (
                     <tr
                       key={activity.id}
                       className="border-b border-border hover:bg-muted/50 transition-colors"
