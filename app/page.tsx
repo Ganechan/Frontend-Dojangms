@@ -1,19 +1,19 @@
 "use client";
 
-import Header from "@/components/home/Header";
-import HeroSection from "@/components/home/HeroSection";
-import AboutSection from "@/components/home/AboutSection";
-import StatisticsSection from "@/components/home/StatisticsSection";
-import ProgramsSection from "@/components/home/ProgramsSection";
-import FacilitiesSection from "@/components/home/FacilitiesSection";
-import AchievementsSection from "@/components/home/AchievementsSection";
-import ScheduleSection from "@/components/home/ScheduleSection";
-import TestimonialsSection from "@/components/home/TestimonialsSection";
-import GallerySection from "@/components/home/GallerySection";
-import CTASection from "@/components/home/CTASection";
-import ContactSection from "@/components/home/ContactSection";
-import FloatingWhatsApp from "@/components/home/Floatingwhatsapp";
-import Footer from "@/components/home/Footer";
+import Header from "@/components/landing-page/Header";
+import HeroSection from "@/components/landing-page/HeroSection";
+import AboutSection from "@/components/landing-page/AboutSection";
+import StatisticsSection from "@/components/landing-page/StatisticsSection";
+import ProgramsSection from "@/components/landing-page/ProgramsSection";
+import FacilitiesSection from "@/components/landing-page/FacilitiesSection";
+import AchievementsSection from "@/components/landing-page/AchievementsSection";
+import ScheduleSection from "@/components/landing-page/ScheduleSection";
+import TestimonialsSection from "@/components/landing-page/TestimonialsSection";
+import GallerySection from "@/components/landing-page/GallerySection";
+import CTASection from "@/components/landing-page/CTASection";
+import ContactSection from "@/components/landing-page/ContactSection";
+import FloatingWhatsApp from "@/components/landing-page/Floatingwhatsapp";
+import Footer from "@/components/landing-page/Footer";
 
 export default function Home() {
   const scrollToSection = (id: string) => {
