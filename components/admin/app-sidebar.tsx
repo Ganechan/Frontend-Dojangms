@@ -16,10 +16,10 @@ import {
   IconUsers,
 } from "@tabler/icons-react";
 
-import { NavDocuments } from "@/components/admin/kejuaraan/nav-documents";
-import { NavMain } from "@/components/admin/kejuaraan/nav-main";
-import { NavSecondary } from "@/components/admin/kejuaraan/nav-secondary";
-import { NavUser } from "@/components/admin/kejuaraan/nav-user";
+import { NavDocuments } from "@/components/admin/nav-documents";
+import { NavMain } from "@/components/admin/nav-main";
+import { NavSecondary } from "@/components/admin/nav-secondary";
+import { NavUser } from "@/components/admin/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -39,7 +39,7 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "/dashboard",
+      url: "/admin",
       icon: IconDashboard,
     },
     {
