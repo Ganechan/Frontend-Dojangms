@@ -72,27 +72,26 @@ export function ChartAreaInteractive() {
         const result = await response.json();
 
         if (result.data && result.data.length > 0) {
-          // Group users by created_at date (Jakarta timezone)
           const dateMap = new Map<string, number>();
 
           result.data.forEach((user: UserData) => {
-            // Convert to Jakarta timezone (UTC+7)
             const createdAtDate = new Date(user.created_at);
             const jakartaDate = new Date(
               createdAtDate.toLocaleString("en-US", {
                 timeZone: "Asia/Jakarta",
-              })
+              }),
             );
             const dateStr = jakartaDate.toISOString().split("T")[0];
 
             dateMap.set(dateStr, (dateMap.get(dateStr) || 0) + 1);
           });
 
-          // Convert map to array and sort by date
           const data = Array.from(dateMap, ([date, count]) => ({
             date,
             registration: count,
-          })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+          })).sort(
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+          );
 
           setChartData(data);
         }
@@ -106,19 +105,45 @@ export function ChartAreaInteractive() {
     fetchUserData();
   }, []);
 
-  const filteredData = chartData.filter((item) => {
-    const date = new Date(item.date);
-    const today = new Date();
+  const filteredData = (() => {
     let daysToSubtract = 90;
-    if (timeRange === "30d") {
+    if (timeRange == "30d") {
       daysToSubtract = 30;
-    } else if (timeRange === "7d") {
+    } else if (timeRange == "7d") {
       daysToSubtract = 7;
     }
-    const startDate = new Date(today);
+
+    const now = new Date();
+    const jakartaOffset = 7 * 60;
+    const utcTime = now.getTime() + now.getTimezoneOffset() * 60 * 1000;
+    const jakartaTime = new Date(utcTime + jakartaOffset * 60 * 1000);
+
+    const jakartaTodayStr = jakartaTime.toISOString().split("T")[0];
+
+    const startDate = new Date(jakartaTime);
     startDate.setDate(startDate.getDate() - daysToSubtract);
-    return date >= startDate;
-  });
+    const startDateStr = startDate.toISOString().split("T")[0];
+
+    const existingDataMap = new Map(
+      chartData.map((item) => [item.date, item.registration]),
+    );
+
+    const result: Array<{ date: string; registration: number }> = [];
+
+    let currentDate = new Date(startDateStr + "T00:00:00Z");
+    const endDate = new Date(jakartaTodayStr + "T00:00:00Z");
+
+    while (currentDate <= endDate) {
+      const dateStr = currentDate.toISOString().split("T")[0];
+      result.push({
+        date: dateStr,
+        registration: existingDataMap.get(dateStr) ?? 0,
+      });
+      currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+    }
+
+    return result;
+  })();
 
   return (
     <Card className="@container/card">
@@ -232,12 +257,44 @@ export function ChartAreaInteractive() {
                   />
                 }
               />
+              {/* ✅ Dot ditambahkan di sini */}
               <Area
                 dataKey="registration"
-                type="natural"
+                type="monotone" // ✅ Ubah dari "natural" ke "monotone"
                 fill="url(#fillRegistration)"
                 stroke="var(--color-registration)"
                 stackId="a"
+                baseValue={0} // ✅ Tambahkan ini untuk memastikan baseline di 0
+                dot={(props) => {
+                  const { cx, cy, payload } = props;
+                  if (payload.registration === 0)
+                    return <React.Fragment key={payload.date} />;
+                  return (
+                    <circle
+                      key={payload.date}
+                      cx={cx}
+                      cy={cy}
+                      r={4}
+                      fill="var(--color-registration)"
+                      stroke="none"
+                    />
+                  );
+                }}
+                activeDot={(props) => {
+                  const { cx, cy, payload } = props;
+                  if (payload.registration === 0)
+                    return <React.Fragment key={payload.date} />;
+                  return (
+                    <circle
+                      key={payload.date}
+                      cx={cx}
+                      cy={cy}
+                      r={6}
+                      fill="var(--color-registration)"
+                      stroke="none"
+                    />
+                  );
+                }}
               />
             </AreaChart>
           </ChartContainer>

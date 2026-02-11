@@ -1,9 +1,9 @@
-import { AppSidebar } from "@/components/admin/kejuaraan/app-sidebar";
-import { ChartAreaInteractive } from "@/components/admin/kejuaraan/chart-area-interactive";
-import { DataTable } from "@/components/admin/kejuaraan/data-table";
-import { SectionCards } from "@/components/admin/kejuaraan/section-cards";
-import { SiteHeader } from "@/components/admin/kejuaraan/site-header";
-import { SectionPieCharts } from "@/components/admin/kejuaraan/pie-chart";
+import { AppSidebar } from "@/components/admin/app-sidebar";
+import { ChartAreaInteractive } from "@/components/admin/chart-area-interactive";
+import { DataTable } from "@/components/admin/data-table";
+import { SectionCards } from "@/components/admin/section-cards";
+import { SiteHeader } from "@/components/admin/site-header";
+import { SectionPieCharts } from "@/components/admin/pie-chart";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 import data from "./data.json";
