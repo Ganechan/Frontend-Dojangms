@@ -1,5 +1,5 @@
-import { AppSidebar } from "@/components/admin/kejuaraan/app-sidebar";
-import { SiteHeader } from "@/components/admin/kejuaraan/site-header";
+import { AppSidebar } from "@/components/admin/app-sidebar";
+import { SiteHeader } from "@/components/admin/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import ChampionshipTable from "@/pages/admin/kejuaraan/championship-table";
 
