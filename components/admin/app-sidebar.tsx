@@ -49,7 +49,7 @@ const data = {
     },
     {
       title: "User",
-      url: "/admin/murid",
+      url: "/admin/user",
       icon: IconChartBar,
     },
     {
