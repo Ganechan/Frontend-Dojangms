@@ -166,8 +166,6 @@ export default function ChampionshipTable() {
   );
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
 function LoadingSkeleton() {
   return (
     <div className="p-6 space-y-4">
