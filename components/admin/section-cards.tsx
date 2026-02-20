@@ -31,6 +31,12 @@ export function SectionCards() {
   >(null);
   const [totalAnggota, setTotalAnggota] = React.useState<number | null>(null);
   const [anggotaBaru, setAnggotaBaru] = React.useState<number | null>(null);
+  const [anggotaStats, setAnggotaStats] = React.useState<{
+    trend: string;
+    percentChange: number;
+    labelBulan: string;
+    labelTahun: string;
+  } | null>(null);
 
   React.useEffect(() => {
     let mounted = true;
@@ -38,40 +44,31 @@ export function SectionCards() {
 
     const fetchCounts = async () => {
       try {
-        const [userRes, beltRes] = await Promise.all([
-          fetch(`${BASE_URL}/api/admin/get/user`),
+        const [userRes, beltRes, statRes] = await Promise.all([
+          fetch(`${BASE_URL}/api/admin/get/user/all`),
           fetch(`${BASE_URL}/api/admin/get/championship`),
+          fetch(`${BASE_URL}/api/admin/get/user/stats`),
         ]);
 
         const userJson = await userRes.json().catch(() => null);
         const beltJson = await beltRes.json().catch(() => null);
-
-        // debug: tunjukkan payload untuk membantu diagnosis
-        console.debug("SectionCards: userJson:", userJson);
-        console.debug("SectionCards: beltJson:", beltJson);
+        const statsJson = await statRes.json().catch(() => null);
 
         if (!mounted) return;
 
-        // Hitung murid aktif (roles === 'murid' && status === 'active')
-        if (userJson?.data && Array.isArray(userJson.data)) {
-          const muridAktif = userJson.data.filter(
-            (u: any) => u.roles === "murid" && u.status === "active",
-          );
+        if (statsJson?.data) {
+          const { trend, percentChange, labelBulan, labelTahun } =
+            statsJson.data;
+          setAnggotaStats({ trend, percentChange, labelBulan, labelTahun });
+        }
 
-          setTotalAnggota(muridAktif.length);
+        // Hitung total murid aktif dari totalMurid (sudah dihitung dari backend)
+        if (userJson?.totalMuridAktif !== undefined) {
+          setTotalAnggota(userJson.totalMuridAktif);
+        }
 
-          // Anggota baru bulan ini (created_at dalam bulan & tahun sekarang)
-          const now = new Date();
-          const anggotaBaruCount = muridAktif.filter((u: any) => {
-            if (!u.created_at) return false;
-            const created = new Date(u.created_at);
-            return (
-              created.getFullYear() === now.getFullYear() &&
-              created.getMonth() === now.getMonth()
-            );
-          }).length;
-
-          setAnggotaBaru(anggotaBaruCount);
+        if (userJson?.muridBaruBulanIni !== undefined) {
+          setAnggotaBaru(userJson.muridBaruBulanIni);
         }
 
         // Hitung kejuaraan
@@ -118,6 +115,14 @@ export function SectionCards() {
       mounted = false;
     };
   }, []);
+
+  const trendLabel = (() => {
+    if (!anggotaStats) return "Memuat data....";
+    const { trend, percentChange } = anggotaStats;
+    if (trend === "up") return `Pendaftaran Meningkat, ${percentChange}%`;
+    if (trend === "down") return `Pendaftaran Menurun, ${percentChange}%`;
+    return `Pendaftaran Stabil, ${percentChange}%`;
+  })();
 
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
@@ -202,7 +207,7 @@ export function SectionCards() {
             <div className="rounded-lg bg-green-500/10 p-2">
               <IconUsers className="size-5 text-green-500" />
             </div>
-            <CardDescription>Total Anggota</CardDescription>
+            <CardDescription>Total Jeja</CardDescription>
           </div>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
             {totalAnggota === null ? "—" : totalAnggota.toLocaleString()}
@@ -223,9 +228,9 @@ export function SectionCards() {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Pertumbuhan anggota stabil
+            Total Jeja saat ini
           </div>
-          <div className="text-muted-foreground">Anggota aktif terdaftar</div>
+          <div className="text-muted-foreground">Jeja aktif terdaftar</div>
         </CardFooter>
       </Card>
 
@@ -236,7 +241,7 @@ export function SectionCards() {
             <div className="rounded-lg bg-purple-500/10 p-2">
               <IconUserPlus className="size-5 text-purple-500" />
             </div>
-            <CardDescription>Anggota Baru</CardDescription>
+            <CardDescription>Jeja Baru</CardDescription>
           </div>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
             {anggotaBaru === null ? "—" : anggotaBaru.toLocaleString()}
@@ -256,11 +261,19 @@ export function SectionCards() {
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Pendaftaran meningkat
+          <div className="line-clamp-1 flex gap-2 font-medium items-center">
+            {anggotaStats?.trend === "up" && (
+              <IconTrendingUp className="size-4 text-green-500" />
+            )}
+            {anggotaStats?.trend === "down" && (
+              <IconTrendingDown className="size-4 text-red-500" />
+            )}
+            {trendLabel}
           </div>
           <div className="text-muted-foreground">
-            Anggota bergabung di Februari 2026
+            {anggotaStats
+              ? `Jeja bergabung di ${anggotaStats.labelBulan} ${anggotaStats.labelTahun}`
+              : "Jeja bergabung bulan ini"}
           </div>
         </CardFooter>
       </Card>
