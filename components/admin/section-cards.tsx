@@ -1,7 +1,6 @@
-//components\admin\section-cards.tsx
-"use client";
+// HAPUS "use client" — tidak perlu lagi
+// HAPUS semua useState, useEffect, isLoading, CardSkeleton
 
-import * as React from "react";
 import {
   IconTrendingDown,
   IconTrendingUp,
@@ -11,8 +10,6 @@ import {
   IconUserPlus,
   IconArrowRight,
 } from "@tabler/icons-react";
-
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -24,164 +21,41 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-function CardSkeleton() {
-  return (
-    <Card className="@container/card">
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <Skeleton className="size-9 rounded-lg" />
-          <Skeleton className="h-4 w-32" />
-        </div>
-        <Skeleton className="h-9 w-24 mt-1" />
-        <CardAction>
-          <Skeleton className="h-8 w-28 rounded-md" />
-        </CardAction>
-      </CardHeader>
-      <CardFooter className="flex-col items-start gap-1.5">
-        <Skeleton className="h-4 w-48" />
-        <Skeleton className="h-3.5 w-36" />
-      </CardFooter>
-    </Card>
-  );
-}
+type DashboardData = {
+  userJson: any;
+  beltJson: any;
+  statsJson: any;
+  championship5yJson: any;
+  championship3mJson: any;
+} | null;
 
-export function SectionCards() {
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [totalKejuaraan, setTotalKejuaraan] = React.useState<number | null>(
-    null,
-  );
-  const [kejuaraanMendatang, setKejuaraanMendatang] = React.useState<
-    number | null
-  >(null);
-  const [totalAnggota, setTotalAnggota] = React.useState<number | null>(null);
-  const [anggotaBaru, setAnggotaBaru] = React.useState<number | null>(null);
-  const [anggotaStats, setAnggotaStats] = React.useState<{
-    trend: string;
-    percentChange: number;
-    labelBulan: string;
-    labelTahun: string;
-  } | null>(null);
-  const [kejuaraanSelesai, setKejuaraanSelesai] = React.useState<number | null>(
-    null,
-  );
-  const [tahunKejuaraan, setTahunKejuaraan] = React.useState<number | null>(
-    null,
-  );
-  const [kejuaraan3Months, setKejuaraan3Months] = React.useState<{
-    total: number;
-    terdekat: {
-      name: string;
-      start_date: string;
-      daysRemaining: number;
-    } | null;
-  } | null>(null);
+export function SectionCards({ data }: { data: DashboardData }) {
+  // Proses data langsung, tidak perlu state
+  const totalAnggota = data?.userJson?.totalMuridAktif ?? null;
+  const anggotaBaru = data?.userJson?.muridBaruBulanIni ?? null;
 
-  React.useEffect(() => {
-    let mounted = true;
-    const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+  const anggotaStats = data?.statsJson?.data ?? null;
 
-    const fetchCounts = async () => {
-      try {
-        const [
-          userRes,
-          beltRes,
-          statRes,
-          championship5yRes,
-          championship3mRes,
-        ] = await Promise.all([
-          fetch(`${BASE_URL}/api/admin/get/user/all`),
-          fetch(`${BASE_URL}/api/admin/get/championship`),
-          fetch(`${BASE_URL}/api/admin/get/user/stats`),
-          fetch(`${BASE_URL}/api/admin/get/championship/5years`),
-          fetch(`${BASE_URL}/api/admin/get/championship/3months`),
-        ]);
+  const championship5yLatest = data?.championship5yJson?.data?.at(-1) ?? null;
+  const tahunKejuaraan = championship5yLatest?.year ?? null;
+  const kejuaraanSelesai = championship5yLatest?.rincian
+    ? Number(championship5yLatest.rincian.selesai)
+    : null;
 
-        const userJson = await userRes.json().catch(() => null);
-        const beltJson = await beltRes.json().catch(() => null);
-        const statsJson = await statRes.json().catch(() => null);
-        const championship5yJson = await championship5yRes
-          .json()
-          .catch(() => null);
-        const championship3mJson = await championship3mRes
-          .json()
-          .catch(() => null);
-
-        if (!mounted) return;
-
-        setIsLoading(false);
-
-        if (championship3mJson) {
-          setKejuaraan3Months({
-            total: championship3mJson.total ?? 0,
-            terdekat: championship3mJson.data?.[0] ?? null,
-          });
-        }
-
-        if (championship5yJson?.data) {
-          const latest =
-            championship5yJson.data[championship5yJson.data.length - 1];
-          setTahunKejuaraan(latest.year);
-          setKejuaraanSelesai(
-            latest.rincian ? Number(latest.rincian.selesai) : 0,
-          );
-        }
-
-        if (statsJson?.data) {
-          const { trend, percentChange, labelBulan, labelTahun } =
-            statsJson.data;
-          setAnggotaStats({ trend, percentChange, labelBulan, labelTahun });
-        }
-
-        if (userJson?.totalMuridAktif !== undefined) {
-          setTotalAnggota(userJson.totalMuridAktif);
-        }
-
-        if (userJson?.muridBaruBulanIni !== undefined) {
-          setAnggotaBaru(userJson.muridBaruBulanIni);
-        }
-
-        if (beltJson) {
-          const totalRaw =
-            beltJson.total ??
-            (beltJson.data && Array.isArray(beltJson.data)
-              ? beltJson.data.length
-              : null);
-          const total =
-            typeof totalRaw === "number" ? totalRaw : Number(totalRaw);
-          console.debug(
-            "SectionCards: computed totalKejuaraan:",
-            totalRaw,
-            "->",
-            total,
-          );
-
-          setTotalKejuaraan(total);
-
-          if (beltJson.data && Array.isArray(beltJson.data)) {
-            const now = new Date();
-            const in30days = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-
-            const upcoming = beltJson.data.filter((k: any) => {
-              if (!k.start_date) return false;
-              const start = new Date(k.start_date);
-              return start >= now && start <= in30days;
-            }).length;
-
-            setKejuaraanMendatang(upcoming);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching section counts:", error);
-        if (mounted) setIsLoading(false);
+  const kejuaraan3Months = data?.championship3mJson
+    ? {
+        total: data.championship3mJson.total ?? 0,
+        terdekat: data.championship3mJson.data?.[0] ?? null,
       }
-    };
+    : null;
 
-    fetchCounts();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  const trendLabel = (() => {
+    if (!anggotaStats) return "Data tidak tersedia";
+    const { trend, percentChange } = anggotaStats;
+    if (trend === "up") return `Pendaftaran Meningkat, ${percentChange}%`;
+    if (trend === "down") return `Pendaftaran Menurun, ${percentChange}%`;
+    return `Pendaftaran Stabil, ${percentChange}%`;
+  })();
 
   const trendLabel = (() => {
     if (!anggotaStats) return "Memuat data....";
@@ -226,8 +100,7 @@ export function SectionCards() {
               asChild
             >
               <a href="/admin/kejuaraan">
-                Lihat Detail
-                <IconArrowRight className="size-3.5" />
+                Lihat Detail <IconArrowRight className="size-3.5" />
               </a>
             </Button>
           </CardAction>
@@ -236,7 +109,7 @@ export function SectionCards() {
           <div className="line-clamp-1 flex gap-2 font-medium">
             {tahunKejuaraan
               ? `Kejuaraan yang telah selesai di tahun ${tahunKejuaraan}`
-              : "Memuat data..."}
+              : "—"}
           </div>
         </CardFooter>
       </Card>
@@ -263,8 +136,7 @@ export function SectionCards() {
               asChild
             >
               <a href="/admin/kejuaraan">
-                Lihat Detail
-                <IconArrowRight className="size-3.5" />
+                Lihat Detail <IconArrowRight className="size-3.5" />
               </a>
             </Button>
           </CardAction>
@@ -314,9 +186,8 @@ export function SectionCards() {
               className="gap-1.5 border-green-500/20 text-green-600 hover:bg-green-500/10 hover:text-green-700"
               asChild
             >
-              <a href="/admin/murid">
-                Lihat Detail
-                <IconArrowRight className="size-3.5" />
+              <a href="/admin/user">
+                Lihat Detail <IconArrowRight className="size-3.5" />
               </a>
             </Button>
           </CardAction>
@@ -329,7 +200,7 @@ export function SectionCards() {
         </CardFooter>
       </Card>
 
-      {/* Anggota Baru Bulan Ini */}
+      {/* Anggota Baru */}
       <Card className="@container/card">
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -349,8 +220,7 @@ export function SectionCards() {
               asChild
             >
               <a href="/admin/murid">
-                Lihat Detail
-                <IconArrowRight className="size-3.5" />
+                Lihat Detail <IconArrowRight className="size-3.5" />
               </a>
             </Button>
           </CardAction>
