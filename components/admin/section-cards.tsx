@@ -1,6 +1,6 @@
-"use client";
+// HAPUS "use client" — tidak perlu lagi
+// HAPUS semua useState, useEffect, isLoading, CardSkeleton
 
-import * as React from "react";
 import {
   IconTrendingDown,
   IconTrendingUp,
@@ -10,8 +10,6 @@ import {
   IconUserPlus,
   IconArrowRight,
 } from "@tabler/icons-react";
-
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,107 +20,46 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export function SectionCards() {
-  const [totalKejuaraan, setTotalKejuaraan] = React.useState<number | null>(
-    null,
-  );
-  const [kejuaraanMendatang, setKejuaraanMendatang] = React.useState<
-    number | null
-  >(null);
-  const [totalAnggota, setTotalAnggota] = React.useState<number | null>(null);
-  const [anggotaBaru, setAnggotaBaru] = React.useState<number | null>(null);
+type DashboardData = {
+  userJson: any;
+  beltJson: any;
+  statsJson: any;
+  championship5yJson: any;
+  championship3mJson: any;
+} | null;
 
-  React.useEffect(() => {
-    let mounted = true;
-    const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+export function SectionCards({ data }: { data: DashboardData }) {
+  // Proses data langsung, tidak perlu state
+  const totalAnggota = data?.userJson?.totalMuridAktif ?? null;
+  const anggotaBaru = data?.userJson?.muridBaruBulanIni ?? null;
 
-    const fetchCounts = async () => {
-      try {
-        const [userRes, beltRes] = await Promise.all([
-          fetch(`${BASE_URL}/api/admin/get/user`),
-          fetch(`${BASE_URL}/api/admin/get/championship`),
-        ]);
+  const anggotaStats = data?.statsJson?.data ?? null;
 
-        const userJson = await userRes.json().catch(() => null);
-        const beltJson = await beltRes.json().catch(() => null);
+  const championship5yLatest = data?.championship5yJson?.data?.at(-1) ?? null;
+  const tahunKejuaraan = championship5yLatest?.year ?? null;
+  const kejuaraanSelesai = championship5yLatest?.rincian
+    ? Number(championship5yLatest.rincian.selesai)
+    : null;
 
-        // debug: tunjukkan payload untuk membantu diagnosis
-        console.debug("SectionCards: userJson:", userJson);
-        console.debug("SectionCards: beltJson:", beltJson);
-
-        if (!mounted) return;
-
-        // Hitung murid aktif (roles === 'murid' && status === 'active')
-        if (userJson?.data && Array.isArray(userJson.data)) {
-          const muridAktif = userJson.data.filter(
-            (u: any) => u.roles === "murid" && u.status === "active",
-          );
-
-          setTotalAnggota(muridAktif.length);
-
-          // Anggota baru bulan ini (created_at dalam bulan & tahun sekarang)
-          const now = new Date();
-          const anggotaBaruCount = muridAktif.filter((u: any) => {
-            if (!u.created_at) return false;
-            const created = new Date(u.created_at);
-            return (
-              created.getFullYear() === now.getFullYear() &&
-              created.getMonth() === now.getMonth()
-            );
-          }).length;
-
-          setAnggotaBaru(anggotaBaruCount);
-        }
-
-        // Hitung kejuaraan
-        if (beltJson) {
-          const totalRaw =
-            beltJson.total ??
-            (beltJson.data && Array.isArray(beltJson.data)
-              ? beltJson.data.length
-              : null);
-          const total =
-            typeof totalRaw === "number" ? totalRaw : Number(totalRaw);
-          console.debug(
-            "SectionCards: computed totalKejuaraan:",
-            totalRaw,
-            "->",
-            total,
-          );
-
-          setTotalKejuaraan(total);
-
-          // Kejuaraan mendatang dalam 30 hari
-          if (beltJson.data && Array.isArray(beltJson.data)) {
-            const now = new Date();
-            const in30days = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-
-            const upcoming = beltJson.data.filter((k: any) => {
-              if (!k.start_date) return false;
-              const start = new Date(k.start_date);
-              return start >= now && start <= in30days;
-            }).length;
-
-            setKejuaraanMendatang(upcoming);
-          }
-        }
-      } catch (error) {
-        // jika gagal, biarkan nilai tetap null
-        console.error("Error fetching section counts:", error);
+  const kejuaraan3Months = data?.championship3mJson
+    ? {
+        total: data.championship3mJson.total ?? 0,
+        terdekat: data.championship3mJson.data?.[0] ?? null,
       }
-    };
+    : null;
 
-    fetchCounts();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  const trendLabel = (() => {
+    if (!anggotaStats) return "Data tidak tersedia";
+    const { trend, percentChange } = anggotaStats;
+    if (trend === "up") return `Pendaftaran Meningkat, ${percentChange}%`;
+    if (trend === "down") return `Pendaftaran Menurun, ${percentChange}%`;
+    return `Pendaftaran Stabil, ${percentChange}%`;
+  })();
 
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
       {/* Total Kejuaraan */}
-      <Card className="@container/card border-l-4 border-l-blue-500">
+      <Card className="@container/card">
         <CardHeader>
           <div className="flex items-center gap-2">
             <div className="rounded-lg bg-blue-500/10 p-2">
@@ -131,7 +68,9 @@ export function SectionCards() {
             <CardDescription>Total Kejuaraan</CardDescription>
           </div>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {totalKejuaraan === null ? "—" : totalKejuaraan.toLocaleString()}
+            {kejuaraanSelesai === null
+              ? "—"
+              : kejuaraanSelesai.toLocaleString()}
           </CardTitle>
           <CardAction>
             <Button
@@ -141,24 +80,22 @@ export function SectionCards() {
               asChild
             >
               <a href="/admin/kejuaraan">
-                Lihat Detail
-                <IconArrowRight className="size-3.5" />
+                Lihat Detail <IconArrowRight className="size-3.5" />
               </a>
             </Button>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Meningkat dari tahun lalu
-          </div>
-          <div className="text-muted-foreground">
-            Total kejuaraan yang terdaftar
+            {tahunKejuaraan
+              ? `Kejuaraan yang telah selesai di tahun ${tahunKejuaraan}`
+              : "—"}
           </div>
         </CardFooter>
       </Card>
 
       {/* Kejuaraan Mendatang */}
-      <Card className="@container/card border-l-4 border-l-orange-500">
+      <Card className="@container/card">
         <CardHeader>
           <div className="flex items-center gap-2">
             <div className="rounded-lg bg-orange-500/10 p-2">
@@ -167,9 +104,9 @@ export function SectionCards() {
             <CardDescription>Kejuaraan Mendatang</CardDescription>
           </div>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {kejuaraanMendatang === null
+            {kejuaraan3Months === null
               ? "—"
-              : kejuaraanMendatang.toLocaleString()}
+              : kejuaraan3Months.total.toLocaleString()}
           </CardTitle>
           <CardAction>
             <Button
@@ -179,30 +116,45 @@ export function SectionCards() {
               asChild
             >
               <a href="/admin/kejuaraan">
-                Lihat Detail
-                <IconArrowRight className="size-3.5" />
+                Lihat Detail <IconArrowRight className="size-3.5" />
               </a>
             </Button>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Persiapan sedang berjalan
-          </div>
-          <div className="text-muted-foreground">
-            Kejuaraan dalam 30 hari ke depan
-          </div>
+          {kejuaraan3Months?.terdekat ? (
+            <>
+              <div className="line-clamp-1 flex gap-2 font-medium">
+                Terdekat: {kejuaraan3Months.terdekat.name}
+              </div>
+              <div className="text-muted-foreground">
+                Mulai{" "}
+                {new Date(
+                  kejuaraan3Months.terdekat.start_date,
+                ).toLocaleDateString("id-ID", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}{" "}
+                • {kejuaraan3Months.terdekat.daysRemaining} hari lagi
+              </div>
+            </>
+          ) : (
+            <div className="text-muted-foreground">
+              Tidak ada kejuaraan dalam 3 bulan ke depan
+            </div>
+          )}
         </CardFooter>
       </Card>
 
       {/* Total Anggota */}
-      <Card className="@container/card border-l-4 border-l-green-500">
+      <Card className="@container/card">
         <CardHeader>
           <div className="flex items-center gap-2">
             <div className="rounded-lg bg-green-500/10 p-2">
               <IconUsers className="size-5 text-green-500" />
             </div>
-            <CardDescription>Total Anggota</CardDescription>
+            <CardDescription>Total Jeja</CardDescription>
           </div>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
             {totalAnggota === null ? "—" : totalAnggota.toLocaleString()}
@@ -214,29 +166,28 @@ export function SectionCards() {
               className="gap-1.5 border-green-500/20 text-green-600 hover:bg-green-500/10 hover:text-green-700"
               asChild
             >
-              <a href="/admin/murid">
-                Lihat Detail
-                <IconArrowRight className="size-3.5" />
+              <a href="/admin/user">
+                Lihat Detail <IconArrowRight className="size-3.5" />
               </a>
             </Button>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Pertumbuhan anggota stabil
+            Total Jeja saat ini
           </div>
-          <div className="text-muted-foreground">Anggota aktif terdaftar</div>
+          <div className="text-muted-foreground">Jeja aktif terdaftar</div>
         </CardFooter>
       </Card>
 
-      {/* Anggota Baru Bulan Ini */}
-      <Card className="@container/card border-l-4 border-l-purple-500">
+      {/* Anggota Baru */}
+      <Card className="@container/card">
         <CardHeader>
           <div className="flex items-center gap-2">
             <div className="rounded-lg bg-purple-500/10 p-2">
               <IconUserPlus className="size-5 text-purple-500" />
             </div>
-            <CardDescription>Anggota Baru</CardDescription>
+            <CardDescription>Jeja Baru</CardDescription>
           </div>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
             {anggotaBaru === null ? "—" : anggotaBaru.toLocaleString()}
@@ -249,18 +200,25 @@ export function SectionCards() {
               asChild
             >
               <a href="/admin/murid">
-                Lihat Detail
-                <IconArrowRight className="size-3.5" />
+                Lihat Detail <IconArrowRight className="size-3.5" />
               </a>
             </Button>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Pendaftaran meningkat
+          <div className="line-clamp-1 flex gap-2 font-medium items-center">
+            {anggotaStats?.trend === "up" && (
+              <IconTrendingUp className="size-4 text-green-500" />
+            )}
+            {anggotaStats?.trend === "down" && (
+              <IconTrendingDown className="size-4 text-red-500" />
+            )}
+            {trendLabel}
           </div>
           <div className="text-muted-foreground">
-            Anggota bergabung di Februari 2026
+            {anggotaStats
+              ? `Jeja bergabung di ${anggotaStats.labelBulan} ${anggotaStats.labelTahun}`
+              : "Jeja bergabung bulan ini"}
           </div>
         </CardFooter>
       </Card>
