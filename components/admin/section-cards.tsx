@@ -11,6 +11,7 @@ import {
   IconArrowRight,
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
   CardAction,
@@ -55,6 +56,25 @@ export function SectionCards({ data }: { data: DashboardData }) {
     if (trend === "down") return `Pendaftaran Menurun, ${percentChange}%`;
     return `Pendaftaran Stabil, ${percentChange}%`;
   })();
+
+  const trendLabel = (() => {
+    if (!anggotaStats) return "Memuat data....";
+    const { trend, percentChange } = anggotaStats;
+    if (trend === "up") return `Pendaftaran Meningkat, ${percentChange}%`;
+    if (trend === "down") return `Pendaftaran Menurun, ${percentChange}%`;
+    return `Pendaftaran Stabil, ${percentChange}%`;
+  })();
+
+  if (isLoading) {
+    return (
+      <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
+        <CardSkeleton />
+        <CardSkeleton />
+        <CardSkeleton />
+        <CardSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
