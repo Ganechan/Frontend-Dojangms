@@ -1,3 +1,4 @@
+//components\admin\section-cards.tsx
 "use client";
 
 import * as React from "react";
@@ -13,6 +14,7 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
   CardAction,
@@ -22,7 +24,29 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+function CardSkeleton() {
+  return (
+    <Card className="@container/card">
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <Skeleton className="size-9 rounded-lg" />
+          <Skeleton className="h-4 w-32" />
+        </div>
+        <Skeleton className="h-9 w-24 mt-1" />
+        <CardAction>
+          <Skeleton className="h-8 w-28 rounded-md" />
+        </CardAction>
+      </CardHeader>
+      <CardFooter className="flex-col items-start gap-1.5">
+        <Skeleton className="h-4 w-48" />
+        <Skeleton className="h-3.5 w-36" />
+      </CardFooter>
+    </Card>
+  );
+}
+
 export function SectionCards() {
+  const [isLoading, setIsLoading] = React.useState(true);
   const [totalKejuaraan, setTotalKejuaraan] = React.useState<number | null>(
     null,
   );
@@ -37,6 +61,20 @@ export function SectionCards() {
     labelBulan: string;
     labelTahun: string;
   } | null>(null);
+  const [kejuaraanSelesai, setKejuaraanSelesai] = React.useState<number | null>(
+    null,
+  );
+  const [tahunKejuaraan, setTahunKejuaraan] = React.useState<number | null>(
+    null,
+  );
+  const [kejuaraan3Months, setKejuaraan3Months] = React.useState<{
+    total: number;
+    terdekat: {
+      name: string;
+      start_date: string;
+      daysRemaining: number;
+    } | null;
+  } | null>(null);
 
   React.useEffect(() => {
     let mounted = true;
@@ -44,17 +82,49 @@ export function SectionCards() {
 
     const fetchCounts = async () => {
       try {
-        const [userRes, beltRes, statRes] = await Promise.all([
+        const [
+          userRes,
+          beltRes,
+          statRes,
+          championship5yRes,
+          championship3mRes,
+        ] = await Promise.all([
           fetch(`${BASE_URL}/api/admin/get/user/all`),
           fetch(`${BASE_URL}/api/admin/get/championship`),
           fetch(`${BASE_URL}/api/admin/get/user/stats`),
+          fetch(`${BASE_URL}/api/admin/get/championship/5years`),
+          fetch(`${BASE_URL}/api/admin/get/championship/3months`),
         ]);
 
         const userJson = await userRes.json().catch(() => null);
         const beltJson = await beltRes.json().catch(() => null);
         const statsJson = await statRes.json().catch(() => null);
+        const championship5yJson = await championship5yRes
+          .json()
+          .catch(() => null);
+        const championship3mJson = await championship3mRes
+          .json()
+          .catch(() => null);
 
         if (!mounted) return;
+
+        setIsLoading(false);
+
+        if (championship3mJson) {
+          setKejuaraan3Months({
+            total: championship3mJson.total ?? 0,
+            terdekat: championship3mJson.data?.[0] ?? null,
+          });
+        }
+
+        if (championship5yJson?.data) {
+          const latest =
+            championship5yJson.data[championship5yJson.data.length - 1];
+          setTahunKejuaraan(latest.year);
+          setKejuaraanSelesai(
+            latest.rincian ? Number(latest.rincian.selesai) : 0,
+          );
+        }
 
         if (statsJson?.data) {
           const { trend, percentChange, labelBulan, labelTahun } =
@@ -62,7 +132,6 @@ export function SectionCards() {
           setAnggotaStats({ trend, percentChange, labelBulan, labelTahun });
         }
 
-        // Hitung total murid aktif dari totalMurid (sudah dihitung dari backend)
         if (userJson?.totalMuridAktif !== undefined) {
           setTotalAnggota(userJson.totalMuridAktif);
         }
@@ -71,7 +140,6 @@ export function SectionCards() {
           setAnggotaBaru(userJson.muridBaruBulanIni);
         }
 
-        // Hitung kejuaraan
         if (beltJson) {
           const totalRaw =
             beltJson.total ??
@@ -89,7 +157,6 @@ export function SectionCards() {
 
           setTotalKejuaraan(total);
 
-          // Kejuaraan mendatang dalam 30 hari
           if (beltJson.data && Array.isArray(beltJson.data)) {
             const now = new Date();
             const in30days = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -104,8 +171,8 @@ export function SectionCards() {
           }
         }
       } catch (error) {
-        // jika gagal, biarkan nilai tetap null
         console.error("Error fetching section counts:", error);
+        if (mounted) setIsLoading(false);
       }
     };
 
@@ -124,10 +191,21 @@ export function SectionCards() {
     return `Pendaftaran Stabil, ${percentChange}%`;
   })();
 
+  if (isLoading) {
+    return (
+      <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
+        <CardSkeleton />
+        <CardSkeleton />
+        <CardSkeleton />
+        <CardSkeleton />
+      </div>
+    );
+  }
+
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
       {/* Total Kejuaraan */}
-      <Card className="@container/card border-l-4 border-l-blue-500">
+      <Card className="@container/card">
         <CardHeader>
           <div className="flex items-center gap-2">
             <div className="rounded-lg bg-blue-500/10 p-2">
@@ -136,7 +214,9 @@ export function SectionCards() {
             <CardDescription>Total Kejuaraan</CardDescription>
           </div>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {totalKejuaraan === null ? "—" : totalKejuaraan.toLocaleString()}
+            {kejuaraanSelesai === null
+              ? "—"
+              : kejuaraanSelesai.toLocaleString()}
           </CardTitle>
           <CardAction>
             <Button
@@ -154,16 +234,15 @@ export function SectionCards() {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Meningkat dari tahun lalu
-          </div>
-          <div className="text-muted-foreground">
-            Total kejuaraan yang terdaftar
+            {tahunKejuaraan
+              ? `Kejuaraan yang telah selesai di tahun ${tahunKejuaraan}`
+              : "Memuat data..."}
           </div>
         </CardFooter>
       </Card>
 
       {/* Kejuaraan Mendatang */}
-      <Card className="@container/card border-l-4 border-l-orange-500">
+      <Card className="@container/card">
         <CardHeader>
           <div className="flex items-center gap-2">
             <div className="rounded-lg bg-orange-500/10 p-2">
@@ -172,9 +251,9 @@ export function SectionCards() {
             <CardDescription>Kejuaraan Mendatang</CardDescription>
           </div>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {kejuaraanMendatang === null
+            {kejuaraan3Months === null
               ? "—"
-              : kejuaraanMendatang.toLocaleString()}
+              : kejuaraan3Months.total.toLocaleString()}
           </CardTitle>
           <CardAction>
             <Button
@@ -191,17 +270,33 @@ export function SectionCards() {
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Persiapan sedang berjalan
-          </div>
-          <div className="text-muted-foreground">
-            Kejuaraan dalam 30 hari ke depan
-          </div>
+          {kejuaraan3Months?.terdekat ? (
+            <>
+              <div className="line-clamp-1 flex gap-2 font-medium">
+                Terdekat: {kejuaraan3Months.terdekat.name}
+              </div>
+              <div className="text-muted-foreground">
+                Mulai{" "}
+                {new Date(
+                  kejuaraan3Months.terdekat.start_date,
+                ).toLocaleDateString("id-ID", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}{" "}
+                • {kejuaraan3Months.terdekat.daysRemaining} hari lagi
+              </div>
+            </>
+          ) : (
+            <div className="text-muted-foreground">
+              Tidak ada kejuaraan dalam 3 bulan ke depan
+            </div>
+          )}
         </CardFooter>
       </Card>
 
       {/* Total Anggota */}
-      <Card className="@container/card border-l-4 border-l-green-500">
+      <Card className="@container/card">
         <CardHeader>
           <div className="flex items-center gap-2">
             <div className="rounded-lg bg-green-500/10 p-2">
@@ -235,7 +330,7 @@ export function SectionCards() {
       </Card>
 
       {/* Anggota Baru Bulan Ini */}
-      <Card className="@container/card border-l-4 border-l-purple-500">
+      <Card className="@container/card">
         <CardHeader>
           <div className="flex items-center gap-2">
             <div className="rounded-lg bg-purple-500/10 p-2">
