@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Table } from "@tanstack/react-table";
 import {
   IconChevronDown,
@@ -34,6 +35,7 @@ export function UserTableToolbar({ table, roleCounts }: UserTableToolbarProps) {
     pelatih: 0,
     murid: 0,
   };
+  const router = useRouter();
 
   return (
     <div className="flex items-center justify-between px-4 lg:px-6">
@@ -85,7 +87,11 @@ export function UserTableToolbar({ table, roleCounts }: UserTableToolbarProps) {
               ))}
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button variant="outline" size="sm">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => router.push("/admin/user/add")}
+        >
           <IconPlus />
           <span className="hidden lg:inline">Tambah Pengguna</span>
         </Button>

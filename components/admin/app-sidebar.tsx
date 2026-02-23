@@ -14,6 +14,7 @@ import {
   IconSearch,
   IconSettings,
   IconUsers,
+  IconTrophy,
 } from "@tabler/icons-react";
 
 import { NavDocuments } from "@/components/admin/nav-documents";
@@ -45,12 +46,12 @@ const data = {
     {
       title: "Kejuaraan",
       url: "/admin/kejuaraan",
-      icon: IconListDetails,
+      icon: IconTrophy,
     },
     {
       title: "User",
       url: "/admin/user",
-      icon: IconChartBar,
+      icon: IconUsers,
     },
     {
       title: "Projects",
