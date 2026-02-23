@@ -31,7 +31,7 @@ import {
   ApiResponse,
   RoleCounts,
 } from "@/components/admin/user/hooks/types";
-import { columns } from "@/components/admin/user/columns";
+import { getColumns } from "@/components/admin/user/columns"; // ✅ CHANGED
 import {
   defaultHiddenColumns,
   DEFAULT_PAGE_SIZE,
@@ -46,22 +46,33 @@ interface DataTableProps {
   data: User[];
   meta?: ApiResponse["meta"];
   roleCounts?: RoleCounts;
-  activeRole?: string; // ✅ NEW
-  onRoleChange?: (role: string) => void; // ✅ NEW
+  activeRole?: string;
+  onRoleChange?: (role: string) => void;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
+  onSoftDeleteSuccess?: () => void; // ✅ NEW
 }
 
 export function DataTable({
   data: initialData,
   meta,
   roleCounts,
-  activeRole = "semua", // ✅ NEW
-  onRoleChange, // ✅ NEW
+  activeRole = "semua",
+  onRoleChange,
   onPageChange,
   onPageSizeChange,
+  onSoftDeleteSuccess,
 }: DataTableProps) {
-  const [data] = React.useState(() => initialData);
+  const data = React.useMemo(
+    () => (initialData ?? []).filter((u) => u.status === "active"),
+    [initialData],
+  );
+
+  const columns = React.useMemo(
+    () => getColumns({ onSoftDeleteSuccess }),
+    [onSoftDeleteSuccess],
+  );
+
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>(defaultHiddenColumns);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -83,8 +94,6 @@ export function DataTable({
     }
   }, [meta]);
 
-  // ✅ REMOVED: filterUsersByRole - sekarang backend yang filter
-
   const handlePaginationChange = React.useCallback(
     (updater: any) => {
       const newPagination =
@@ -104,7 +113,7 @@ export function DataTable({
   );
 
   const table = useReactTable({
-    data, // ✅ CHANGED: Langsung pakai data tanpa filter
+    data,
     columns,
     pageCount: meta?.total_page ?? -1,
     state: {
@@ -129,7 +138,7 @@ export function DataTable({
   return (
     <Tabs
       value={activeRole}
-      onValueChange={onRoleChange} // ✅ CHANGED: Trigger parent handler
+      onValueChange={onRoleChange}
       className="w-full flex-col justify-start gap-6"
     >
       <UserTableToolbar table={table} roleCounts={roleCounts} />
@@ -156,6 +165,7 @@ export function DataTable({
                 </TableRow>
               ))}
             </TableHeader>
+
             <TableBody>
               {table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (

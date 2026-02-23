@@ -1,6 +1,4 @@
-// HAPUS "use client" — tidak perlu lagi
-// HAPUS semua useState, useEffect, isLoading, CardSkeleton
-
+//components\admin\section-cards.tsx
 import {
   IconTrendingDown,
   IconTrendingUp,

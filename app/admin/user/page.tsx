@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation"; // ✅ NEW
+import { useCallback, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { DataTable } from "@/pages/admin/user/data-table";
 import type {
@@ -17,97 +17,91 @@ export default function Page() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // ✅ NEW: Initialize state dari URL query parameters
   const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
   const [currentPage, setCurrentPage] = useState(() => {
     const page = searchParams.get("page");
     return page ? parseInt(page, 10) : 1;
   });
+
   const [pageSize, setPageSize] = useState(() => {
     const limit = searchParams.get("limit");
     return limit ? parseInt(limit, 10) : 10;
   });
+
   const [activeRole, setActiveRole] = useState(() => {
     return searchParams.get("role") || "semua";
   });
 
-  // ✅ NEW: Function untuk update URL
   const updateURL = (page: number, limit: number, role: string) => {
     const params = new URLSearchParams();
     params.set("page", page.toString());
     params.set("limit", limit.toString());
-    if (role !== "semua") {
-      params.set("role", role);
-    }
+    if (role !== "semua") params.set("role", role);
     router.push(`?${params.toString()}`, { scroll: false });
   };
 
-  async function fetchUsers(
-    page: number,
-    limit: number,
-    role: string = "semua",
-  ) {
-    try {
-      setIsLoading(true);
+  const fetchUsers = useCallback(
+    async (page: number, limit: number, role: string = "semua") => {
+      try {
+        setIsLoading(true);
 
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
+        let url = `${baseUrl}/api/admin/get/user?page=${page}&limit=${limit}`;
 
-      let url = `${baseUrl}/api/admin/get/user?page=${page}&limit=${limit}`;
-      if (role !== "semua") {
-        url += `&role=${role}`;
+        if (role !== "semua") url += `&role=${role}`;
+
+        const res = await fetch(url, {
+          cache: "no-store",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!res.ok) throw new Error("Gagal mengambil data pengguna");
+
+        const response: ApiResponse = await res.json();
+
+        if (response.data) {
+          setApiResponse(response);
+        } else {
+          throw new Error(response.message || "Terjadi kesalahan");
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        toast.error("Gagal memuat data pengguna");
+        setApiResponse(null);
+      } finally {
+        setIsLoading(false);
       }
-
-      const res = await fetch(url, {
-        cache: "no-store",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!res.ok) {
-        throw new Error("Gagal mengambil data pengguna");
-      }
-
-      const response: ApiResponse = await res.json();
-
-      if (response.data) {
-        setApiResponse(response);
-      } else {
-        throw new Error(response.message || "Terjadi kesalahan");
-      }
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      toast.error("Gagal memuat data pengguna");
-      setApiResponse(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }
+    },
+    [],
+  );
 
   useEffect(() => {
     fetchUsers(currentPage, pageSize, activeRole);
-  }, [currentPage, pageSize, activeRole]);
+  }, [currentPage, pageSize, activeRole, fetchUsers]);
 
-  // ✅ UPDATED: Update URL saat state berubah
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     updateURL(page, pageSize, activeRole);
   };
 
-  // ✅ UPDATED: Update URL saat state berubah
   const handlePageSizeChange = (size: number) => {
     setPageSize(size);
     setCurrentPage(1);
     updateURL(1, size, activeRole);
   };
 
-  // ✅ UPDATED: Update URL saat state berubah
   const handleRoleChange = (role: string) => {
     setActiveRole(role);
     setCurrentPage(1);
     updateURL(1, pageSize, role);
   };
+
+  // NEW: dipanggil setelah soft delete sukses untuk reload data terbaru
+  const handleSoftDeleteSuccess = useCallback(() => {
+    fetchUsers(currentPage, pageSize, activeRole);
+  }, [fetchUsers, currentPage, pageSize, activeRole]);
 
   const roleCounts: RoleCounts | undefined = apiResponse
     ? {
@@ -151,6 +145,7 @@ export default function Page() {
                   onRoleChange={handleRoleChange}
                   onPageChange={handlePageChange}
                   onPageSizeChange={handlePageSizeChange}
+                  onSoftDeleteSuccess={handleSoftDeleteSuccess} // ✅ NEW
                 />
               ) : (
                 <div className="flex h-[400px] w-full items-center justify-center">
