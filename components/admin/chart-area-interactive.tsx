@@ -1,3 +1,4 @@
+// components\admin\chart-area-interactive.tsx
 "use client";
 
 import * as React from "react";
