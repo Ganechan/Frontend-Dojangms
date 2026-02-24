@@ -1,7 +1,7 @@
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SiteHeader } from "@/components/admin/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import ChampionshipTable from "@/pages/admin/kejuaraan/championship-table";
+import ChampionshipTable from "@/components/admin/kejuaraan/championship-table";
 
 export default function Page() {
   return (

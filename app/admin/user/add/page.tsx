@@ -1,6 +1,6 @@
 // app/admin/users/add/page.tsx
 
-import UserForm from "@/pages/admin/user/user-form";
+import UserForm from "@/components/admin/user/user-form";
 
 export const metadata = {
   title: "Tambah User | Admin",

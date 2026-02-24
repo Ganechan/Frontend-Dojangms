@@ -1,7 +1,7 @@
 // app/admin/user/edit/[id]/page.tsx
 
 import { notFound } from "next/navigation";
-import UserForm from "@/pages/admin/user/user-form";
+import UserForm from "@/components/admin/user/user-form";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export const metadata = {

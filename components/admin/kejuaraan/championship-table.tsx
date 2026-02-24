@@ -29,9 +29,9 @@ import {
   Championship,
   LEVEL_OPTIONS,
   LEVEL_COLORS,
-} from "../../../components/admin/kejuaraan/hooks/useChampionship";
-import { ChampionshipFormDialog } from "../../../components/admin/kejuaraan/Championshipformdialog";
-import { ChampionshipDeleteDialog } from "../../../components/admin/kejuaraan/Championshipdeletedialog";
+} from "./hooks/useChampionship";
+import { ChampionshipFormDialog } from "./Championshipformdialog";
+import { ChampionshipDeleteDialog } from "./Championshipdeletedialog";
 
 const formatDate = (dateString: string) => {
   try {

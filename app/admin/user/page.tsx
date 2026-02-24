@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AppSidebar } from "@/components/admin/app-sidebar";
-import { DataTable } from "@/pages/admin/user/data-table";
+import { DataTable } from "@/components/admin/user/data-table";
 import type {
   ApiResponse,
   RoleCounts,
