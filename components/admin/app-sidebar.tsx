@@ -45,7 +45,7 @@ const data = {
     },
     {
       title: "Kejuaraan",
-      url: "/admin/kejuaraan",
+      url: "/admin/user",
       icon: IconTrophy,
     },
     {
