@@ -57,7 +57,7 @@ export default function ContactSection() {
                 height="100%"
                 frameBorder="0"
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1123.2017952748215!2d110.51831058619182!3d-7.338092165230224!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a793e30786d3d%3A0xfa78cee49e16ce5!2sJOKO%20TINGKIR%20Taekwondo%20Salatiga!5e0!3m2!1sid!2sid!4v1770041189232!5m2!1sid!2sid"
-                allowFullScreen=""
+                allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
                 className="rounded-lg"
