@@ -1,8 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -23,13 +21,66 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Eye, EyeOff, ArrowLeft, CheckCircle2, Award } from "lucide-react";
+import { useRegister } from "@/hooks/Useregister";
+
+const MAX_PHONE_DIGITS = 12;
+
+const MONTHS = [
+  { value: "01", label: "Januari" },
+  { value: "02", label: "Februari" },
+  { value: "03", label: "Maret" },
+  { value: "04", label: "April" },
+  { value: "05", label: "Mei" },
+  { value: "06", label: "Juni" },
+  { value: "07", label: "Juli" },
+  { value: "08", label: "Agustus" },
+  { value: "09", label: "September" },
+  { value: "10", label: "Oktober" },
+  { value: "11", label: "November" },
+  { value: "12", label: "Desember" },
+];
+
+function getDaysInMonth(month: number, year: number): number {
+  if (!month || !year) return 31;
+  return new Date(year, month, 0).getDate();
+}
+
+function calculatePasswordStrength(password: string): number {
+  let strength = 0;
+  if (password.length >= 6) strength++;
+  if (password.length >= 8) strength++;
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+  if (/[0-9]/.test(password)) strength++;
+  if (/[^a-zA-Z0-9]/.test(password)) strength++;
+  return strength;
+}
+
+const STRENGTH_LABELS = [
+  "Sangat Lemah",
+  "Lemah",
+  "Cukup",
+  "Kuat",
+  "Sangat Kuat",
+];
+const STRENGTH_COLORS = [
+  "bg-destructive",
+  "bg-orange-500",
+  "bg-yellow-500",
+  "bg-green-500",
+  "bg-green-600",
+];
 
 export default function RegisterPage() {
+  const { isLoading, error, belts, isBeltsLoading, register, fetchBelts } =
+    useRegister();
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-  const MAX_PHONE_DIGITS = 12;
-  const router = useRouter();
+  const [passwordStrength, setPasswordStrength] = useState(0);
+  const [pernahTaekwondo, setPernahTaekwondo] = useState<"ya" | "tidak" | "">(
+    "",
+  );
+  const [beltId, setBeltId] = useState<string>("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -40,149 +91,47 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const [passwordStrength, setPasswordStrength] = useState(0);
-  const [pernahTaekwondo, setPernahTaekwondo] = useState<"ya" | "tidak" | "">(
-    "",
-  );
-  const [belts, setBelts] = useState<any[]>([]);
-  const [beltId, setBeltId] = useState<string>("");
-
-  // Helper function to get days in a month
-  const getDaysInMonth = (month: number, year: number) => {
-    if (!month || !year) return 31;
-    return new Date(year, month, 0).getDate();
-  };
-
-  // Generate arrays for dropdowns
-  const months = [
-    { value: "01", label: "Januari" },
-    { value: "02", label: "Februari" },
-    { value: "03", label: "Maret" },
-    { value: "04", label: "April" },
-    { value: "05", label: "Mei" },
-    { value: "06", label: "Juni" },
-    { value: "07", label: "Juli" },
-    { value: "08", label: "Agustus" },
-    { value: "09", label: "September" },
-    { value: "10", label: "Oktober" },
-    { value: "11", label: "November" },
-    { value: "12", label: "Desember" },
-  ];
 
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
-
-  const daysInSelectedMonth = getDaysInMonth(
+  const daysInMonth = getDaysInMonth(
     parseInt(formData.month),
     parseInt(formData.year),
   );
-  const days = Array.from({ length: daysInSelectedMonth }, (_, i) => i + 1);
-
-  useEffect(() => {
-    if (pernahTaekwondo === "ya") {
-      fetch(`${BASE_URL}/api/public/get/belt`)
-        .then((res) => res.json())
-        .then((data) => {
-          setBelts(data.data || data);
-        })
-        .catch(() => {
-          alert("Gagal mengambil data sabuk");
-        });
-    }
-  }, [pernahTaekwondo]);
-
-  const calculatePasswordStrength = (password: string) => {
-    let strength = 0;
-    if (password.length >= 6) strength++;
-    if (password.length >= 8) strength++;
-    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
-    if (/[0-9]/.test(password)) strength++;
-    if (/[^a-zA-Z0-9]/.test(password)) strength++;
-    return strength;
-  };
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const password = e.target.value;
-    setFormData({ ...formData, password });
+    setFormData((prev) => ({ ...prev, password }));
     setPasswordStrength(calculatePasswordStrength(password));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (formData.password !== formData.confirmPassword) {
-      alert("Password tidak cocok");
-      return;
-    }
+    if (formData.password !== formData.confirmPassword) return;
+    if (!formData.day || !formData.month || !formData.year) return;
 
-    if (!formData.day || !formData.month || !formData.year) {
-      alert("Mohon lengkapi tanggal lahir");
-      return;
-    }
-
-    setIsLoading(true);
-
-    // Construct date in YYYY-MM-DD format
     const tanggalLahir = `${formData.year}-${formData.month}-${formData.day.padStart(2, "0")}`;
 
-    try {
-      const res = await fetch(`${BASE_URL}/api/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          phone: `+62${formData.phone}`,
-          tanggal_lahir: tanggalLahir,
-          belt_id: pernahTaekwondo === "ya" ? beltId : null,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.message || "Gagal mendaftar");
-        return;
-      }
-
-      router.push("/login");
-    } catch (error) {
-      alert("Terjadi kesalahan server");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const getPasswordStrengthLabel = () => {
-    const labels = ["Sangat Lemah", "Lemah", "Cukup", "Kuat", "Sangat Kuat"];
-    return labels[passwordStrength - 1] || "Masukkan password";
-  };
-
-  const getPasswordStrengthColor = () => {
-    const colors = [
-      "bg-destructive",
-      "bg-orange-500",
-      "bg-yellow-500",
-      "bg-green-500",
-      "bg-green-600",
-    ];
-    return colors[passwordStrength - 1] || "bg-border";
+    await register({
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      phone: `+62${formData.phone}`,
+      tanggal_lahir: tanggalLahir,
+      belt_id: pernahTaekwondo === "ya" && beltId ? Number(beltId) : null,
+    });
   };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary/5 rounded-full blur-3xl" />
       </div>
 
       <div className="w-full max-w-4xl relative z-10">
-        {/* Back button */}
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition mb-8"
@@ -191,7 +140,6 @@ export default function RegisterPage() {
           <span className="text-sm font-medium">Kembali ke Beranda</span>
         </Link>
 
-        {/* Card */}
         <Card className="border-0 shadow-xl">
           <CardHeader className="space-y-2 flex flex-col items-center text-center">
             <Link href="/">
@@ -212,11 +160,17 @@ export default function RegisterPage() {
 
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Two Column Layout */}
+              {/* Error Message */}
+              {error && (
+                <div className="bg-destructive/10 border border-destructive/30 text-destructive text-sm rounded-md px-3 py-2">
+                  {error}
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Left Column */}
+                {/* ── Kolom Kiri ── */}
                 <div className="space-y-4">
-                  {/* Full Name Field */}
+                  {/* Nama */}
                   <div className="space-y-2">
                     <Label htmlFor="fullName" className="text-sm font-medium">
                       Nama Lengkap
@@ -227,14 +181,18 @@ export default function RegisterPage() {
                       placeholder="Masukkan nama lengkap Anda"
                       value={formData.name}
                       onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
+                        setFormData((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
                       }
                       required
+                      disabled={isLoading}
                       className="h-10"
                     />
                   </div>
 
-                  {/* Email Field */}
+                  {/* Email */}
                   <div className="space-y-2">
                     <Label htmlFor="email" className="text-sm font-medium">
                       Email
@@ -245,14 +203,19 @@ export default function RegisterPage() {
                       placeholder="email@example.com"
                       value={formData.email}
                       onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
+                        setFormData((prev) => ({
+                          ...prev,
+                          email: e.target.value,
+                        }))
                       }
                       required
+                      autoComplete="email"
+                      disabled={isLoading}
                       className="h-10"
                     />
                   </div>
 
-                  {/* Password Field */}
+                  {/* Password */}
                   <div className="space-y-2">
                     <Label htmlFor="password" className="text-sm font-medium">
                       Password
@@ -265,12 +228,19 @@ export default function RegisterPage() {
                         value={formData.password}
                         onChange={handlePasswordChange}
                         required
+                        autoComplete="new-password"
+                        disabled={isLoading}
                         className="h-10 pr-10"
                       />
                       <button
                         type="button"
-                        onClick={() => setShowPassword(!showPassword)}
+                        onClick={() => setShowPassword((v) => !v)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition"
+                        aria-label={
+                          showPassword
+                            ? "Sembunyikan password"
+                            : "Tampilkan password"
+                        }
                       >
                         {showPassword ? (
                           <EyeOff className="w-4 h-4" />
@@ -279,17 +249,15 @@ export default function RegisterPage() {
                         )}
                       </button>
                     </div>
-
-                    {/* Password Strength Indicator */}
                     {formData.password && (
-                      <div className="space-y-2">
+                      <div className="space-y-1">
                         <div className="flex gap-1">
                           {[...Array(5)].map((_, i) => (
                             <div
                               key={i}
                               className={`h-1 flex-1 rounded-full transition ${
                                 i < passwordStrength
-                                  ? getPasswordStrengthColor()
+                                  ? STRENGTH_COLORS[passwordStrength - 1]
                                   : "bg-border"
                               }`}
                             />
@@ -298,14 +266,15 @@ export default function RegisterPage() {
                         <p className="text-xs text-muted-foreground">
                           Kekuatan:{" "}
                           <span className="font-medium">
-                            {getPasswordStrengthLabel()}
+                            {STRENGTH_LABELS[passwordStrength - 1] ??
+                              "Masukkan password"}
                           </span>
                         </p>
                       </div>
                     )}
                   </div>
 
-                  {/* Confirm Password Field */}
+                  {/* Konfirmasi Password */}
                   <div className="space-y-2">
                     <Label
                       htmlFor="confirmPassword"
@@ -320,20 +289,25 @@ export default function RegisterPage() {
                         placeholder="Ulangi password Anda"
                         value={formData.confirmPassword}
                         onChange={(e) =>
-                          setFormData({
-                            ...formData,
+                          setFormData((prev) => ({
+                            ...prev,
                             confirmPassword: e.target.value,
-                          })
+                          }))
                         }
                         required
+                        autoComplete="new-password"
+                        disabled={isLoading}
                         className="h-10 pr-10"
                       />
                       <button
                         type="button"
-                        onClick={() =>
-                          setShowConfirmPassword(!showConfirmPassword)
-                        }
+                        onClick={() => setShowConfirmPassword((v) => !v)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition"
+                        aria-label={
+                          showConfirmPassword
+                            ? "Sembunyikan password"
+                            : "Tampilkan password"
+                        }
                       >
                         {showConfirmPassword ? (
                           <EyeOff className="w-4 h-4" />
@@ -342,8 +316,6 @@ export default function RegisterPage() {
                         )}
                       </button>
                     </div>
-
-                    {/* Password Match Indicator */}
                     {formData.password && formData.confirmPassword && (
                       <div className="flex items-center gap-2 text-sm">
                         {formData.password === formData.confirmPassword ? (
@@ -366,19 +338,17 @@ export default function RegisterPage() {
                   </div>
                 </div>
 
-                {/* Right Column */}
+                {/* ── Kolom Kanan ── */}
                 <div className="space-y-4">
-                  {/* Phone Field */}
+                  {/* Nomor HP */}
                   <div className="space-y-2">
                     <Label htmlFor="phone" className="text-sm font-medium">
                       Nomor HP
                     </Label>
-
                     <div className="flex">
                       <div className="flex items-center px-3 border border-r-0 rounded-l-md bg-muted text-sm text-muted-foreground">
                         +62
                       </div>
-
                       <Input
                         id="phone"
                         type="tel"
@@ -386,126 +356,108 @@ export default function RegisterPage() {
                         value={formData.phone}
                         onChange={(e) => {
                           let value = e.target.value.replace(/\D/g, "");
-
-                          // optional: cegah diawali 0
-                          if (value.startsWith("0")) {
-                            value = value.slice(1);
-                          }
-
-                          // batas maksimal digit
-                          if (value.length > MAX_PHONE_DIGITS) {
+                          if (value.startsWith("0")) value = value.slice(1);
+                          if (value.length > MAX_PHONE_DIGITS)
                             value = value.slice(0, MAX_PHONE_DIGITS);
-                          }
-
-                          setFormData({ ...formData, phone: value });
+                          setFormData((prev) => ({ ...prev, phone: value }));
                         }}
+                        disabled={isLoading}
                         className="h-10 rounded-l-none"
                       />
                     </div>
                   </div>
 
-                  {/* Tanggal Lahir Field - Three Dropdowns */}
+                  {/* Tanggal Lahir */}
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">Tanggal Lahir</Label>
-
                     <div className="grid grid-cols-3 gap-2">
-                      {/* Year Dropdown */}
-                      <div>
-                        <Select
-                          value={formData.year}
-                          onValueChange={(value) => {
-                            setFormData({ ...formData, year: value });
-                            // Reset day if it exceeds the new year's max days (for leap year)
-                            const maxDays = getDaysInMonth(
-                              parseInt(formData.month),
-                              parseInt(value),
-                            );
-                            if (parseInt(formData.day) > maxDays) {
-                              setFormData((prev) => ({ ...prev, day: "" }));
-                            }
-                          }}
-                          required
-                        >
-                          <SelectTrigger className="h-10">
-                            <SelectValue placeholder="Tahun" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {years.map((year) => (
-                              <SelectItem key={year} value={year.toString()}>
-                                {year}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                      <Select
+                        value={formData.year}
+                        onValueChange={(value) => {
+                          const maxDays = getDaysInMonth(
+                            parseInt(formData.month),
+                            parseInt(value),
+                          );
+                          setFormData((prev) => ({
+                            ...prev,
+                            year: value,
+                            day: parseInt(prev.day) > maxDays ? "" : prev.day,
+                          }));
+                        }}
+                      >
+                        <SelectTrigger className="h-10">
+                          <SelectValue placeholder="Tahun" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {years.map((year) => (
+                            <SelectItem key={year} value={year.toString()}>
+                              {year}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
 
-                      {/* Month Dropdown */}
-                      <div>
-                        <Select
-                          value={formData.month}
-                          onValueChange={(value) => {
-                            setFormData({ ...formData, month: value });
-                            // Reset day if it exceeds the new month's max days
-                            const maxDays = getDaysInMonth(
-                              parseInt(value),
-                              parseInt(formData.year),
-                            );
-                            if (parseInt(formData.day) > maxDays) {
-                              setFormData((prev) => ({ ...prev, day: "" }));
-                            }
-                          }}
-                          required
-                        >
-                          <SelectTrigger className="h-10">
-                            <SelectValue placeholder="Bulan" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {months.map((month) => (
-                              <SelectItem key={month.value} value={month.value}>
-                                {month.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                      <Select
+                        value={formData.month}
+                        onValueChange={(value) => {
+                          const maxDays = getDaysInMonth(
+                            parseInt(value),
+                            parseInt(formData.year),
+                          );
+                          setFormData((prev) => ({
+                            ...prev,
+                            month: value,
+                            day: parseInt(prev.day) > maxDays ? "" : prev.day,
+                          }));
+                        }}
+                      >
+                        <SelectTrigger className="h-10">
+                          <SelectValue placeholder="Bulan" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {MONTHS.map((m) => (
+                            <SelectItem key={m.value} value={m.value}>
+                              {m.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
 
-                      {/* Day Dropdown */}
-                      <div>
-                        <Select
-                          value={formData.day}
-                          onValueChange={(value) =>
-                            setFormData({ ...formData, day: value })
-                          }
-                          required
-                        >
-                          <SelectTrigger className="h-10 w-auto">
-                            <SelectValue placeholder="Hari" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {days.map((day) => (
-                              <SelectItem
-                                key={day}
-                                value={day.toString().padStart(2, "0")}
-                              >
-                                {day.toString().padStart(2, "0")}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                      <Select
+                        value={formData.day}
+                        onValueChange={(value) =>
+                          setFormData((prev) => ({ ...prev, day: value }))
+                        }
+                      >
+                        <SelectTrigger className="h-10">
+                          <SelectValue placeholder="Hari" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {days.map((day) => (
+                            <SelectItem
+                              key={day}
+                              value={day.toString().padStart(2, "0")}
+                            >
+                              {day.toString().padStart(2, "0")}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
 
-                  {/* Pernah Taekwondo Field - Enhanced Design */}
+                  {/* Pernah Taekwondo */}
                   <div className="space-y-3">
                     <Label className="text-sm font-medium">
                       Pernah ikut Taekwondo?
                     </Label>
-
                     <div className="grid grid-cols-2 gap-3">
                       <button
                         type="button"
-                        onClick={() => setPernahTaekwondo("ya")}
+                        onClick={() => {
+                          setPernahTaekwondo("ya");
+                          fetchBelts();
+                        }}
                         className={`relative h-20 rounded-lg border-2 transition-all duration-200 ${
                           pernahTaekwondo === "ya"
                             ? "border-primary bg-primary/5 shadow-md"
@@ -523,11 +475,7 @@ export default function RegisterPage() {
                             <Award className="w-5 h-5" />
                           </div>
                           <span
-                            className={`text-sm font-medium ${
-                              pernahTaekwondo === "ya"
-                                ? "text-primary"
-                                : "text-foreground"
-                            }`}
+                            className={`text-sm font-medium ${pernahTaekwondo === "ya" ? "text-primary" : "text-foreground"}`}
                           >
                             Ya
                           </span>
@@ -562,11 +510,7 @@ export default function RegisterPage() {
                             <span className="text-xl">✕</span>
                           </div>
                           <span
-                            className={`text-sm font-medium ${
-                              pernahTaekwondo === "tidak"
-                                ? "text-primary"
-                                : "text-foreground"
-                            }`}
+                            className={`text-sm font-medium ${pernahTaekwondo === "tidak" ? "text-primary" : "text-foreground"}`}
                           >
                             Tidak
                           </span>
@@ -580,7 +524,7 @@ export default function RegisterPage() {
                     </div>
                   </div>
 
-                  {/* Pilih Sabuk - Enhanced Design with Shadcn Select */}
+                  {/* Pilih Sabuk */}
                   {pernahTaekwondo === "ya" && (
                     <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
                       <Label className="text-sm font-medium flex items-center gap-2">
@@ -589,11 +533,18 @@ export default function RegisterPage() {
                       </Label>
                       <Select
                         value={beltId}
-                        onValueChange={(value) => setBeltId(value)}
+                        onValueChange={setBeltId}
+                        disabled={isBeltsLoading}
                         required
                       >
                         <SelectTrigger className="w-full h-11 border-2">
-                          <SelectValue placeholder="Pilih sabuk terakhir Anda" />
+                          <SelectValue
+                            placeholder={
+                              isBeltsLoading
+                                ? "Memuat..."
+                                : "Pilih sabuk terakhir Anda"
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           {belts.map((belt) => (
@@ -614,10 +565,9 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Submit Button */}
               <Button
                 type="submit"
-                className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-medium transition-all shadow-md hover:shadow-lg"
+                className="w-full h-11 font-medium shadow-md hover:shadow-lg transition-all"
                 disabled={
                   isLoading || formData.password !== formData.confirmPassword
                 }
@@ -626,7 +576,6 @@ export default function RegisterPage() {
               </Button>
             </form>
 
-            {/* Sign in link */}
             <p className="text-center text-sm text-muted-foreground mt-6">
               Sudah punya akun?{" "}
               <Link
@@ -638,18 +587,6 @@ export default function RegisterPage() {
             </p>
           </CardContent>
         </Card>
-
-        {/* Footer text
-        <p className="text-center text-xs text-muted-foreground mt-6">
-          Dengan mendaftar, Anda menyetujui{" "}
-          <Link
-            href="#"
-            className="text-primary hover:text-primary/80 transition"
-          >
-            Syarat Layanan
-          </Link>{" "}
-          kami
-        </p> */}
       </div>
     </div>
   );
