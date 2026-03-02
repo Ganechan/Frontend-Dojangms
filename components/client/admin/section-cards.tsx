@@ -1,4 +1,6 @@
-//components\client\admin\section-cards.tsx
+// components/client/admin/section-cards.tsx
+"use client"; // ✅ FIX: Tambahkan directive — wajib ada di folder client/
+
 import {
   IconTrendingDown,
   IconTrendingUp,
@@ -17,17 +19,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+// ✅ FIX: Gunakan type dari types/dashboard.ts — tidak lagi pakai `any`
+import type { DashboardData } from "@/types/dashboardAdmin";
 
-type DashboardData = {
-  userJson: any;
-  beltJson: any;
-  statsJson: any;
-  championship5yJson: any;
-  championship3mJson: any;
-} | null;
-
-export function SectionCards({ data }: { data: DashboardData }) {
-  // Proses data langsung, tidak perlu state
+export function SectionCards({ data }: { data: DashboardData | null }) {
   const totalAnggota = data?.userJson?.totalMuridAktif ?? null;
   const anggotaBaru = data?.userJson?.muridBaruBulanIni ?? null;
 
