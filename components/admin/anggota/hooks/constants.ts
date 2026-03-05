@@ -19,7 +19,7 @@ export const columnLabelMap: Record<string, string> = {
   email: "Email",
   phone: "No. Telepon",
   tanggal_lahir: "Tanggal Lahir",
-  roles: "Role",
+  // ❌ roles dihapus
   current_belt: "Sabuk",
   belt_achieved_at: "Sabuk Dicapai",
   status: "Status",
@@ -34,6 +34,6 @@ export const defaultHiddenColumns = {
   created_at: false,
 };
 
-// ✅ NEW: Page size options
+// ✅ Page size options
 export const PAGE_SIZE_OPTIONS = [10, 25, 50, 75, 100, 200] as const;
 export const DEFAULT_PAGE_SIZE = 10;

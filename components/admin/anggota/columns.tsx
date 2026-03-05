@@ -1,4 +1,3 @@
-// components\admin\user\columns.tsx
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
@@ -41,8 +40,6 @@ import { UserDetailDrawer } from "./user-detail-drawer";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "";
 
 async function softDeleteUser(userId: number) {
-  // Disarankan pakai relative URL kalau endpoint ada di app yang sama:
-  // const url = `/api/admin/softdelete/user/${userId}`;
   const url = `${BASE_URL}/api/admin/softdelete/user/${userId}`;
 
   const res = await fetch(url, {
@@ -83,15 +80,8 @@ function ActionCell({
     setDeleting(true);
     try {
       await softDeleteUser(user.id);
-
-      // ✅ Sonner (shadcn) notif sukses
       toast.success(`User "${user.name}" berhasil dinonaktifkan`);
-
-      // Karena page.tsx adalah client component, router.refresh saja tidak memicu fetchUsers.
-      // Jadi trigger refetch via callback:
       onSoftDeleteSuccess?.();
-
-      // Optional: tetap refresh untuk sinkron UI lain (aman)
       router.refresh();
     } catch (err: unknown) {
       toast.error(
@@ -207,29 +197,6 @@ export function getColumns({
           <span className="text-sm">
             {formatDate(row.original.tanggal_lahir)}
           </span>
-        </div>
-      ),
-    },
-    {
-      accessorKey: "roles",
-      header: () => <div className="text-center">Role</div>,
-      cell: ({ row }) => (
-        <div className="flex flex-wrap gap-1 justify-center">
-          {row.original.roles && row.original.roles.length > 0 ? (
-            row.original.roles.map((role) => (
-              <Badge
-                key={role}
-                variant="outline"
-                className="text-xs capitalize"
-              >
-                {role}
-              </Badge>
-            ))
-          ) : (
-            <Badge variant="outline" className="text-xs text-muted-foreground">
-              -
-            </Badge>
-          )}
         </div>
       ),
     },

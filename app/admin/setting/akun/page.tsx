@@ -1,7 +1,7 @@
 // app/admin/user/page.tsx
 
 import { Suspense } from "react";
-import MuridPageClient from "./MuridPageClient";
+import UserPageClient from "./UserPageClient";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +14,7 @@ export default function Page() {
         </div>
       }
     >
-      <MuridPageClient />
+      <UserPageClient />
     </Suspense>
   );
 }

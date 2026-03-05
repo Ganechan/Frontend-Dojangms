@@ -82,7 +82,7 @@ const data = {
       title: "Setting",
       url: "/admin/setting",
       items: [
-        { title: "Manajemen Role dan Akun", url: "/admin/setting/role" },
+        { title: "Manajemen Role dan Akun", url: "/admin/setting/akun" },
         { title: "Tingkatan Sabuk", url: "/admin/setting/sabuk" },
         { title: "BackUp Data", url: "/admin/setting/backup" },
       ],
