@@ -3,17 +3,17 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AppSidebar } from "@/components/admin/app-sidebar";
-import { DataTable } from "@/components/admin/anggota/data-table";
+import { DataTable } from "@/components/admin/murid/data-table";
 import type {
   ApiResponse,
   StatusCounts,
-} from "@/components/admin/anggota/hooks/types";
+} from "@/components/admin/murid/hooks/types";
 import { SiteHeader } from "@/components/admin/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { IconLoader } from "@tabler/icons-react";
 import { toast } from "sonner";
 
-export default function UserPageClient() {
+export default function MuridPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
 

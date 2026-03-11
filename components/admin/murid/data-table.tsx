@@ -29,15 +29,15 @@ import type {
   ApiResponse,
   StatusCounts,
   User,
-} from "@/components/admin/anggota/hooks/types";
-import { schema } from "@/components/admin/anggota/hooks/types";
-import { getColumns } from "@/components/admin/anggota/columns";
+} from "@/components/admin/murid/hooks/types";
+import { schema } from "@/components/admin/murid/hooks/types";
+import { getColumns } from "@/components/admin/murid/columns";
 import {
   defaultHiddenColumns,
   DEFAULT_PAGE_SIZE,
-} from "@/components/admin/anggota/hooks/constants";
-import { UserTableToolbar } from "@/components/admin/anggota/user-table-toolbar";
-import { UserTablePagination } from "@/components/admin/anggota/user-table-pagination";
+} from "@/components/admin/murid/hooks/constants";
+import { UserTableToolbar } from "@/components/admin/murid/user-table-toolbar";
+import { UserTablePagination } from "@/components/admin/murid/user-table-pagination";
 
 export type { User };
 export { schema };
