@@ -25,13 +25,13 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 
-import {
-  User,
-  schema,
+import type {
   ApiResponse,
   RoleCounts,
+  User,
 } from "@/components/admin/user/hooks/types";
-import { getColumns } from "@/components/admin/user/columns"; // ✅ CHANGED
+import { schema } from "@/components/admin/user/hooks/types";
+import { getColumns } from "@/components/admin/user/columns";
 import {
   defaultHiddenColumns,
   DEFAULT_PAGE_SIZE,
@@ -44,18 +44,18 @@ export { schema };
 
 interface DataTableProps {
   data: User[];
-  meta?: ApiResponse["meta"];
+  pagination?: ApiResponse["pagination"]; // ✅ updated
   roleCounts?: RoleCounts;
   activeRole?: string;
   onRoleChange?: (role: string) => void;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
-  onSoftDeleteSuccess?: () => void; // ✅ NEW
+  onSoftDeleteSuccess?: () => void;
 }
 
 export function DataTable({
   data: initialData,
-  meta,
+  pagination,
   roleCounts,
   activeRole = "semua",
   onRoleChange,
@@ -80,47 +80,50 @@ export function DataTable({
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
-  const [pagination, setPagination] = React.useState<PaginationState>({
-    pageIndex: meta ? meta.page - 1 : 0,
-    pageSize: meta?.limit || DEFAULT_PAGE_SIZE,
-  });
+  const [tablePagination, setTablePagination] = React.useState<PaginationState>(
+    {
+      pageIndex: pagination ? pagination.page - 1 : 0,
+      pageSize: pagination?.limit || DEFAULT_PAGE_SIZE,
+    },
+  );
 
+  // Sync dari server pagination → table state
   React.useEffect(() => {
-    if (meta) {
-      setPagination({
-        pageIndex: meta.page - 1,
-        pageSize: meta.limit,
+    if (pagination) {
+      setTablePagination({
+        pageIndex: pagination.page - 1,
+        pageSize: pagination.limit,
       });
     }
-  }, [meta]);
+  }, [pagination]);
 
   const handlePaginationChange = React.useCallback(
     (updater: any) => {
       const newPagination =
-        typeof updater === "function" ? updater(pagination) : updater;
+        typeof updater === "function" ? updater(tablePagination) : updater;
 
-      if (newPagination.pageIndex !== pagination.pageIndex) {
+      if (newPagination.pageIndex !== tablePagination.pageIndex) {
         onPageChange?.(newPagination.pageIndex + 1);
       }
 
-      if (newPagination.pageSize !== pagination.pageSize) {
+      if (newPagination.pageSize !== tablePagination.pageSize) {
         onPageSizeChange?.(newPagination.pageSize);
       }
 
-      setPagination(newPagination);
+      setTablePagination(newPagination);
     },
-    [pagination, onPageChange, onPageSizeChange],
+    [tablePagination, onPageChange, onPageSizeChange],
   );
 
   const table = useReactTable({
     data,
     columns,
-    pageCount: meta?.total_page ?? -1,
+    pageCount: pagination?.total_page ?? -1,
     state: {
       sorting,
       columnVisibility,
       columnFilters,
-      pagination,
+      pagination: tablePagination,
     },
     manualPagination: true,
     getRowId: (row) => row.id.toString(),
@@ -134,6 +137,23 @@ export function DataTable({
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
+
+  /**
+   * Compat layer:
+   * Kalau UserTablePagination masih expect prop bernama `meta`,
+   * kita map `pagination` → `metaCompat`.
+   */
+  const metaCompat = React.useMemo(() => {
+    if (!pagination) return undefined;
+    return {
+      page: pagination.page,
+      limit: pagination.limit,
+      total_data: pagination.total_data,
+      total_page: pagination.total_page,
+      has_next: pagination.has_next,
+      has_prev: pagination.has_prev,
+    };
+  }, [pagination]);
 
   return (
     <Tabs
@@ -194,7 +214,8 @@ export function DataTable({
           </Table>
         </div>
 
-        <UserTablePagination table={table} meta={meta} />
+        {/* ✅ sementara pakai compat supaya tidak perlu ubah komponen pagination dulu */}
+        <UserTablePagination table={table} meta={metaCompat} />
       </TabsContent>
     </Tabs>
   );

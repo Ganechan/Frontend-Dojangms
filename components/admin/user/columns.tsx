@@ -1,3 +1,4 @@
+// components\admin\user\columns.tsx
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";

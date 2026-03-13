@@ -1,3 +1,4 @@
+// components/client/admin/pie-chart.tsx
 "use client";
 
 import * as React from "react";
@@ -16,11 +17,8 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-
-interface ChartItem {
-  name: string;
-  value: number;
-}
+// ✅ FIX: Import type dari types/dashboard.ts — tidak lagi didefinisikan ulang di sini
+import type { ChartItem } from "@/types/dashboardAdmin";
 
 interface SectionPieChartsProps {
   beltData: ChartItem[];
@@ -146,7 +144,6 @@ function PieChartCard({
               </PieChart>
             </ChartContainer>
 
-            {/* Legend hanya render setelah colors siap (isLoaded = true) */}
             {isLoaded && (
               <div className="grid grid-cols-2 gap-3 text-sm max-h-[200px] overflow-y-auto pr-2">
                 {chartData.map((item) => (

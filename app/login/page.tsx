@@ -45,16 +45,18 @@ export default function LoginPage() {
         </Link>
 
         <Card className="border-0 shadow-xl">
-          <CardHeader className="space-y-0 items-center text-center py-3">
-            <Link href="/">
-              <Image
-                src="/logo_dojang.png"
-                alt="Logo Dojang"
-                width={150}
-                height={150}
-                priority
-              />
-            </Link>
+          <CardHeader className="space-y-0 text-center py-3">
+            <div className="flex justify-center mb-2">
+              <Link href="/">
+                <Image
+                  src="/logo_dojang.png"
+                  alt="Logo Dojang"
+                  width={150}
+                  height={150}
+                  priority
+                />
+              </Link>
+            </div>
             <CardTitle className="text-2xl pt-3">Masuk ke Akun Anda</CardTitle>
             <CardDescription className="pt-1">
               Masukkan email dan password untuk melanjutkan

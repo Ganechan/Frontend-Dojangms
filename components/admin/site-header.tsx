@@ -1,13 +1,43 @@
+// components\admin\site-header.tsx
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { LogOut } from "lucide-react";
-import { useAuth } from "@/hooks/Useauth";
+import { useUser } from "@/hooks/useUser";
+import { useRouter, usePathname } from "next/navigation";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { LayoutDashboard, ChevronDown, Check } from "lucide-react";
+
+const ROLE_LABELS: Record<string, string> = {
+  admin: "Admin",
+  pelatih: "Pelatih",
+  murid: "Murid",
+};
+
+const ROLE_ROUTES: Record<string, string> = {
+  admin: "/admin",
+  pelatih: "/pelatih",
+  murid: "/murid",
+};
 
 export function SiteHeader() {
-  const { logout, isLoading } = useAuth();
+  const user = useUser();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const roles: string[] = user?.roles ?? [];
+  const hasMultipleRoles = roles.length > 1;
+
+  const activeRole =
+    roles.find((role) => pathname.startsWith(ROLE_ROUTES[role])) ?? roles[0];
 
   return (
     <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
@@ -18,18 +48,6 @@ export function SiteHeader() {
           className="mx-2 data-[orientation=vertical]:h-4"
         />
         <h1 className="text-base font-medium">Documents</h1>
-        <div className="ml-auto flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={logout}
-            disabled={isLoading}
-            className="hidden sm:flex items-center gap-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            {isLoading ? "Keluar..." : "Keluar"}
-          </Button>
-        </div>
       </div>
     </header>
   );

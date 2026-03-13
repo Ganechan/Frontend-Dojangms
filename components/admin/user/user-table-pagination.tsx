@@ -21,7 +21,7 @@ import { PAGE_SIZE_OPTIONS } from "./hooks/constants";
 
 interface UserTablePaginationProps {
   table: Table<User>;
-  meta?: ApiResponse["meta"]; // ✅ NEW: Meta dari backend
+  meta?: ApiResponse["pagination"]; // ✅ NEW: Meta dari backend
 }
 
 export function UserTablePagination({ table, meta }: UserTablePaginationProps) {

@@ -172,3 +172,55 @@ components/
 - Gunakan `toLocaleDateString("id-ID", {...})` untuk format tanggal
 - Tampilkan `"—"` jika data null, bukan string kosong atau 0
 - Gunakan `.at(-1)` untuk ambil elemen terakhir array
+
+
+data user
+{
+  "name": "admin",
+  "email": "admin@gmail.com",
+  "password": "admin",
+  "phone": "1234567890",
+  "tanggal_lahir": "2012-08-12",
+  "roles" : ["admin"],
+  "belt_id": 9
+}
+
+{
+  "name": "admin",
+  "email": "admin2@gmail.com",
+  "password": "admin",
+  "phone": "1234567890",
+  "tanggal_lahir": "2012-08-12",
+  "roles" : ["admin", "pelatih"],
+  "belt_id": 9
+}
+
+{
+  "name": "admin",
+  "email": "admin3@gmail.com",
+  "password": "admin",
+  "phone": "1234567890",
+  "tanggal_lahir": "2012-08-12",
+  "roles" : ["admin", "pelatih", "murid"],
+  "belt_id": 9
+}
+
+{
+  "name": "pelatih",
+  "email": "pelatih@gmail.com",
+  "password": "pelatih",
+  "phone": "1234567890",
+  "tanggal_lahir": "2012-08-12",
+  "roles" : ["pelatih", "murid"],
+  "belt_id": 9
+}
+
+{
+  "name": "murid",
+  "email": "murid@gmail.com",
+  "password": "murid",
+  "phone": "1234567890",
+  "tanggal_lahir": "2012-08-12",
+  "roles" : ["murid"],
+  "belt_id": 9
+}
