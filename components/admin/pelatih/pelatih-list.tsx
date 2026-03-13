@@ -5,18 +5,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
 import { Spinner } from "@/components/ui/spinner";
-import {
-  fetchPelatih,
-  sanitizeLimit,
-  sanitizePage,
-} from "@/services/pelatihService";
+import { ApiError } from "@/lib/apiClient";
+import { fetchPelatih, sanitizeLimit, sanitizePage } from "@/services/pelatihService";
 import type {
-  CoachApiResponse,
-  FetchCoachesParams,
-  LimitOption,
   ActiveStatusTab,
+  CoachApiResponse,
   CoachStatus,
   CoachStatusCounts,
+  FetchCoachesParams,
 } from "@/types/pelatih";
 import { CoachDataTable } from "./pelatih-table";
 
@@ -24,29 +20,25 @@ export function CoachList() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [apiResponse, setApiResponse] = React.useState<CoachApiResponse | null>(
-    null,
-  );
-  const [statusCounts, setStatusCounts] = React.useState<
-    CoachStatusCounts | undefined
-  >(undefined);
-  const [loading, setLoading] = React.useState(true);
+  const [apiResponse, setApiResponse]   = React.useState<CoachApiResponse | null>(null);
+  const [statusCounts, setStatusCounts] = React.useState<CoachStatusCounts | undefined>(undefined);
+  const [loading, setLoading]           = React.useState(true);
 
   const currentPage = sanitizePage(searchParams.get("page"));
-  const pageSize = sanitizeLimit(searchParams.get("limit"));
-  const search = searchParams.get("search") ?? "";
-  const status = (searchParams.get("status") ?? "total") as ActiveStatusTab;
+  const pageSize    = sanitizeLimit(searchParams.get("limit"));
+  const search      = searchParams.get("search") ?? "";
+  const status      = (searchParams.get("status") ?? "total") as ActiveStatusTab;
 
   const updateURL = React.useCallback(
-    (params: Partial<Record<"page" | "limit" | "search", string>>) => {
+    (params: Partial<Record<"page" | "limit" | "search" | "status", string>>) => {
       const next = new URLSearchParams(searchParams.toString());
       Object.entries(params).forEach(([k, v]) => {
-        if (v) next.set(k, v);
+        if (v && v !== "total") next.set(k, v);
         else next.delete(k);
       });
       router.push(`?${next.toString()}`, { scroll: false });
     },
-    [router, searchParams],
+    [router, searchParams]
   );
 
   React.useEffect(() => {
@@ -56,20 +48,22 @@ export function CoachList() {
       setLoading(true);
       try {
         const params: FetchCoachesParams = {
-          page: currentPage,
-          limit: pageSize,
+          page:   currentPage,
+          limit:  pageSize,
           search: search || undefined,
           status: status !== "total" ? (status as CoachStatus) : undefined,
         };
+
         const data = await fetchPelatih(params);
+
         if (!cancelled) {
           setApiResponse(data);
 
           setStatusCounts((prev) => {
             const next: CoachStatusCounts = {
-              total: prev?.total ?? 0,
-              active: prev?.active ?? 0,
-              inactive: prev?.inactive ?? 0,
+              total:     prev?.total     ?? 0,
+              active:    prev?.active    ?? 0,
+              inactive:  prev?.inactive  ?? 0,
             };
 
             if (status === "total") {
@@ -84,7 +78,27 @@ export function CoachList() {
       } catch (err) {
         if (!cancelled) {
           console.error(err);
-          toast.error("Gagal memuat data pelatih");
+
+          if (err instanceof ApiError) {
+            switch (err.status) {
+              case 401:
+                toast.error("Sesi habis, silakan login kembali");
+                router.push("/login");
+                break;
+              case 403:
+                toast.error("Anda tidak memiliki akses ke halaman ini");
+                router.push("/admin"); // redirect ke halaman default admin
+                break;
+              case 404:
+                toast.error("Data tidak ditemukan");
+                break;
+              default:
+                toast.error("Terjadi kesalahan server");
+            }
+          } else {
+            toast.error("Gagal terhubung ke server");
+          }
+
           setApiResponse(null);
         }
       } finally {
@@ -93,9 +107,7 @@ export function CoachList() {
     }
 
     load();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [currentPage, pageSize, search, status]);
 
   if (loading) {
@@ -127,9 +139,7 @@ export function CoachList() {
       initialSearch={search}
       initialStatus={status}
       onPageChange={(page) => updateURL({ page: String(page) })}
-      onPageSizeChange={(limit) =>
-        updateURL({ limit: String(limit), page: "1" })
-      }
+      onPageSizeChange={(limit) => updateURL({ limit: String(limit), page: "1" })}
       onSearchChange={(q) => updateURL({ search: q, page: "1" })}
       onStatusChange={(s) => updateURL({ status: s, page: "1" })}
     />

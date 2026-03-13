@@ -1,42 +1,38 @@
-export class ApiError extends Error {
-  constructor(
-    public status: number,
-    message: string,
-  ) {
-    super(message);
-    this.name = "ApiError";
-  }
-}
+import { cookies } from "next/headers";
+import { ApiError } from "./apiClient";
 
-interface FetchOptions extends RequestInit {
+const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:3001";
+
+interface ServerFetchOptions extends RequestInit {
   timeout?: number;
 }
 
 /**
- * Dipakai di Client Component.
- * Selalu memanggil Next.js Route Handler (/api/...), BUKAN langsung ke backend.
- * Token tidak perlu dikirim manual — sudah otomatis lewat cookie httpOnly.
+ * Dipakai HANYA di server (Route Handler / Server Component).
+ * Otomatis membaca auth_token dari cookie httpOnly dan meneruskannya ke backend.
  */
-export async function apiFetch<T>(
-  endpoint: string,
-  options: FetchOptions = {},
+export async function serverFetch<T>(
+  path: string,
+  options: ServerFetchOptions = {},
 ): Promise<T> {
   const { timeout = 10_000, ...fetchOptions } = options;
+
+  // baca auth_token — nama cookie sesuai middleware.ts
+  const cookieStore = await cookies();
+  const token = cookieStore.get("auth_token")?.value;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
 
   try {
-    const res = await fetch(endpoint, {
+    const res = await fetch(`${BACKEND_URL}${path}`, {
       ...fetchOptions,
       signal: controller.signal,
       headers: {
         "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
         ...fetchOptions.headers,
       },
-      // credentials: "include" memastikan cookie dikirim
-      // walaupun pakai relative URL ini sudah default di same-origin
-      credentials: "same-origin",
     });
 
     if (!res.ok) {

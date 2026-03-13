@@ -19,10 +19,11 @@ export async function fetchPelatih({
   if (search?.trim()) params.set("search", search.trim());
   if (status && status !== "total") params.set("status", status);
 
-  return apiFetch<CoachApiResponse>(
-    `/api/admin/get/user/pelatih?${params.toString()}`,
-    { cache: "no-store" },
-  );
+  // panggil Next.js Route Handler, bukan langsung ke backend
+  // browser hanya tahu /api/pelatih, tidak tahu URL backend
+  return apiFetch<CoachApiResponse>(`/api/pelatih?${params.toString()}`, {
+    cache: "no-store",
+  });
 }
 
 export function sanitizeLimit(raw: string | null): LimitOption {
