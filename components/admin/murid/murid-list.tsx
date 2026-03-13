@@ -7,28 +7,28 @@ import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { ApiError } from "@/lib/apiClient";
 import {
-  fetchPelatih,
+  fetchMurid,
   sanitizeLimit,
   sanitizePage,
-} from "@/services/admin/pelatihService";
+} from "@/services/admin/muridService";
 import type {
   ActiveStatusTab,
-  CoachApiResponse,
-  CoachStatus,
-  CoachStatusCounts,
-  FetchCoachesParams,
-} from "@/types/admin/pelatih";
-import { CoachDataTable } from "./pelatih-table";
+  MuridApiResponse,
+  MuridStatus,
+  MuridStatusCounts,
+  FetchMuridParams,
+} from "@/types/admin/murid";
+import { MuridDataTable } from "./murid-table";
 
-export function CoachList() {
+export function MuridList() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [apiResponse, setApiResponse] = React.useState<CoachApiResponse | null>(
+  const [apiResponse, setApiResponse] = React.useState<MuridApiResponse | null>(
     null,
   );
   const [statusCounts, setStatusCounts] = React.useState<
-    CoachStatusCounts | undefined
+    MuridStatusCounts | undefined
   >(undefined);
   const [loading, setLoading] = React.useState(true);
 
@@ -57,32 +57,24 @@ export function CoachList() {
     async function load() {
       setLoading(true);
       try {
-        const params: FetchCoachesParams = {
+        const params: FetchMuridParams = {
           page: currentPage,
           limit: pageSize,
           search: search || undefined,
-          status: status !== "total" ? (status as CoachStatus) : undefined,
+          status: status !== "total" ? (status as MuridStatus) : undefined,
         };
 
-        const data = await fetchPelatih(params);
+        const data = await fetchMurid(params);
 
         if (!cancelled) {
           setApiResponse(data);
 
-          setStatusCounts((prev) => {
-            const next: CoachStatusCounts = {
-              total: prev?.total ?? 0,
-              active: prev?.active ?? 0,
-              inactive: prev?.inactive ?? 0,
-            };
-
-            if (status === "total") {
-              next.total = data.pagination.total_data;
-            } else {
-              next[status as CoachStatus] = data.pagination.total_data;
-            }
-
-            return next;
+          // summary dari API sudah berisi total keseluruhan — langsung akurat
+          setStatusCounts({
+            total: data.summary.total_murid,
+            active: Number(data.summary.total_murid_active),
+            inactive: Number(data.summary.total_murid_inactive),
+            suspended: 0,
           });
         }
       } catch (err) {
@@ -97,7 +89,7 @@ export function CoachList() {
                 break;
               case 403:
                 toast.error("Anda tidak memiliki akses ke halaman ini");
-                router.push("/admin"); // redirect ke halaman default admin
+                router.push("/admin");
                 break;
               case 404:
                 toast.error("Data tidak ditemukan");
@@ -127,7 +119,7 @@ export function CoachList() {
       <div className="flex min-h-[400px] items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Spinner className="h-8 w-8" />
-          <p className="text-muted-foreground">Memuat data pelatih...</p>
+          <p className="text-muted-foreground">Memuat data murid...</p>
         </div>
       </div>
     );
@@ -144,7 +136,7 @@ export function CoachList() {
   }
 
   return (
-    <CoachDataTable
+    <MuridDataTable
       data={apiResponse.data}
       pagination={apiResponse.pagination}
       statusCounts={statusCounts}

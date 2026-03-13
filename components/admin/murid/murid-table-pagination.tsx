@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import type { Table } from "@tanstack/react-table";
-
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -11,19 +10,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { LIMIT_OPTIONS } from "@/types/admin/murid";
+import type { MuridData, PaginationMeta } from "@/types/admin/murid";
 
-import type { CoachData, PaginationMeta } from "@/types/admin/pelatih";
-import { LIMIT_OPTIONS } from "@/types/admin/pelatih";
-
-interface CoachTablePaginationProps {
-  table: Table<CoachData>;
+interface MuridTablePaginationProps {
+  table: Table<MuridData>;
   meta?: PaginationMeta;
 }
 
-export function CoachTablePagination({
+export function MuridTablePagination({
   table,
   meta,
-}: CoachTablePaginationProps) {
+}: MuridTablePaginationProps) {
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
       <p className="text-sm text-muted-foreground">

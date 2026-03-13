@@ -4,18 +4,17 @@ import * as React from "react";
 import {
   flexRender,
   getCoreRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
   getFilteredRowModel,
   getSortedRowModel,
+  getFacetedRowModel,
+  getFacetedUniqueValues,
   useReactTable,
+  type ColumnDef,
   type ColumnFiltersState,
   type PaginationState,
   type SortingState,
   type VisibilityState,
-  type ColumnDef,
 } from "@tanstack/react-table";
-
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import {
   Table,
@@ -27,18 +26,17 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { Eye } from "lucide-react";
+import Link from "next/link";
 
 import type {
-  CoachData,
   ActiveStatusTab,
+  MuridData,
+  MuridStatusCounts,
   PaginationMeta,
-  CoachStatusCounts,
-} from "@/types/admin/pelatih";
-
-import { CoachTableToolbar } from "./pelatih-table-toolbar";
-import { CoachTablePagination } from "./pelatih-table-pagination";
+} from "@/types/admin/murid";
+import { MuridTableToolbar } from "./murid-table-toolbar";
+import { MuridTablePagination } from "./murid-table-pagination";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -80,7 +78,7 @@ function getStatusClass(status: string) {
 
 // ─── columns ────────────────────────────────────────────────────────────────
 
-function getCoachColumns(): ColumnDef<CoachData>[] {
+function getMuridColumns(): ColumnDef<MuridData>[] {
   return [
     {
       accessorKey: "name",
@@ -104,49 +102,47 @@ function getCoachColumns(): ColumnDef<CoachData>[] {
       ),
     },
     {
-      accessorKey: "tanggal_bergabung",
-      header: "Tgl Gabung",
+      accessorKey: "phone",
+      header: "No. HP",
       cell: ({ row }) => (
         <span className="text-sm text-muted-foreground">
-          {row.original.tanggal_bergabung
-            ? formatDate(row.original.tanggal_bergabung)
+          {row.original.phone || "-"}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "tanggal_lahir",
+      header: "Tgl Lahir",
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">
+          {row.original.tanggal_lahir
+            ? formatDate(row.original.tanggal_lahir)
             : "-"}
         </span>
       ),
     },
     {
-      accessorKey: "sabuk_saat_ini.name",
+      accessorKey: "current_belt",
       header: "Sabuk",
       cell: ({ row }) => (
-        <span className="text-sm">
-          {row.original.sabuk_saat_ini?.name ?? "-"}
+        <span className="text-sm">{row.original.current_belt || "-"}</span>
+      ),
+    },
+    {
+      accessorKey: "created_at",
+      header: "Tgl Bergabung",
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">
+          {row.original.created_at ? formatDate(row.original.created_at) : "-"}
         </span>
-      ),
-    },
-    {
-      id: "kelas",
-      header: () => <div className="text-center">Kelas</div>,
-      cell: ({ row }) => (
-        <div className="text-center text-sm">
-          {row.original.kelas_diampu?.length ?? 0}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "total_murid",
-      header: () => <div className="text-center">Murid</div>,
-      cell: ({ row }) => (
-        <div className="text-center text-sm">
-          {row.original.total_murid ?? 0}
-        </div>
       ),
     },
     {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => (
-        <Badge className={getStatusClass(String(row.original.status))}>
-          {getStatusLabel(String(row.original.status))}
+        <Badge className={getStatusClass(row.original.status)}>
+          {getStatusLabel(row.original.status)}
         </Badge>
       ),
     },
@@ -155,11 +151,11 @@ function getCoachColumns(): ColumnDef<CoachData>[] {
       header: () => <div className="text-right">Aksi</div>,
       cell: ({ row }) => (
         <div className="flex justify-end">
-          <Link href={`/admin/anggota/pelatih/${row.original.id}`}>
+          <Link href={`/admin/anggota/murid/${row.original.id}`}>
             <Button variant="outline" size="sm" className="gap-2">
               <Eye className="h-4 w-4" />
               <span className="hidden sm:inline">Detail</span>
-              <span className="sr-only">Lihat detail pelatih</span>
+              <span className="sr-only">Lihat detail murid</span>
             </Button>
           </Link>
         </div>
@@ -172,10 +168,10 @@ function getCoachColumns(): ColumnDef<CoachData>[] {
 
 // ─── props ───────────────────────────────────────────────────────────────────
 
-interface CoachDataTableProps {
-  data: CoachData[];
+interface MuridDataTableProps {
+  data: MuridData[];
   pagination?: PaginationMeta;
-  statusCounts?: CoachStatusCounts;
+  statusCounts?: MuridStatusCounts;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
   onSearchChange?: (q: string) => void;
@@ -186,7 +182,7 @@ interface CoachDataTableProps {
 
 // ─── component ───────────────────────────────────────────────────────────────
 
-export function CoachDataTable({
+export function MuridDataTable({
   data,
   pagination,
   statusCounts,
@@ -196,7 +192,7 @@ export function CoachDataTable({
   onStatusChange,
   initialSearch,
   initialStatus,
-}: CoachDataTableProps) {
+}: MuridDataTableProps) {
   const [activeStatus, setActiveStatus] = React.useState<ActiveStatusTab>(
     initialStatus ?? "total",
   );
@@ -227,20 +223,16 @@ export function CoachDataTable({
     }
   }, [pagination]);
 
-  const columns = React.useMemo(() => getCoachColumns(), []);
+  const columns = React.useMemo(() => getMuridColumns(), []);
 
   const handlePaginationChange = React.useCallback(
     (updater: React.SetStateAction<PaginationState>) => {
       const next =
         typeof updater === "function" ? updater(tablePagination) : updater;
-
-      if (next.pageIndex !== tablePagination.pageIndex) {
+      if (next.pageIndex !== tablePagination.pageIndex)
         onPageChange?.(next.pageIndex + 1);
-      }
-      if (next.pageSize !== tablePagination.pageSize) {
+      if (next.pageSize !== tablePagination.pageSize)
         onPageSizeChange?.(next.pageSize);
-      }
-
       setTablePagination(next);
     },
     [tablePagination, onPageChange, onPageSizeChange],
@@ -272,18 +264,22 @@ export function CoachDataTable({
   return (
     <Tabs
       value={activeStatus}
-      onValueChange={(v) => setActiveStatus(v as ActiveStatusTab)}
+      onValueChange={(v) => {
+        const s = v as ActiveStatusTab;
+        setActiveStatus(s);
+        onStatusChange?.(s);
+      }}
       className="w-full flex-col justify-start gap-6"
     >
-      <CoachTableToolbar
+      <MuridTableToolbar
         table={table}
         statusCounts={statusCounts}
         onSearchChange={onSearchChange}
-        initialSearch={initialSearch}
         onStatusChange={(s) => {
           setActiveStatus(s);
           onStatusChange?.(s);
         }}
+        initialSearch={initialSearch}
         initialStatus={activeStatus}
       />
 
@@ -338,7 +334,7 @@ export function CoachDataTable({
           </Table>
         </div>
 
-        <CoachTablePagination table={table} meta={pagination} />
+        <MuridTablePagination table={table} meta={pagination} />
       </TabsContent>
     </Tabs>
   );

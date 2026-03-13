@@ -2,42 +2,44 @@
 
 import * as React from "react";
 import type { Table } from "@tanstack/react-table";
-
 import { Input } from "@/components/ui/input";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-
 import type {
   ActiveStatusTab,
-  CoachData,
-  CoachStatusCounts,
-} from "@/types/admin/pelatih";
+  MuridData,
+  MuridStatusCounts,
+} from "@/types/admin/murid";
 
-interface CoachTableToolbarProps {
-  table: Table<CoachData>;
-  statusCounts?: CoachStatusCounts;
+interface MuridTableToolbarProps {
+  table: Table<MuridData>;
+  statusCounts?: MuridStatusCounts;
   onSearchChange?: (q: string) => void;
-  onStatusChange?: (status: string) => void;
+  onStatusChange?: (status: ActiveStatusTab) => void;
   initialSearch?: string;
   initialStatus?: ActiveStatusTab;
 }
 
-export function CoachTableToolbar({
+const TABS: { value: ActiveStatusTab; label: string }[] = [
+  { value: "total", label: "Total" },
+  { value: "active", label: "Aktif" },
+  { value: "inactive", label: "Tidak Aktif" },
+];
+
+export function MuridTableToolbar({
   table,
   statusCounts,
   onSearchChange,
   onStatusChange,
   initialSearch,
-  initialStatus,
-}: CoachTableToolbarProps) {
+}: MuridTableToolbarProps) {
   const [q, setQ] = React.useState(initialSearch ?? "");
 
-  // sync jika initialSearch berubah dari URL (misal user klik back)
   React.useEffect(() => {
     setQ(initialSearch ?? "");
   }, [initialSearch]);
 
-  const applySearch = () => onSearchChange?.(q);
+  const applySearch = () => onSearchChange?.(q.trim());
 
   const clear = () => {
     setQ("");
@@ -53,30 +55,21 @@ export function CoachTableToolbar({
     <div className="flex w-full flex-col gap-4 px-4 lg:px-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <TabsList className="w-full sm:w-auto">
-          {(["total", "active", "inactive"] as ActiveStatusTab[]).map((s) => {
-            const labels: Record<ActiveStatusTab, string> = {
-              total: "Total",
-              active: "Aktif",
-              inactive: "Tidak Aktif",
-            };
-            const count = statusCounts?.[s];
-
-            return (
-              <TabsTrigger
-                key={s}
-                value={s}
-                className="gap-2"
-                onClick={() => onStatusChange?.(s)}
-              >
-                {labels[s]}
-                {typeof count === "number" && (
-                  <span className="text-xs text-muted-foreground">
-                    ({count})
-                  </span>
-                )}
-              </TabsTrigger>
-            );
-          })}
+          {TABS.map(({ value, label }) => (
+            <TabsTrigger
+              key={value}
+              value={value}
+              className="gap-2"
+              onClick={() => onStatusChange?.(value)}
+            >
+              {label}
+              {typeof statusCounts?.[value] === "number" && (
+                <span className="text-xs text-muted-foreground">
+                  ({statusCounts[value]})
+                </span>
+              )}
+            </TabsTrigger>
+          ))}
         </TabsList>
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">

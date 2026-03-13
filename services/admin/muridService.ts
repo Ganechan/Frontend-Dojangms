@@ -1,27 +1,26 @@
 import { apiFetch } from "@/lib/apiClient";
 import type {
-  CoachApiResponse,
-  FetchCoachesParams,
+  FetchMuridParams,
   LimitOption,
-} from "@/types/pelatih";
+  MuridApiResponse,
+} from "@/types/admin/murid";
 
-export async function fetchPelatih({
+export async function fetchMurid({
   page,
   limit,
   search,
   status,
-}: FetchCoachesParams): Promise<CoachApiResponse> {
+}: FetchMuridParams): Promise<MuridApiResponse> {
   const params = new URLSearchParams({
     page: String(page),
     limit: String(limit),
   });
 
   if (search?.trim()) params.set("search", search.trim());
-  if (status && status !== "total") params.set("status", status);
+  if (status) params.set("status", status);
 
   // panggil Next.js Route Handler, bukan langsung ke backend
-  // browser hanya tahu /api/pelatih, tidak tahu URL backend
-  return apiFetch<CoachApiResponse>(`/api/pelatih?${params.toString()}`, {
+  return apiFetch<MuridApiResponse>(`/api/admin/murid?${params.toString()}`, {
     cache: "no-store",
   });
 }
