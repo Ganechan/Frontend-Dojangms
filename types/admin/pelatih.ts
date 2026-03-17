@@ -23,7 +23,7 @@ export interface CoachData {
     id: number;
     name: string;
   };
-  kelas_diampu: string[];
+  kelas_diampu: KelasItem[];
   total_murid: number;
 }
 
@@ -53,4 +53,29 @@ export interface FetchCoachesParams {
   limit: LimitOption;
   search?: string;
   status?: CoachStatus | "total";
+}
+
+export interface KelasItem {
+  id: number;
+  nama: string;
+  status: string;
+  jumlah_murid: number;
+  jadwal: JadwalItem[];
+}
+
+export interface JadwalItem {
+  hari: string;
+  jam_mulai: string;
+  jam_selesai: string;
+  lokasi: string | null;
+}
+
+export interface CoachDetail extends CoachData {
+  // CoachDetail sama dengan CoachData
+  // tambahkan field ekstra dari endpoint detail jika ada
+}
+
+export interface CoachDetailApiResponse {
+  message: string;
+  data: CoachDetail;
 }

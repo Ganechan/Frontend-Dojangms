@@ -1,9 +1,17 @@
 import { apiFetch } from "@/lib/apiClient";
 import type {
   CoachApiResponse,
+  CoachDetailApiResponse,
   FetchCoachesParams,
   LimitOption,
 } from "@/types/admin/pelatih";
+
+export async function fetchPelatihById(id: number):
+Promise<CoachDetailApiResponse> {
+  return apiFetch<CoachDetailApiResponse>(`/api/admin/pelatih/${id}`, {
+    cache: "no-store",
+  });
+}
 
 export async function fetchPelatih({
   page,
