@@ -3,6 +3,7 @@ import type {
   FetchMuridParams,
   LimitOption,
   MuridApiResponse,
+  MuridDetailApiResponse,
 } from "@/types/admin/murid";
 
 export async function fetchMurid({
@@ -34,4 +35,12 @@ export function sanitizeLimit(raw: string | null): LimitOption {
 export function sanitizePage(raw: string | null): number {
   const n = raw ? parseInt(raw, 10) : NaN;
   return Number.isFinite(n) && n >= 1 ? n : 1;
+}
+
+export async function fetchMuridById(
+  id: number,
+): Promise<MuridDetailApiResponse> {
+  return apiFetch<MuridDetailApiResponse>(`/api/admin/murid/${id}`, {
+    cache: "no-store",
+  });
 }

@@ -1,3 +1,4 @@
+// types\admin\murid.ts
 export type MuridStatus = "active" | "inactive";
 export type ActiveStatusTab = "total" | MuridStatus;
 export type LimitOption = 10 | 25 | 50 | 75 | 100 | 200;
@@ -51,4 +52,34 @@ export interface FetchMuridParams {
   limit: LimitOption;
   search?: string;
   status?: MuridStatus;
+}
+
+// ── Tipe khusus untuk detail murid ───────────────────────────────────────────
+
+export interface BeltEntry {
+  name: string;
+  dan_level: number | null;
+  achieved_at: string;
+}
+
+export interface BeltHistoryEntry extends BeltEntry {
+  is_current: number;
+}
+
+export interface MuridDetail {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  status: MuridStatus;
+  tanggal_lahir: string;
+  created_at: string;
+  roles: string[];
+  current_belt: BeltEntry | null;
+  belt_history: BeltHistoryEntry[];
+}
+
+export interface MuridDetailApiResponse {
+  message: string;
+  data: MuridDetail;
 }

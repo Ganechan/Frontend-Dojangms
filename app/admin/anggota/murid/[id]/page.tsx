@@ -1,4 +1,4 @@
-// app\admin\anggota\pelatih\[id]\page.tsx
+// app/admin/anggota/murid/[id]/page.tsx
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -9,21 +9,18 @@ import { SiteHeader } from "@/components/admin/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { serverFetch } from "@/lib/serverFetch";
 import { ApiError } from "@/lib/apiClient";
-import type {
-  CoachDetail,
-  CoachDetailApiResponse,
-} from "@/types/admin/pelatih";
-import { CoachCard } from "@/components/admin/pelatih/pelatih-card";
+import type { MuridDetail, MuridDetailApiResponse } from "@/types/admin/murid";
+import { MuridCard } from "@/components/admin/murid/murid-card";
 
-// ─── fetch di server ──────────────────────────────────────────────────────────
+// ── fetch di server ───────────────────────────────────────────────────────────
 
-async function getPelatihById(id: string): Promise<CoachDetail> {
+async function getMuridById(id: string): Promise<MuridDetail> {
   const numericId = parseInt(id, 10);
   if (!Number.isFinite(numericId) || numericId < 1) notFound();
 
   try {
-    const res = await serverFetch<CoachDetailApiResponse>(
-      `/api/admin/get/user/pelatih/${numericId}`,
+    const res = await serverFetch<MuridDetailApiResponse>(
+      `/api/admin/get/user/${numericId}`,
     );
     return res.data;
   } catch (err) {
@@ -36,7 +33,7 @@ async function getPelatihById(id: string): Promise<CoachDetail> {
   }
 }
 
-// ─── metadata dinamis ─────────────────────────────────────────────────────────
+// ── metadata dinamis ──────────────────────────────────────────────────────────
 
 export async function generateMetadata({
   params,
@@ -45,25 +42,25 @@ export async function generateMetadata({
 }) {
   const { id } = await params;
   try {
-    const coach = await getPelatihById(id);
+    const murid = await getMuridById(id);
     return {
-      title: `${coach.name} | Detail Pelatih`,
-      description: `Detail informasi pelatih ${coach.name}`,
+      title: `${murid.name} | Detail Murid`,
+      description: `Detail informasi murid ${murid.name}`,
     };
   } catch {
-    return { title: "Detail Pelatih | Admin Dashboard" };
+    return { title: "Detail Murid | Admin Dashboard" };
   }
 }
 
-// ─── page ─────────────────────────────────────────────────────────────────────
+// ── page ──────────────────────────────────────────────────────────────────────
 
-export default async function CoachDetailPage({
+export default async function MuridDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const coach = await getPelatihById(id);
+  const murid = await getMuridById(id);
 
   return (
     <SidebarProvider
@@ -79,16 +76,14 @@ export default async function CoachDetailPage({
         <SiteHeader />
         <div className="flex flex-1 flex-col">
           <div className="max-w-4xl mx-auto w-full px-4 py-8">
-            {/* Tombol Kembali */}
-            <Link href="/admin/anggota/pelatih">
+            <Link href="/admin/anggota/murid">
               <Button variant="ghost" className="gap-2 mb-6">
                 <ArrowLeft className="h-4 w-4" />
-                Kembali ke Daftar Pelatih
+                Kembali ke Daftar Murid
               </Button>
             </Link>
 
-            {/* Semua konten ada di CoachCard */}
-            <CoachCard coach={coach} />
+            <MuridCard murid={murid} />
           </div>
         </div>
       </SidebarInset>
