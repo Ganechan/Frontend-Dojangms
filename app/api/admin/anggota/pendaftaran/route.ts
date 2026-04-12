@@ -1,18 +1,17 @@
-// app\api\admin\pelatih\route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { serverFetch } from "@/lib/serverFetch";
 import { ApiError } from "@/lib/apiClient";
 
-export async function GET(req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const query = searchParams.toString();
+    const body = await req.json();
 
-    const data = await serverFetch(
-      `/api/admin/get/user/pelatih${query ? `?${query}` : ""}`,
-    );
+    const data = await serverFetch("/api/admin/create/user", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
 
-    return NextResponse.json(data);
+    return NextResponse.json(data, { status: 201 });
   } catch (err) {
     if (err instanceof ApiError) {
       if (err.status === 401) {

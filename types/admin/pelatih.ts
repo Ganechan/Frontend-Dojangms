@@ -1,3 +1,4 @@
+// types\admin\pelatih.ts
 export type CoachStatus = "active" | "inactive";
 export type ActiveStatusTab = "total" | CoachStatus;
 export type LimitOption = 10 | 25 | 50 | 75 | 100 | 200;
