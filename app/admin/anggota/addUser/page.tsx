@@ -1,8 +1,8 @@
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SiteHeader } from "@/components/admin/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { BackButton } from "@/components/admin/anggota/pendaftaran/back-button";
-import { AddUserForm } from "@/components/admin/anggota/pendaftaran/add-user-form";
+import { BackButton } from "@/components/admin/anggota/create/back-button";
+import { AddUserForm } from "@/components/admin/anggota/create/add-user-form";
 
 export const metadata = {
   title: "Tambah User Murid | Admin Dashboard",

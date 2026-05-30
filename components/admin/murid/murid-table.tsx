@@ -1,3 +1,4 @@
+// components\admin\murid\murid-table.tsx
 "use client";
 
 import * as React from "react";
@@ -26,7 +27,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
+import { Eye, SquarePenIcon } from "lucide-react";
 import Link from "next/link";
 
 import type {
@@ -150,7 +151,14 @@ function getMuridColumns(): ColumnDef<MuridData>[] {
       id: "actions",
       header: () => <div className="text-right">Aksi</div>,
       cell: ({ row }) => (
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-1">
+          <Link href={`/admin/anggota/murid/${row.original.id}/edit`}>
+            <Button variant="outline" size="sm" className="gap-2">
+              <SquarePenIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">Edit</span>
+              <span className="sr-only">Edit murid</span>
+            </Button>
+          </Link>
           <Link href={`/admin/anggota/murid/${row.original.id}`}>
             <Button variant="outline" size="sm" className="gap-2">
               <Eye className="h-4 w-4" />

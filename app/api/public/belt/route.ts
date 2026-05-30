@@ -1,3 +1,4 @@
+// app\api\public\belt\route.ts
 import { NextResponse } from "next/server";
 import { ApiError } from "@/lib/apiClient";
 

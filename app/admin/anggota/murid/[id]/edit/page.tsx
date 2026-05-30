@@ -1,4 +1,4 @@
-// app/admin/anggota/murid/[id]/page.tsx
+// app/admin/anggota/murid/[id]/edit/page.tsx
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -10,9 +10,9 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { serverFetch } from "@/lib/serverFetch";
 import { ApiError } from "@/lib/apiClient";
 import type { MuridDetail, MuridDetailApiResponse } from "@/types/admin/murid";
-import { MuridCard } from "@/components/admin/murid/murid-card";
+import { MuridEditForm } from "@/components/admin/murid/murid-edit-form";
 
-// fetch di server
+// ── fetch di server ───────────────────────────────────────────────────────────
 
 async function getMuridById(id: string): Promise<MuridDetail> {
   const numericId = parseInt(id, 10);
@@ -44,17 +44,17 @@ export async function generateMetadata({
   try {
     const murid = await getMuridById(id);
     return {
-      title: `${murid.name} | Detail Murid`,
-      description: `Detail informasi murid ${murid.name}`,
+      title: `Edit ${murid.name} | Admin Dashboard`,
+      description: `Edit data murid ${murid.name}`,
     };
   } catch {
-    return { title: "Detail Murid | Admin Dashboard" };
+    return { title: "Edit Murid | Admin Dashboard" };
   }
 }
 
 // ── page ──────────────────────────────────────────────────────────────────────
 
-export default async function MuridDetailPage({
+export default async function MuridEditPage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -76,14 +76,27 @@ export default async function MuridDetailPage({
         <SiteHeader />
         <div className="flex flex-1 flex-col">
           <div className="max-w-4xl mx-auto w-full px-4 py-8">
-            <Link href="/admin/anggota/murid">
-              <Button variant="ghost" className="gap-2 mb-6">
-                <ArrowLeft className="h-4 w-4" />
-                Kembali ke Daftar Murid
-              </Button>
-            </Link>
+            {/* ── Header ── */}
+            <div className="flex flex-col gap-1 mb-6">
+              <Link href={`/admin/anggota/murid`}>
+                <Button variant="ghost" className="gap-2 -ml-3 mb-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  Kembali
+                </Button>
+              </Link>
+              <h1 className="text-2xl font-semibold tracking-tight">
+                Edit Murid
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Perbarui data murid{" "}
+                <span className="font-medium text-foreground">
+                  {murid.name}
+                </span>
+              </p>
+            </div>
 
-            <MuridCard murid={murid} />
+            {/* ── Form ── */}
+            <MuridEditForm murid={murid} />
           </div>
         </div>
       </SidebarInset>

@@ -1,9 +1,13 @@
+// services\admin\muridService.ts
 import { apiFetch } from "@/lib/apiClient";
 import type {
   FetchMuridParams,
   LimitOption,
   MuridApiResponse,
   MuridDetailApiResponse,
+  UpdateMuridPayload,
+  UpdateMuridResponse,
+  BeltListApiResponse,
 } from "@/types/admin/murid";
 
 export async function fetchMurid({
@@ -42,5 +46,22 @@ export async function fetchMuridById(
 ): Promise<MuridDetailApiResponse> {
   return apiFetch<MuridDetailApiResponse>(`/api/admin/murid/${id}`, {
     cache: "no-store",
+  });
+}
+
+export async function fetchBelts(): Promise<BeltListApiResponse> {
+  return apiFetch<BeltListApiResponse>(`/api/public/belt`, {
+    cache: "no-store",
+  });
+}
+
+export async function updateMurid(
+  id: number,
+  payload: UpdateMuridPayload,
+): Promise<UpdateMuridResponse> {
+  return apiFetch<UpdateMuridResponse>(`/api/admin/murid/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
   });
 }

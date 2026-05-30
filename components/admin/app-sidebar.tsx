@@ -31,7 +31,7 @@ const data = {
       items: [
         { title: "Data Murid", url: "/admin/anggota/murid" },
         { title: "Data Pelatih", url: "/admin/anggota/pelatih" },
-        { title: "Pendaftaran Baru", url: "/admin/anggota/pendaftaran" },
+        { title: "Buat Data User Baru", url: "/admin/anggota/addUser" },
       ],
     },
     {
@@ -59,25 +59,25 @@ const data = {
         { title: "Rekap Prestasi", url: "/admin/kejuaraan/rekap" },
       ],
     },
-    {
-      title: "Keuangan",
-      url: "/admin/keuangan",
-      items: [
-        { title: "Pembayaran SPP", url: "/admin/keuangan/spp" },
-        { title: "Biaya Pendaftaran", url: "/admin/keuangan/pendaftaran" },
-        { title: "Laporan Keuangan", url: "/admin/keuangan/laporan" },
-        { title: "Tunggakan", url: "/admin/keuangan/tunggakan" },
-      ],
-    },
-    {
-      title: "Laporan",
-      url: "/admin/laporan",
-      items: [
-        { title: "Laporan Absensi", url: "/admin/laporan/absensi" },
-        { title: "Laporan Keuangan", url: "/admin/laporan/keuangan" },
-        { title: "Export Data", url: "/admin/laporan/export" },
-      ],
-    },
+    // {
+    //   title: "Keuangan",
+    //   url: "/admin/keuangan",
+    //   items: [
+    //     { title: "Pembayaran SPP", url: "/admin/keuangan/spp" },
+    //     { title: "Biaya Pendaftaran", url: "/admin/keuangan/pendaftaran" },
+    //     { title: "Laporan Keuangan", url: "/admin/keuangan/laporan" },
+    //     { title: "Tunggakan", url: "/admin/keuangan/tunggakan" },
+    //   ],
+    // },
+    // {
+    //   title: "Laporan",
+    //   url: "/admin/laporan",
+    //   items: [
+    //     { title: "Laporan Absensi", url: "/admin/laporan/absensi" },
+    //     { title: "Laporan Keuangan", url: "/admin/laporan/keuangan" },
+    //     { title: "Export Data", url: "/admin/laporan/export" },
+    //   ],
+    // },
     {
       title: "Setting",
       url: "/admin/setting",
