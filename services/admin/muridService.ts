@@ -65,3 +65,11 @@ export async function updateMurid(
     body: JSON.stringify(payload),
   });
 }
+
+export async function softDeleteMurid(
+  id: number,
+): Promise<{ message: string }> {
+  return apiFetch<{ message: string }>(`/api/admin/murid/${id}`, {
+    method: "DELETE",
+  });
+}
