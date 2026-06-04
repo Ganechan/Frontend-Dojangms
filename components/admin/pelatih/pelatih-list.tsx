@@ -55,6 +55,8 @@ export function CoachList() {
     [router, searchParams],
   );
 
+  const [refreshKey, setRefreshKey] = React.useState(0);
+
   React.useEffect(() => {
     let cancelled = false;
 
@@ -79,18 +81,10 @@ export function CoachList() {
         if (!cancelled) {
           setApiResponse(data);
 
-          setStatusCounts((prev) => {
-            const next: CoachStatusCounts = {
-              total: prev?.total ?? 0,
-              active: prev?.active ?? 0,
-              inactive: prev?.inactive ?? 0,
-            };
-            if (status === "total") {
-              next.total = data.pagination.total_data;
-            } else {
-              next[status as CoachStatus] = data.pagination.total_data;
-            }
-            return next;
+          setStatusCounts({
+            total: data.summary.total_pelatih,
+            active: Number(data.summary.total_pelatih_active),
+            inactive: Number(data.summary.total_pelatih_inactive),
           });
         }
       } catch (err) {
@@ -126,7 +120,7 @@ export function CoachList() {
     return () => {
       cancelled = true;
     };
-  }, [currentPage, pageSize, search, status]);
+  }, [currentPage, pageSize, search, status, refreshKey]);
 
   // ── first load → tampilkan skeleton ──────────────────────────────────────
   if (isFirstLoad) {
@@ -169,6 +163,7 @@ export function CoachList() {
         }
         onSearchChange={(q) => updateURL({ search: q, page: "1" })}
         onStatusChange={(s) => updateURL({ status: s, page: "1" })}
+        onRefresh={() => setRefreshKey((k) => k + 1)}
       />
     </div>
   );

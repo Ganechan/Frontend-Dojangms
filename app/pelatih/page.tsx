@@ -1,3 +1,4 @@
+// app\pelatih\page.tsx
 import dynamic from "next/dynamic";
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SiteHeader } from "@/components/admin/site-header";

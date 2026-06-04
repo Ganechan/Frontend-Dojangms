@@ -31,6 +31,7 @@ const data = {
       items: [
         { title: "Data Murid", url: "/admin/anggota/murid" },
         { title: "Data Pelatih", url: "/admin/anggota/pelatih" },
+        { title: "Data Admin", url: "/admin/anggota/admin" },
         { title: "Buat Data User Baru", url: "/admin/anggota/addUser" },
       ],
     },

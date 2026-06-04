@@ -147,44 +147,59 @@ export function CoachCard({ coach }: CoachCardProps) {
           Informasi Keahlian
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase mb-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Sabuk */}
+          <div className="flex flex-col gap-3 rounded-lg border bg-muted/30 p-4">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Sabuk Saat Ini
             </p>
             {coach.sabuk_saat_ini ? (
-              <Badge className="bg-primary text-primary-foreground text-sm py-1.5 px-3">
-                {coach.sabuk_saat_ini.name}
+              <span className="inline-flex items-center gap-2">
+                <span className="h-3 w-3 rounded-full bg-primary shrink-0" />
+                <span className="text-sm font-semibold text-foreground">
+                  {coach.sabuk_saat_ini.name}
+                </span>
+              </span>
+            ) : (
+              <p className="text-sm text-muted-foreground">Belum ada data</p>
+            )}
+          </div>
+
+          {/* Spesialisasi */}
+          <div className="flex flex-col gap-3 rounded-lg border bg-muted/30 p-4">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Spesialisasi
+            </p>
+            {coach.pelatih.spesialisasi ? (
+              <Badge className="w-fit capitalize border-transparent bg-blue-100 text-blue-800">
+                {coach.pelatih.spesialisasi}
               </Badge>
             ) : (
               <p className="text-sm text-muted-foreground">Belum ada data</p>
             )}
           </div>
 
-          {coach.pelatih.spesialisasi && (
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase mb-3">
-                Spesialisasi
-              </p>
-              <p className="text-sm text-foreground">
-                {coach.pelatih.spesialisasi}
-              </p>
-            </div>
-          )}
-
-          {coach.pelatih.sertifikasi && (
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase mb-3">
-                Sertifikasi
-              </p>
-              <p className="text-sm text-foreground">
-                {coach.pelatih.sertifikasi}
-              </p>
-            </div>
-          )}
+          {/* Sertifikasi */}
+          <div className="flex flex-col gap-3 rounded-lg border bg-muted/30 p-4">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Sertifikasi
+            </p>
+            {coach.pelatih.sertifikasi &&
+            coach.pelatih.sertifikasi.length > 0 ? (
+              <div className="flex flex-col gap-1.5">
+                {coach.pelatih.sertifikasi.map((s) => (
+                  <div key={s.id} className="flex items-start gap-2">
+                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                    <span className="text-sm text-foreground">{s.nama}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Belum ada data</p>
+            )}
+          </div>
         </div>
       </Card>
-
       {/* ── Statistik Mengajar ── */}
       <Card className="p-8">
         <h2 className="text-xl font-bold text-foreground mb-6">
@@ -217,7 +232,6 @@ export function CoachCard({ coach }: CoachCardProps) {
           </div>
         </div>
       </Card>
-
       {/* ── Daftar Kelas ── */}
       {coach.kelas_diampu.length > 0 && (
         <Card className="p-8">
