@@ -1,10 +1,10 @@
+// components\admin\pelatih\pelatih-list.tsx
 "use client";
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
-import { Spinner } from "@/components/ui/spinner";
 import { ApiError } from "@/lib/apiClient";
 import {
   fetchPelatih,
@@ -19,6 +19,7 @@ import type {
   FetchCoachesParams,
 } from "@/types/admin/pelatih";
 import { CoachDataTable } from "./pelatih-table";
+import { PelatihTableSkeleton } from "./pelatih-table-skeleton";
 
 export function CoachList() {
   const router = useRouter();
@@ -30,7 +31,10 @@ export function CoachList() {
   const [statusCounts, setStatusCounts] = React.useState<
     CoachStatusCounts | undefined
   >(undefined);
-  const [loading, setLoading] = React.useState(true);
+
+  // ── 2 state loading yang berbeda ─────────────────────────────────────────
+  const [isFirstLoad, setIsFirstLoad] = React.useState(true); // ← skeleton
+  const [isFetching, setIsFetching] = React.useState(false); // ← spinner overlay
 
   const currentPage = sanitizePage(searchParams.get("page"));
   const pageSize = sanitizeLimit(searchParams.get("limit"));
@@ -51,11 +55,19 @@ export function CoachList() {
     [router, searchParams],
   );
 
+  const [refreshKey, setRefreshKey] = React.useState(0);
+
   React.useEffect(() => {
     let cancelled = false;
 
     async function load() {
-      setLoading(true);
+      // kalau sudah pernah load → pakai spinner, bukan skeleton
+      if (isFirstLoad) {
+        // skeleton sudah aktif dari useState(true), tidak perlu set lagi
+      } else {
+        setIsFetching(true);
+      }
+
       try {
         const params: FetchCoachesParams = {
           page: currentPage,
@@ -69,26 +81,15 @@ export function CoachList() {
         if (!cancelled) {
           setApiResponse(data);
 
-          setStatusCounts((prev) => {
-            const next: CoachStatusCounts = {
-              total: prev?.total ?? 0,
-              active: prev?.active ?? 0,
-              inactive: prev?.inactive ?? 0,
-            };
-
-            if (status === "total") {
-              next.total = data.pagination.total_data;
-            } else {
-              next[status as CoachStatus] = data.pagination.total_data;
-            }
-
-            return next;
+          setStatusCounts({
+            total: data.summary.total_pelatih,
+            active: Number(data.summary.total_pelatih_active),
+            inactive: Number(data.summary.total_pelatih_inactive),
           });
         }
       } catch (err) {
         if (!cancelled) {
           console.error(err);
-
           if (err instanceof ApiError) {
             switch (err.status) {
               case 401:
@@ -97,10 +98,7 @@ export function CoachList() {
                 break;
               case 403:
                 toast.error("Anda tidak memiliki akses ke halaman ini");
-                router.push("/admin"); // redirect ke halaman default admin
-                break;
-              case 404:
-                toast.error("Data tidak ditemukan");
+                router.push("/admin");
                 break;
               default:
                 toast.error("Terjadi kesalahan server");
@@ -108,11 +106,13 @@ export function CoachList() {
           } else {
             toast.error("Gagal terhubung ke server");
           }
-
           setApiResponse(null);
         }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setIsFirstLoad(false); // ← setelah load pertama selesai, skeleton tidak muncul lagi
+          setIsFetching(false);
+        }
       }
     }
 
@@ -120,19 +120,14 @@ export function CoachList() {
     return () => {
       cancelled = true;
     };
-  }, [currentPage, pageSize, search, status]);
+  }, [currentPage, pageSize, search, status, refreshKey]);
 
-  if (loading) {
-    return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Spinner className="h-8 w-8" />
-          <p className="text-muted-foreground">Memuat data pelatih...</p>
-        </div>
-      </div>
-    );
+  // ── first load → tampilkan skeleton ──────────────────────────────────────
+  if (isFirstLoad) {
+    return <PelatihTableSkeleton />;
   }
 
+  // ── gagal load & tidak ada data sama sekali ───────────────────────────────
   if (!apiResponse) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
@@ -143,19 +138,33 @@ export function CoachList() {
     );
   }
 
+  // ── normal render dengan spinner overlay saat re-fetch ───────────────────
   return (
-    <CoachDataTable
-      data={apiResponse.data}
-      pagination={apiResponse.pagination}
-      statusCounts={statusCounts}
-      initialSearch={search}
-      initialStatus={status}
-      onPageChange={(page) => updateURL({ page: String(page) })}
-      onPageSizeChange={(limit) =>
-        updateURL({ limit: String(limit), page: "1" })
-      }
-      onSearchChange={(q) => updateURL({ search: q, page: "1" })}
-      onStatusChange={(s) => updateURL({ status: s, page: "1" })}
-    />
+    <div className="relative">
+      {/* Spinner overlay — muncul saat ganti halaman/filter/search */}
+      {isFetching && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center rounded-lg bg-background/60 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-2">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <p className="text-sm text-muted-foreground">Memuat...</p>
+          </div>
+        </div>
+      )}
+
+      <CoachDataTable
+        data={apiResponse.data}
+        pagination={apiResponse.pagination}
+        statusCounts={statusCounts}
+        initialSearch={search}
+        initialStatus={status}
+        onPageChange={(page) => updateURL({ page: String(page) })}
+        onPageSizeChange={(limit) =>
+          updateURL({ limit: String(limit), page: "1" })
+        }
+        onSearchChange={(q) => updateURL({ search: q, page: "1" })}
+        onStatusChange={(s) => updateURL({ status: s, page: "1" })}
+        onRefresh={() => setRefreshKey((k) => k + 1)}
+      />
+    </div>
   );
 }

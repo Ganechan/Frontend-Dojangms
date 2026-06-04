@@ -1,3 +1,4 @@
+// app\admin\anggota\murid\page.tsx
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SiteHeader } from "@/components/admin/site-header";
 import { MuridList } from "@/components/admin/murid/murid-list";

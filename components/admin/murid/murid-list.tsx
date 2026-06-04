@@ -1,3 +1,4 @@
+// components\admin\murid\murid-list.tsx
 "use client";
 
 import * as React from "react";
@@ -31,6 +32,7 @@ export function MuridList() {
     MuridStatusCounts | undefined
   >(undefined);
   const [loading, setLoading] = React.useState(true);
+  const [refreshKey, setRefreshKey] = React.useState(0); // untuk trigger refresh data
 
   const currentPage = sanitizePage(searchParams.get("page"));
   const pageSize = sanitizeLimit(searchParams.get("limit"));
@@ -112,7 +114,7 @@ export function MuridList() {
     return () => {
       cancelled = true;
     };
-  }, [currentPage, pageSize, search, status]);
+  }, [currentPage, pageSize, search, status, refreshKey]);
 
   if (loading) {
     return (
@@ -148,6 +150,7 @@ export function MuridList() {
       }
       onSearchChange={(q) => updateURL({ search: q, page: "1" })}
       onStatusChange={(s) => updateURL({ status: s, page: "1" })}
+      onRefresh={() => setRefreshKey((k) => k + 1)} // trigger refresh data
     />
   );
 }

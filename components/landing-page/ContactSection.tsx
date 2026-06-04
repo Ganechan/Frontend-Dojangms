@@ -1,57 +1,129 @@
+import { MapPin, Phone, Mail, Clock, Instagram, Facebook, Youtube } from "lucide-react";
+
+const contactInfo = [
+  {
+    icon: <MapPin size={20} />,
+    label: "Alamat",
+    value: "Jl. Joko Tingkir No. 123, Salatiga, Jawa Tengah 50711",
+    href: null,
+    color: "text-red-500",
+    bg: "bg-red-50",
+  },
+  {
+    icon: <Phone size={20} />,
+    label: "Telepon & WhatsApp",
+    value: "+62 812 345 6789",
+    href: "tel:+628123456789",
+    color: "text-green-600",
+    bg: "bg-green-50",
+  },
+  {
+    icon: <Mail size={20} />,
+    label: "Email",
+    value: "info@dojanjokotingkir.com",
+    href: "mailto:info@dojanjokotingkir.com",
+    color: "text-blue-600",
+    bg: "bg-blue-50",
+  },
+  {
+    icon: <Clock size={20} />,
+    label: "Jam Operasional",
+    value: "Sen – Jum: 14:00 – 21:00 · Sab – Min: 09:00 – 13:00",
+    href: null,
+    color: "text-purple-600",
+    bg: "bg-purple-50",
+  },
+];
+
+const socials = [
+  { icon: <Instagram size={18} />, label: "Instagram", href: "#", color: "hover:bg-pink-500" },
+  { icon: <Facebook size={18} />, label: "Facebook", href: "#", color: "hover:bg-blue-600" },
+  { icon: <Youtube size={18} />, label: "YouTube", href: "#", color: "hover:bg-red-600" },
+];
+
 export default function ContactSection() {
   return (
-    <section id="contact" className="py-20 px-4 bg-white">
-      <div className="max-w-6xl mx-auto">
-        <h2 className="text-4xl font-bold text-center mb-12">Hubungi Kami</h2>
-        <div className="grid md:grid-cols-2 gap-12">
+    <section id="contact" className="py-24 px-4 bg-gray-50 relative overflow-hidden">
+      <div className="absolute left-0 bottom-0 w-72 h-72 bg-red-100 rounded-full blur-3xl opacity-50 -translate-x-1/2 translate-y-1/2" />
+
+      <div className="max-w-6xl mx-auto relative">
+        {/* Label */}
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <div className="h-px w-8 bg-red-500 rounded" />
+          <span className="text-red-500 text-sm font-semibold tracking-widest uppercase">
+            Kontak
+          </span>
+          <div className="h-px w-8 bg-red-500 rounded" />
+        </div>
+
+        <h2 className="text-4xl md:text-5xl font-black text-center text-gray-900 mb-4">
+          Hubungi <span className="text-red-500">Kami</span>
+        </h2>
+        <p className="text-gray-500 text-center mb-16 max-w-md mx-auto">
+          Ada pertanyaan? Kami siap membantu. Hubungi kami melalui berbagai saluran di bawah ini.
+        </p>
+
+        <div className="grid md:grid-cols-2 gap-10">
+          {/* Contact Info */}
           <div>
-            <h3 className="text-2xl font-bold mb-6 text-primary">
+            <h3 className="text-2xl font-black text-gray-900 mb-2">
               Informasi Kontak
             </h3>
-            <div className="space-y-6">
-              <div>
-                <h4 className="font-bold text-lg mb-2">Alamat</h4>
-                <p className="text-gray-700">
-                  Jl. Joko Tingkir No. 123, Salatiga, Jawa Tengah 50711
-                </p>
-              </div>
-              <div>
-                <h4 className="font-bold text-lg mb-2">Telepon & WhatsApp</h4>
-                <p className="text-gray-700">
+            <div className="h-1 w-12 bg-gradient-to-r from-red-500 to-orange-400 rounded mb-8" />
+
+            <div className="space-y-4">
+              {contactInfo.map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-4 bg-white border border-gray-100 rounded-2xl p-4 hover:shadow-md transition-all duration-300"
+                >
+                  <div className={`flex-shrink-0 w-10 h-10 ${item.bg} rounded-xl flex items-center justify-center ${item.color}`}>
+                    {item.icon}
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-0.5">
+                      {item.label}
+                    </p>
+                    {item.href ? (
+                      <a
+                        href={item.href}
+                        className={`font-semibold text-sm ${item.color} hover:underline`}
+                      >
+                        {item.value}
+                      </a>
+                    ) : (
+                      <p className="font-semibold text-sm text-gray-700">{item.value}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Social Media */}
+            <div className="mt-8">
+              <p className="text-sm font-bold text-gray-700 mb-4">Ikuti Kami</p>
+              <div className="flex gap-3">
+                {socials.map((s, i) => (
                   <a
-                    href="tel:+628123456789"
-                    className="text-primary hover:underline"
+                    key={i}
+                    href={s.href}
+                    aria-label={s.label}
+                    className={`w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center text-gray-500 hover:text-white transition-all duration-300 ${s.color}`}
                   >
-                    +62 812 345 6789
+                    {s.icon}
                   </a>
-                </p>
-              </div>
-              <div>
-                <h4 className="font-bold text-lg mb-2">Email</h4>
-                <p className="text-gray-700">
-                  <a
-                    href="mailto:info@dojanjokotingkir.com"
-                    className="text-primary hover:underline"
-                  >
-                    info@dojanjokotingkir.com
-                  </a>
-                </p>
-              </div>
-              <div>
-                <h4 className="font-bold text-lg mb-2">Jam Operasional</h4>
-                <p className="text-gray-700">
-                  Senin - Jumat: 14:00 - 21:00
-                  <br />
-                  Sabtu - Minggu: 09:00 - 13:00
-                </p>
+                ))}
               </div>
             </div>
           </div>
+
+          {/* Map */}
           <div>
-            <h3 className="text-2xl font-bold mb-6 text-primary">
+            <h3 className="text-2xl font-black text-gray-900 mb-2">
               Lokasi Kami
             </h3>
-            <div className="w-full h-96 bg-gray-200 rounded-lg overflow-hidden">
+            <div className="h-1 w-12 bg-gradient-to-r from-red-500 to-orange-400 rounded mb-8" />
+            <div className="w-full h-96 bg-gray-200 rounded-2xl overflow-hidden shadow-lg border border-gray-100">
               <iframe
                 width="100%"
                 height="100%"
@@ -60,8 +132,8 @@ export default function ContactSection() {
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                className="rounded-lg"
-              ></iframe>
+                className="rounded-2xl"
+              />
             </div>
           </div>
         </div>

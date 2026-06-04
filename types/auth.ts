@@ -1,3 +1,4 @@
+// types\auth.ts
 export interface Belt {
   name: string;
   dan_level: string | null;

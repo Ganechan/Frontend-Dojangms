@@ -1,8 +1,13 @@
+// services\admin\muridService.ts
 import { apiFetch } from "@/lib/apiClient";
 import type {
   FetchMuridParams,
   LimitOption,
   MuridApiResponse,
+  MuridDetailApiResponse,
+  UpdateMuridPayload,
+  UpdateMuridResponse,
+  BeltListApiResponse,
 } from "@/types/admin/murid";
 
 export async function fetchMurid({
@@ -34,4 +39,37 @@ export function sanitizeLimit(raw: string | null): LimitOption {
 export function sanitizePage(raw: string | null): number {
   const n = raw ? parseInt(raw, 10) : NaN;
   return Number.isFinite(n) && n >= 1 ? n : 1;
+}
+
+export async function fetchMuridById(
+  id: number,
+): Promise<MuridDetailApiResponse> {
+  return apiFetch<MuridDetailApiResponse>(`/api/admin/murid/${id}`, {
+    cache: "no-store",
+  });
+}
+
+export async function fetchBelts(): Promise<BeltListApiResponse> {
+  return apiFetch<BeltListApiResponse>(`/api/public/belt`, {
+    cache: "no-store",
+  });
+}
+
+export async function updateMurid(
+  id: number,
+  payload: UpdateMuridPayload,
+): Promise<UpdateMuridResponse> {
+  return apiFetch<UpdateMuridResponse>(`/api/admin/murid/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function softDeleteMurid(
+  id: number,
+): Promise<{ message: string }> {
+  return apiFetch<{ message: string }>(`/api/admin/murid/${id}`, {
+    method: "DELETE",
+  });
 }
