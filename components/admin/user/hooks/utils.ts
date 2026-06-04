@@ -8,7 +8,6 @@ export function formatDate(iso: string) {
   });
 }
 
-// ✅ Keep calculateRoleCounts if needed for fallback
 export function calculateRoleCounts(data: User[]) {
   const counts = {
     semua: data.length,
@@ -27,5 +26,3 @@ export function calculateRoleCounts(data: User[]) {
 
   return counts;
 }
-
-// ✅ REMOVE filterUsersByRole - tidak perlu lagi

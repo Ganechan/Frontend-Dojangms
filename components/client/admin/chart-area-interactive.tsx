@@ -1,4 +1,4 @@
-// components\client\admin\chart-area-interactive.tsx
+// components/client/admin/chart-area-interactive.tsx
 "use client";
 
 import * as React from "react";
@@ -28,8 +28,8 @@ import {
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Skeleton } from "@/components/ui/skeleton";
-
-export const description = "An interactive area chart";
+// ✅ FIX: Import type dari types/dashboard.ts — tidak lagi didefinisikan ulang di sini
+import type { ChartAllData } from "@/types/dashboardAdmin";
 
 const chartConfig = {
   totalMurid: {
@@ -37,18 +37,6 @@ const chartConfig = {
     color: "var(--primary)",
   },
 } satisfies ChartConfig;
-
-export interface ChartDataItem {
-  period: string;
-  muridAktif: number;
-  totalMurid: number;
-}
-
-export interface ChartAllData {
-  "7days": ChartDataItem[];
-  "1month": ChartDataItem[];
-  "3months": ChartDataItem[];
-}
 
 const TIME_RANGE_MAP = {
   "7d": "7days",
@@ -97,14 +85,11 @@ type Props = {
 export function ChartAreaInteractive({ allData }: Props) {
   const isMobile = useIsMobile();
 
-  // initial stabil untuk hydration
   const [timeRange, setTimeRange] = React.useState<TimeRangeKey>("7d");
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
     setMounted(true);
-
-    // load last selected range
     try {
       const saved = window.localStorage.getItem(TIME_RANGE_STORAGE_KEY);
       if (isValidTimeRange(saved)) setTimeRange(saved);
@@ -132,9 +117,6 @@ export function ChartAreaInteractive({ allData }: Props) {
     if (isValidTimeRange(value)) setTimeRange(value);
   };
 
-  // Karena data sudah diprefetch di server, "loading" client biasanya tidak diperlukan.
-  // Tapi saat streaming/suspense, bisa saja komponen ini muncul belakangan.
-  // Kita pakai skeleton pendek saat belum mounted agar ToggleGroup tidak mismatch.
   const showMountedSkeleton = !mounted;
 
   return (
@@ -151,7 +133,6 @@ export function ChartAreaInteractive({ allData }: Props) {
         </CardDescription>
 
         <CardAction>
-          {/* Desktop ToggleGroup */}
           {showMountedSkeleton ? (
             <div className="hidden @[767px]/card:block">
               <Skeleton className="h-9 w-[340px] rounded-md" />
@@ -170,7 +151,6 @@ export function ChartAreaInteractive({ allData }: Props) {
             </ToggleGroup>
           )}
 
-          {/* Mobile Select */}
           {showMountedSkeleton ? (
             <div className="@[767px]/card:hidden">
               <Skeleton className="h-9 w-40 rounded-md" />
@@ -202,7 +182,6 @@ export function ChartAreaInteractive({ allData }: Props) {
 
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         {!allData ? (
-          // kalau fetch server gagal / env salah
           <div className="flex items-center justify-center h-[250px]">
             <p className="text-muted-foreground">No data available</p>
           </div>
@@ -211,7 +190,6 @@ export function ChartAreaInteractive({ allData }: Props) {
             <p className="text-muted-foreground">No data available</p>
           </div>
         ) : showMountedSkeleton ? (
-          // skeleton ringan saat menunggu mounted (menghindari mismatch)
           <ChartSkeleton />
         ) : (
           <ChartContainer

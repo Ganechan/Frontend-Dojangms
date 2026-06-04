@@ -47,7 +47,7 @@ export default function UserPageClient() {
       try {
         setIsLoading(true);
 
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
         let url = `${baseUrl}/api/admin/get/user?page=${page}&limit=${limit}`;
 
         if (role !== "semua") url += `&role=${role}`;
@@ -104,10 +104,10 @@ export default function UserPageClient() {
 
   const roleCounts: RoleCounts | undefined = apiResponse
     ? {
-        semua: apiResponse.meta.total_data,
-        admin: apiResponse.totalAdmin,
-        pelatih: apiResponse.totalPelatih,
-        murid: apiResponse.totalMurid,
+        semua: apiResponse.summary.total,
+        admin: apiResponse.summary.total_admin,
+        pelatih: apiResponse.summary.total_pelatih,
+        murid: apiResponse.summary.total_murid,
       }
     : undefined;
 
@@ -138,7 +138,7 @@ export default function UserPageClient() {
               ) : apiResponse ? (
                 <DataTable
                   data={apiResponse.data}
-                  meta={apiResponse.meta}
+                  pagination={apiResponse.pagination}
                   roleCounts={roleCounts}
                   activeRole={activeRole}
                   onRoleChange={handleRoleChange}

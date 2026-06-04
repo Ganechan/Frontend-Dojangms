@@ -7,6 +7,7 @@ export const beltColorMap: Record<string, string> = {
   Biru: "bg-blue-600 text-white",
   "Biru Strip Merah": "bg-blue-600 text-white",
   Merah: "bg-red-600 text-white",
+  "Merah Stip Hitam": "bg-red-600 text-white",
   "DAN I": "bg-gray-900 text-white",
   "DAN II": "bg-gray-900 text-white",
   "DAN III": "bg-gray-900 text-white",
