@@ -243,7 +243,7 @@ export function CoachCard({ coach }: CoachCardProps) {
             {coach.kelas_diampu.map((kelas) => (
               <div
                 key={kelas.id}
-                className="p-4 bg-secondary rounded-lg border border-border space-y-2"
+                className="p-4 bg-muted/40 hover:bg-muted/70 transition-colors rounded-xl border border-border space-y-2"
               >
                 <div className="flex items-center justify-between">
                   <p className="font-medium text-foreground">{kelas.nama}</p>

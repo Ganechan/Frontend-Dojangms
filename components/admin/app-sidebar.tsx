@@ -36,12 +36,12 @@ const data = {
       ],
     },
     {
-      title: "Latihan",
-      url: "/admin/latihan",
+      title: "Kelas dan Jadwal Latihan",
+      url: "/admin/jadwal",
       items: [
-        { title: "Jadwal Latihan", url: "/admin/latihan/jadwal" },
-        { title: "Absensi Latihan", url: "/admin/latihan/absensi" },
-        { title: "Materi Latihan", url: "/admin/latihan/materi" },
+        { title: "Jadwal Latihan", url: "/admin/jadwal/jadwal" },
+        { title: "Buat Jadwal Latihan", url: "/admin/jadwal/create" },
+        { title: "Daftar Kelas", url: "/admin/jadwal/kelas" },
       ],
     },
     {

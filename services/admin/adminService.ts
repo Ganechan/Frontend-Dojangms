@@ -3,6 +3,8 @@ import { apiFetch } from "@/lib/apiClient";
 import type {
   AdminApiResponse,
   AdminDetailApiResponse,
+  UpdateAdminPayload,
+  UpdateAdminResponse,
   FetchAdminParams,
   LimitOption,
 } from "@/types/admin/admin";
@@ -29,7 +31,7 @@ export async function fetchAdmin({
 export async function fetchAdminById(
   id: number,
 ): Promise<AdminDetailApiResponse> {
-  return apiFetch<AdminDetailApiResponse>(`/api/admin/admins/${id}`, {
+  return apiFetch<AdminDetailApiResponse>(`/api/admin/admin/${id}`, {
     cache: "no-store",
   });
 }
@@ -37,7 +39,7 @@ export async function fetchAdminById(
 export async function softDeleteAdmin(
   id: number,
 ): Promise<{ message: string }> {
-  return apiFetch<{ message: string }>(`/api/admin/admins/${id}`, {
+  return apiFetch<{ message: string }>(`/api/admin/admin/${id}`, {
     method: "DELETE",
   });
 }
@@ -51,4 +53,16 @@ export function sanitizeLimit(raw: string | null): LimitOption {
 export function sanitizePage(raw: string | null): number {
   const n = raw ? parseInt(raw, 10) : NaN;
   return Number.isFinite(n) && n >= 1 ? n : 1;
+}
+
+// ── Update admin ──────────────────────────────────────────────────────────────
+export async function updateAdmin(
+  id: number,
+  payload: UpdateAdminPayload,
+): Promise<UpdateAdminResponse> {
+  return apiFetch<UpdateAdminResponse>(`/api/admin/admin/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 }
