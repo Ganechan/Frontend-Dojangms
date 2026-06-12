@@ -44,6 +44,7 @@ const data = {
         { title: "Jadwal Libur Global", url: "/admin/liburGlobal" },
         { title: "Buat Jadwal Latihan", url: "/admin/jadwal/create" },
         { title: "Daftar Kelas", url: "/admin/kelas" },
+        { title: "Tambah Murid Kelas", url: "/admin/kelas/addMurid" },
       ],
     },
     {
