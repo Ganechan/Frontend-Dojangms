@@ -1,10 +1,10 @@
 // app\admin\page.tsx
 export const dynamic = "force-dynamic";
 import { AppSidebar } from "@/components/admin/app-sidebar";
-import { DataTable } from "@/components/admin/data-table";
 import { SiteHeader } from "@/components/admin/site-header";
-import { SectionPieChartsServer } from "@/components/server/admin/section-pie-charts-server";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { DataTable } from "@/components/admin/data-table";
+import { SectionPieChartsServer } from "@/components/server/admin/section-pie-charts-server";
 import { SectionCardsServer } from "@/components/server/admin/section-cards-server";
 import { ChartAreaInteractiveServer } from "@/components/server/admin/chart-area-interactive-server";
 

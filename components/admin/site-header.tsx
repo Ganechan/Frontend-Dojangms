@@ -19,28 +19,18 @@ const PATH_LABELS: Record<string, string> = {
   "/admin/anggota": "Manajemen Anggota",
   "/admin/anggota/murid": "Data Murid",
   "/admin/anggota/pelatih": "Data Pelatih",
-  "/admin/anggota/admin": "Data Admin",       // ← tidak konflik lagi
+  "/admin/anggota/admin": "Data Admin", // ← tidak konflik lagi
   "/admin/anggota/addUser": "Buat Data User Baru",
   "/admin/jadwal": "Kelas dan Jadwal Latihan",
   "/admin/jadwal/jadwal": "Jadwal Latihan",
   "/admin/jadwal/create": "Buat Jadwal",
-  "/admin/jadwal/materi": "Materi Latihan",
-  "/admin/ujian": "Ujian dan Sabuk",
-  "/admin/ujian/jadwal": "Jadwal Ujian",
-  "/admin/ujian/riwayat": "Riwayat Kenaikan Sabuk",
-  "/admin/kejuaraan": "Kejuaraan dan Prestasi",
-  "/admin/kejuaraan/data": "Data Kejuaraan",   // ← tidak konflik lagi
-  "/admin/kejuaraan/rekap": "Rekap Prestasi",
-  "/admin/setting": "Setting",
-  "/admin/setting/akun": "Manajemen Role dan Akun",
-  "/admin/setting/sabuk": "Tingkatan Sabuk",
-  "/admin/setting/backup": "BackUp Data",
+  "/admin/kelas": "Daftar Kelas",
+  "/admin/libur": "Daftar Libur",
 };
 
 function getLabel(fullPath: string, segment: string): string {
   return (
-    PATH_LABELS[fullPath] ??
-    segment.charAt(0).toUpperCase() + segment.slice(1)
+    PATH_LABELS[fullPath] ?? segment.charAt(0).toUpperCase() + segment.slice(1)
   );
 }
 
@@ -54,7 +44,7 @@ export function SiteHeader() {
   const crumbs = segments.map((seg, index) => {
     const fullPath = "/" + segments.slice(0, index + 1).join("/");
     return {
-      label: getLabel(fullPath, seg),  // ← pakai fullPath, bukan seg saja
+      label: getLabel(fullPath, seg), // ← pakai fullPath, bukan seg saja
       href: fullPath,
       isLast: index === segments.length - 1,
     };
@@ -81,9 +71,7 @@ export function SiteHeader() {
                     <BreadcrumbLink href={crumb.href}>
                       {crumb.label}
                     </BreadcrumbLink>
-                    {index < crumbs.length - 1 && (
-                      <BreadcrumbSeparator />
-                    )}
+                    {index < crumbs.length - 1 && <BreadcrumbSeparator />}
                   </>
                 )}
               </BreadcrumbItem>

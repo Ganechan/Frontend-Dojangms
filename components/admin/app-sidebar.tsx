@@ -40,8 +40,10 @@ const data = {
       url: "/admin/jadwal",
       items: [
         { title: "Jadwal Latihan", url: "/admin/jadwal/jadwal" },
+        { title: "Jadwal Libur Latihan", url: "/admin/libur" },
+        { title: "Jadwal Libur", url: "/admin/liburglobal" },
         { title: "Buat Jadwal Latihan", url: "/admin/jadwal/create" },
-        { title: "Daftar Kelas", url: "/admin/jadwal/kelas" },
+        { title: "Daftar Kelas", url: "/admin/kelas" },
       ],
     },
     {
