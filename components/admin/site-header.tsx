@@ -26,6 +26,7 @@ const PATH_LABELS: Record<string, string> = {
   "/admin/jadwal/create": "Buat Jadwal",
   "/admin/kelas": "Daftar Kelas",
   "/admin/libur": "Daftar Libur",
+  "/admin/liburGlobal": "Daftar Libur Global",
 };
 
 function getLabel(fullPath: string, segment: string): string {

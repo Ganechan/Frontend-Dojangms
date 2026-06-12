@@ -41,7 +41,7 @@ const data = {
       items: [
         { title: "Jadwal Latihan", url: "/admin/jadwal/jadwal" },
         { title: "Jadwal Libur Latihan", url: "/admin/libur" },
-        { title: "Jadwal Libur", url: "/admin/liburglobal" },
+        { title: "Jadwal Libur Global", url: "/admin/liburGlobal" },
         { title: "Buat Jadwal Latihan", url: "/admin/jadwal/create" },
         { title: "Daftar Kelas", url: "/admin/kelas" },
       ],
@@ -187,7 +187,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <SidebarGroupContent>
                     <SidebarMenu>
                       {group.items.map((item) => {
-                        const isActive = pathname.startsWith(item.url);
+                        const isActive =
+                          pathname === item.url ||
+                          pathname.startsWith(item.url + "/");
 
                         return (
                           <SidebarMenuItem key={item.title}>
