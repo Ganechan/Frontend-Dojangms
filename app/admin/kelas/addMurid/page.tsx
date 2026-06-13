@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { SearchIcon, Plus, Loader2, Layers } from "lucide-react";
+import { SearchIcon, Plus, Loader2, Layers, Edit } from "lucide-react";
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SiteHeader } from "@/components/admin/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -194,13 +194,13 @@ export default function Page() {
                     <TableHead className="w-[30%] font-semibold text-neutral-700">
                       Nama Kelas
                     </TableHead>
-                    <TableHead className="w-[45%] font-semibold text-neutral-700">
+                    <TableHead className="w-[40%] font-semibold text-neutral-700">
                       Deskripsi Kelas
                     </TableHead>
                     <TableHead className="w-[13%] font-semibold text-neutral-700">
                       Status
                     </TableHead>
-                    <TableHead className="w-[12%] text-right font-semibold text-neutral-700">
+                    <TableHead className="w-[17%] text-right font-semibold text-neutral-700">
                       Aksi
                     </TableHead>
                   </TableRow>
@@ -253,30 +253,58 @@ export default function Page() {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right py-4">
-                          {kelas.status === "aktif" ? (
-                            <Link
-                              href={`/admin/kelas/addMurid/create?classId=${kelas.id}`}
-                            >
+                          <div className="flex items-center justify-end gap-2">
+                            {/* Button Edit Murid Kelas (Conditional) */}
+                            {kelas.status === "aktif" ? (
+                              <Link href={`/admin/kelas/addMurid/${kelas.id}`}>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="shadow-sm border-neutral-200 hover:bg-neutral-500 font-medium"
+                                  distribute-id="btn-add"
+                                >
+                                  <Plus className="size-3.5 mr-1.5 stroke-[2.5]" />
+                                  Edit
+                                </Button>
+                              </Link>
+                            ) : (
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="shadow-sm border-neutral-200 hover:bg-neutral-500 font-medium"
+                                disabled
+                                className="shadow-sm font-medium opacity-50 cursor-not-allowed"
+                              >
+                                <Plus className="size-3.5 mr-1.5 stroke-[2.5]" />
+                                Edit
+                              </Button>
+                            )}
+                            {/* Button Tambah Murid (Conditional) */}
+                            {kelas.status === "aktif" ? (
+                              <Link
+                                href={`/admin/kelas/addMurid/create?classId=${kelas.id}`}
+                              >
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="shadow-sm border-neutral-200 hover:bg-neutral-500 font-medium"
+                                  distribute-id="btn-add"
+                                >
+                                  <Plus className="size-3.5 mr-1.5 stroke-[2.5]" />
+                                  Tambah Murid
+                                </Button>
+                              </Link>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled
+                                className="shadow-sm font-medium opacity-50 cursor-not-allowed"
                               >
                                 <Plus className="size-3.5 mr-1.5 stroke-[2.5]" />
                                 Tambah Murid
                               </Button>
-                            </Link>
-                          ) : (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled
-                              className="shadow-sm font-medium opacity-50 cursor-not-allowed"
-                            >
-                              <Plus className="size-3.5 mr-1.5 stroke-[2.5]" />
-                              Tambah Murid
-                            </Button>
-                          )}
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))

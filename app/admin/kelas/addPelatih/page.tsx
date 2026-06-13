@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { SearchIcon, Plus, Loader2 } from "lucide-react";
+import { SearchIcon, Plus, Loader2, Edit } from "lucide-react";
 import { toast } from "sonner";
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SiteHeader } from "@/components/admin/site-header";
@@ -195,21 +195,60 @@ export default function TrainersPage() {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          {kelas.status === "aktif" ? (
-                            <Link
-                              href={`/admin/kelas/addPelatih/create?classId=${kelas.id}`}
-                            >
-                              <Button size="sm" variant="outline">
-                                <Plus className="size-3.5 mr-1.5" /> Tambah
-                                Pelatih
+                          <div className="flex items-center justify-end gap-2">
+                            {/* Button Edit Pelatih Kelas (Conditional) */}
+                            {kelas.status === "aktif" ? (
+                              <Link
+                                href={`/admin/kelas/addPelatih/${kelas.id}`}
+                              >
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="shadow-sm border-neutral-200 hover:bg-neutral-500 font-medium"
+                                  distribute-id="btn-add"
+                                >
+                                  <Plus className="size-3.5 mr-1.5 stroke-[2.5]" />
+                                  Edit
+                                </Button>
+                              </Link>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled
+                                className="shadow-sm font-medium opacity-50 cursor-not-allowed"
+                              >
+                                <Plus className="size-3.5 mr-1.5 stroke-[2.5]" />
+                                Edit
                               </Button>
-                            </Link>
-                          ) : (
-                            <Button size="sm" variant="outline" disabled>
-                              <Plus className="size-3.5 mr-1.5" /> Tambah
-                              Pelatih
-                            </Button>
-                          )}
+                            )}
+                            {/* Button Tambah Murid (Conditional) */}
+                            {kelas.status === "aktif" ? (
+                              <Link
+                                href={`/admin/kelas/addPelatih/create?classId=${kelas.id}`}
+                              >
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="shadow-sm border-neutral-200 hover:bg-neutral-500 font-medium"
+                                  distribute-id="btn-add"
+                                >
+                                  <Plus className="size-3.5 mr-1.5 stroke-[2.5]" />
+                                  Tambah Pelatih
+                                </Button>
+                              </Link>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled
+                                className="shadow-sm font-medium opacity-50 cursor-not-allowed"
+                              >
+                                <Plus className="size-3.5 mr-1.5 stroke-[2.5]" />
+                                Tambah Pelatih
+                              </Button>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
