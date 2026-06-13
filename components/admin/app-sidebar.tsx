@@ -45,24 +45,25 @@ const data = {
         { title: "Buat Jadwal Latihan", url: "/admin/jadwal/create" },
         { title: "Daftar Kelas", url: "/admin/kelas" },
         { title: "Tambah Murid Kelas", url: "/admin/kelas/addMurid" },
+        { title: "Tambah Pelatih Kelas", url: "/admin/kelas/addPelatih" },
       ],
     },
-    {
-      title: "Ujian dan Sabuk",
-      url: "/admin/ujian",
-      items: [
-        { title: "Jadwal Ujian", url: "/admin/ujian/jadwal" },
-        { title: "Riwayat Kenaikan Sabuk", url: "/admin/ujian/riwayat" },
-      ],
-    },
-    {
-      title: "Kejuaraan dan Prestasi",
-      url: "/admin/kejuaraan",
-      items: [
-        { title: "Data Kejuaraan", url: "/admin/kejuaraan/data" },
-        { title: "Rekap Prestasi", url: "/admin/kejuaraan/rekap" },
-      ],
-    },
+    // {
+    //   title: "Ujian dan Sabuk",
+    //   url: "/admin/ujian",
+    //   items: [
+    //     { title: "Jadwal Ujian", url: "/admin/ujian/jadwal" },
+    //     { title: "Riwayat Kenaikan Sabuk", url: "/admin/ujian/riwayat" },
+    //   ],
+    // },
+    // {
+    //   title: "Kejuaraan dan Prestasi",
+    //   url: "/admin/kejuaraan",
+    //   items: [
+    //     { title: "Data Kejuaraan", url: "/admin/kejuaraan/data" },
+    //     { title: "Rekap Prestasi", url: "/admin/kejuaraan/rekap" },
+    //   ],
+    // },
     // {
     //   title: "Keuangan",
     //   url: "/admin/keuangan",
@@ -82,15 +83,15 @@ const data = {
     //     { title: "Export Data", url: "/admin/laporan/export" },
     //   ],
     // },
-    {
-      title: "Setting",
-      url: "/admin/setting",
-      items: [
-        { title: "Manajemen Role dan Akun", url: "/admin/setting/akun" },
-        { title: "Tingkatan Sabuk", url: "/admin/setting/sabuk" },
-        { title: "BackUp Data", url: "/admin/setting/backup" },
-      ],
-    },
+    // {
+    //   title: "Setting",
+    //   url: "/admin/setting",
+    //   items: [
+    //     { title: "Manajemen Role dan Akun", url: "/admin/setting/akun" },
+    //     { title: "Tingkatan Sabuk", url: "/admin/setting/sabuk" },
+    //     { title: "BackUp Data", url: "/admin/setting/backup" },
+    //   ],
+    // },
   ],
   user: {
     name: "shadcn",
