@@ -48,14 +48,14 @@ const data = {
         { title: "Tambah Pelatih Kelas", url: "/admin/kelas/addPelatih" },
       ],
     },
-    // {
-    //   title: "Ujian dan Sabuk",
-    //   url: "/admin/ujian",
-    //   items: [
-    //     { title: "Jadwal Ujian", url: "/admin/ujian/jadwal" },
-    //     { title: "Riwayat Kenaikan Sabuk", url: "/admin/ujian/riwayat" },
-    //   ],
-    // },
+    {
+      title: "Ujian dan Sabuk",
+      url: "/admin/ujian",
+      items: [
+        { title: "Ujian Kenaikan Sabuk", url: "/admin/ujianKenaikanSabuk" },
+        { title: "Riwayat Kenaikan Sabuk", url: "/admin/ujian/riwayat" },
+      ],
+    },
     // {
     //   title: "Kejuaraan dan Prestasi",
     //   url: "/admin/kejuaraan",
