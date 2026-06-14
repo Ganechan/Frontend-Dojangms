@@ -64,14 +64,14 @@ const data = {
         { title: "Riwayat Kenaikan Sabuk", url: "/admin/ujianKenaikanSabuk/riwayat" },
       ],
     },
-    // {
-    //   title: "Kejuaraan dan Prestasi",
-    //   url: "/admin/kejuaraan",
-    //   items: [
-    //     { title: "Data Kejuaraan", url: "/admin/kejuaraan/data" },
-    //     { title: "Rekap Prestasi", url: "/admin/kejuaraan/rekap" },
-    //   ],
-    // },
+    {
+      title: "Kejuaraan dan Prestasi",
+      url: "/admin/kejuaraan",
+      items: [
+        { title: "Data Kejuaraan", url: "/admin/kejuaraan" },
+        { title: "Rekap Prestasi", url: "/admin/kejuaraan/rekap" },
+      ],
+    },
     // {
     //   title: "Keuangan",
     //   url: "/admin/keuangan",
