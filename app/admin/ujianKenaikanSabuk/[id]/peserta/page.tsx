@@ -24,24 +24,40 @@ import {
 import { SearchIcon, Trash2, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import DeleteTrainerDialog from "@/components/admin/kelas/delete-pelatih-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SiteHeader } from "@/components/admin/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
-interface Trainer {
+interface Murid {
   id: number;
-  name: string;
+  nama: string;
   email: string;
-  phone: string;
-  tanggal_lahir: string;
-  status_user: "active" | "inactive";
-  tanggal_bergabung: string;
-  spesialisasi: string;
-  sabuk_saat_ini: {
-    id: number;
-    name: string;
-  };
+  telepon: string;
+}
+
+interface Belt {
+  id: number;
+  nama: string;
+}
+
+interface PesertaUjian {
+  id: number;
+  murid: Murid;
+  belt_asal: Belt;
+  belt_tujuan: Belt;
+  status: string; // "terdaftar", "lulus", dll
+  tanggal_lulus: string | null;
+  tanggal_edit: string | null;
 }
 
 interface PaginationInfo {
@@ -55,12 +71,12 @@ interface PaginationInfo {
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 75, 100, 200];
 
-export default function TrainersPage() {
+export default function ParticipantsPage() {
   const params = useParams();
   const router = useRouter();
-  const classId = params.id as string;
+  const examId = params.id as string;
 
-  const [trainers, setTrainers] = useState<Trainer[]>([]);
+  const [participants, setParticipants] = useState<PesertaUjian[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
     current_page: 1,
     per_page: 10,
@@ -72,23 +88,25 @@ export default function TrainersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [pageSize, setPageSize] = useState(10);
   const [loading, setLoading] = useState(true);
-  const [selectedTrainers, setSelectedTrainers] = useState<Set<number>>(
+  const [selectedParticipants, setSelectedParticipants] = useState<Set<number>>(
     new Set(),
   );
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [trainerToDelete, setTrainerToDelete] = useState<number | null>(null);
+  const [participantToDelete, setParticipantToDelete] = useState<number | null>(
+    null,
+  );
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Fetch trainers menggunakan route handler internal
-  const fetchTrainers = async (page: number = 1) => {
+  // Fetch peserta terdaftar via route handler internal
+  const fetchParticipants = async (page: number = 1) => {
     try {
       setLoading(true);
       const response = await fetch(
-        `/api/admin/kelas/${classId}/pelatih?page=${page}&limit=${pageSize}`,
+        `/api/admin/ujian-kenaikan-sabuk/${examId}/peserta/terdaftar?page=${page}&limit=${pageSize}`,
       );
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
-      setTrainers(data.data || []);
+      if (!response.ok) throw new Error(data.message || "Gagal memuat data");
+      setParticipants(data.data || []);
       setPagination({
         current_page: data.pagination.current_page,
         per_page: data.pagination.per_page,
@@ -97,98 +115,99 @@ export default function TrainersPage() {
         has_next: data.pagination.has_next,
         has_prev: data.pagination.has_prev,
       });
-      setSelectedTrainers(new Set());
-    } catch (error) {
+      setSelectedParticipants(new Set());
+    } catch (error: any) {
       console.error(error);
-      toast.error("Gagal memuat data pelatih");
+      toast.error(error.message || "Gagal memuat data peserta");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (classId) fetchTrainers();
-  }, [classId, pageSize]);
+    if (examId) fetchParticipants();
+  }, [examId, pageSize]);
 
-  const filteredTrainers = trainers.filter((trainer) => {
-    const matchesSearch =
-      trainer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trainer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trainer.phone.includes(searchTerm);
-    return matchesSearch;
+  // Filter berdasarkan pencarian (nama, email, telepon)
+  const filteredParticipants = participants.filter((p) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      p.murid.nama.toLowerCase().includes(searchLower) ||
+      p.murid.email.toLowerCase().includes(searchLower) ||
+      p.murid.telepon.includes(searchTerm)
+    );
   });
 
-  const toggleTrainerSelection = (trainerId: number) => {
-    const newSelected = new Set(selectedTrainers);
-    if (newSelected.has(trainerId)) newSelected.delete(trainerId);
-    else newSelected.add(trainerId);
-    setSelectedTrainers(newSelected);
+  const toggleSelect = (userId: number) => {
+    const newSelected = new Set(selectedParticipants);
+    if (newSelected.has(userId)) newSelected.delete(userId);
+    else newSelected.add(userId);
+    setSelectedParticipants(newSelected);
   };
 
   const toggleSelectAll = () => {
     if (
-      selectedTrainers.size === filteredTrainers.length &&
-      filteredTrainers.length > 0
+      selectedParticipants.size === filteredParticipants.length &&
+      filteredParticipants.length > 0
     ) {
-      setSelectedTrainers(new Set());
+      setSelectedParticipants(new Set());
     } else {
-      setSelectedTrainers(new Set(filteredTrainers.map((t) => t.id)));
+      setSelectedParticipants(
+        new Set(filteredParticipants.map((p) => p.murid.id)),
+      );
     }
   };
 
-  const handleDeleteTrainer = (trainerId: number) => {
-    setTrainerToDelete(trainerId);
+  const handleDeleteClick = (userId: number) => {
+    setParticipantToDelete(userId);
     setDeleteDialogOpen(true);
   };
 
   const handleDeleteSelected = () => {
-    if (selectedTrainers.size > 0) {
-      setTrainerToDelete(-1);
+    if (selectedParticipants.size > 0) {
+      setParticipantToDelete(-1); // tanda bulk
       setDeleteDialogOpen(true);
     }
   };
 
-  const handleConfirmDelete = async (trainerIds: number[]) => {
-    if (trainerIds.length === 0) return;
+  const handleConfirmDelete = async () => {
+    let userIds: number[] = [];
+    if (participantToDelete === -1) {
+      userIds = Array.from(selectedParticipants);
+    } else {
+      userIds = [participantToDelete];
+    }
+    if (userIds.length === 0) return;
+
     setIsDeleting(true);
     try {
-      if (trainerIds.length === 1) {
-        const response = await fetch("/api/admin/kelas/softdeletepelatih", {
-          method: "PATCH",
+      const response = await fetch(
+        `/api/admin/ujian-kenaikan-sabuk/${examId}/peserta/bulk`,
+        {
+          method: "DELETE",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ kelas_id: classId, user_id: trainerIds[0] }),
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message);
-        toast.success("Pelatih berhasil dihapus dari kelas");
-      } else {
-        const response = await fetch(
-          "/api/admin/kelas/softdeletepelatih/bulk",
-          {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ kelas_id: classId, user_ids: trainerIds }),
-          },
-        );
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message);
-        toast.success(
-          `${trainerIds.length} pelatih berhasil dihapus dari kelas`,
-        );
-      }
+          body: JSON.stringify({ user_ids: userIds }),
+        },
+      );
+      const data = await response.json();
+      if (!response.ok)
+        throw new Error(data.message || "Gagal menghapus peserta");
+      toast.success(
+        data.message || `${userIds.length} peserta berhasil dihapus dari ujian`,
+      );
       setDeleteDialogOpen(false);
-      setTrainerToDelete(null);
+      setParticipantToDelete(null);
       // Refresh data ke halaman pertama
-      await fetchTrainers(1);
+      await fetchParticipants(1);
     } catch (error: any) {
       console.error(error);
-      toast.error(error.message || "Gagal menghapus pelatih");
+      toast.error(error.message || "Terjadi kesalahan saat menghapus peserta");
     } finally {
       setIsDeleting(false);
     }
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null) => {
     if (!dateString) return "-";
     return new Date(dateString).toLocaleDateString("id-ID", {
       year: "numeric",
@@ -216,17 +235,17 @@ export default function TrainersPage() {
                 <div className="max-w-7xl mx-auto">
                   {/* Header */}
                   <div className="mb-6">
-                    <Link href="/admin/kelas/addPelatih">
+                    <Link href={`/admin/ujianKenaikanSabuk/${examId}`}>
                       <Button variant="outline" size="sm" className="mb-4">
                         <ArrowLeft className="w-4 h-4 mr-2" />
-                        Kembali ke Kelas
+                        Kembali ke Detail Ujian
                       </Button>
                     </Link>
                     <h1 className="text-3xl font-bold text-foreground mb-2">
-                      Daftar Pelatih
+                      Daftar Peserta Ujian
                     </h1>
                     <p className="text-muted-foreground">
-                      Total pelatih: {pagination.total_data}
+                      Total peserta: {pagination.total_data}
                     </p>
                   </div>
 
@@ -258,7 +277,7 @@ export default function TrainersPage() {
                           ))}
                         </SelectContent>
                       </Select>
-                      {selectedTrainers.size > 0 && (
+                      {selectedParticipants.size > 0 && (
                         <Button
                           variant="destructive"
                           size="sm"
@@ -266,7 +285,7 @@ export default function TrainersPage() {
                           disabled={isDeleting}
                         >
                           <Trash2 className="w-4 h-4 mr-2" />
-                          Hapus {selectedTrainers.size} Pelatih
+                          Hapus {selectedParticipants.size} Peserta
                         </Button>
                       )}
                     </div>
@@ -280,9 +299,9 @@ export default function TrainersPage() {
                           <TableHead className="w-12">
                             <Checkbox
                               checked={
-                                selectedTrainers.size ===
-                                  filteredTrainers.length &&
-                                filteredTrainers.length > 0
+                                selectedParticipants.size ===
+                                  filteredParticipants.length &&
+                                filteredParticipants.length > 0
                               }
                               onCheckedChange={toggleSelectAll}
                             />
@@ -290,90 +309,81 @@ export default function TrainersPage() {
                           <TableHead>Nama</TableHead>
                           <TableHead>Email</TableHead>
                           <TableHead>Telepon</TableHead>
-                          <TableHead>Tanggal Lahir</TableHead>
-                          <TableHead>Spesialisasi</TableHead>
-                          <TableHead>Sabuk</TableHead>
+                          <TableHead>Sabuk Asal</TableHead>
+                          <TableHead>Sabuk Tujuan</TableHead>
                           <TableHead>Status</TableHead>
-                          <TableHead>Tanggal Bergabung</TableHead>
+                          <TableHead>Tanggal Lulus</TableHead>
                           <TableHead className="text-right">Aksi</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {loading ? (
                           <TableRow>
-                            <TableCell
-                              colSpan={10}
-                              className="text-center py-8"
-                            >
+                            <TableCell colSpan={9} className="text-center py-8">
                               <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                             </TableCell>
                           </TableRow>
-                        ) : filteredTrainers.length === 0 ? (
+                        ) : filteredParticipants.length === 0 ? (
                           <TableRow>
                             <TableCell
-                              colSpan={10}
+                              colSpan={9}
                               className="text-center py-8 text-muted-foreground"
                             >
-                              Tidak ada pelatih yang ditemukan
+                              Tidak ada peserta yang ditemukan
                             </TableCell>
                           </TableRow>
                         ) : (
-                          filteredTrainers.map((trainer) => (
-                            <TableRow key={trainer.id}>
+                          filteredParticipants.map((p) => (
+                            <TableRow key={p.id}>
                               <TableCell>
                                 <Checkbox
-                                  checked={selectedTrainers.has(trainer.id)}
+                                  checked={selectedParticipants.has(p.murid.id)}
                                   onCheckedChange={() =>
-                                    toggleTrainerSelection(trainer.id)
+                                    toggleSelect(p.murid.id)
                                   }
                                 />
                               </TableCell>
                               <TableCell className="font-medium">
-                                {trainer.name}
+                                {p.murid.nama}
                               </TableCell>
                               <TableCell className="text-sm">
-                                {trainer.email}
+                                {p.murid.email}
                               </TableCell>
                               <TableCell className="text-sm">
-                                {trainer.phone}
-                              </TableCell>
-                              <TableCell className="text-sm">
-                                {formatDate(trainer.tanggal_lahir)}
-                              </TableCell>
-                              <TableCell className="text-sm capitalize">
-                                {trainer.spesialisasi || "-"}
+                                {p.murid.telepon}
                               </TableCell>
                               <TableCell>
-                                <Badge variant="secondary">
-                                  {trainer.sabuk_saat_ini?.name || "-"}
+                                <Badge variant="outline">
+                                  {p.belt_asal.nama}
                                 </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Badge>{p.belt_tujuan.nama}</Badge>
                               </TableCell>
                               <TableCell>
                                 <Badge
                                   variant={
-                                    trainer.status_user === "active"
-                                      ? "default"
-                                      : "secondary"
+                                    p.status === "terdaftar"
+                                      ? "secondary"
+                                      : p.status === "lulus"
+                                        ? "default"
+                                        : "destructive"
                                   }
                                 >
-                                  {trainer.status_user === "active"
-                                    ? "Aktif"
-                                    : "Nonaktif"}
+                                  {p.status}
                                 </Badge>
                               </TableCell>
                               <TableCell className="text-sm">
-                                {formatDate(trainer.tanggal_bergabung)}
+                                {formatDate(p.tanggal_lulus)}
                               </TableCell>
                               <TableCell className="text-right">
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() =>
-                                    handleDeleteTrainer(trainer.id)
-                                  }
+                                  onClick={() => handleDeleteClick(p.murid.id)}
                                   disabled={isDeleting}
                                 >
-                                  <Trash2 className="w-4 h-4" />
+                                  <Trash2 className="w-4 h-4 mr-2" />
                                   Hapus
                                 </Button>
                               </TableCell>
@@ -396,7 +406,7 @@ export default function TrainersPage() {
                           variant="outline"
                           size="sm"
                           onClick={() =>
-                            fetchTrainers(pagination.current_page - 1)
+                            fetchParticipants(pagination.current_page - 1)
                           }
                           disabled={!pagination.has_prev || loading}
                         >
@@ -406,7 +416,7 @@ export default function TrainersPage() {
                           variant="outline"
                           size="sm"
                           onClick={() =>
-                            fetchTrainers(pagination.current_page + 1)
+                            fetchParticipants(pagination.current_page + 1)
                           }
                           disabled={!pagination.has_next || loading}
                         >
@@ -417,20 +427,39 @@ export default function TrainersPage() {
                   )}
                 </div>
 
-                {/* Delete Dialog */}
-                {deleteDialogOpen && (
-                  <DeleteTrainerDialog
-                    open={deleteDialogOpen}
-                    onOpenChange={setDeleteDialogOpen}
-                    trainerIds={
-                      trainerToDelete === -1
-                        ? Array.from(selectedTrainers)
-                        : [trainerToDelete || 0]
-                    }
-                    onConfirm={handleConfirmDelete}
-                    isMultiple={trainerToDelete === -1}
-                  />
-                )}
+                {/* Delete Confirmation Dialog */}
+                <AlertDialog
+                  open={deleteDialogOpen}
+                  onOpenChange={setDeleteDialogOpen}
+                >
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Hapus Peserta</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Apakah Anda yakin ingin menghapus{" "}
+                        {participantToDelete === -1
+                          ? `${selectedParticipants.size} peserta`
+                          : "peserta ini"}{" "}
+                        dari ujian? Tindakan ini tidak dapat dibatalkan.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel disabled={isDeleting}>
+                        Batal
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleConfirmDelete}
+                        disabled={isDeleting}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        {isDeleting ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : null}
+                        Hapus
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
           </div>

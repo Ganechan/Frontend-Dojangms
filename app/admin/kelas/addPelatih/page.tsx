@@ -207,7 +207,7 @@ export default function TrainersPage() {
                                   className="shadow-sm border-neutral-200 hover:bg-neutral-500 font-medium"
                                   distribute-id="btn-add"
                                 >
-                                  <Plus className="size-3.5 mr-1.5 stroke-[2.5]" />
+                                  <Edit className="size-3.5 mr-1.5 stroke-[2.5]" />
                                   Edit
                                 </Button>
                               </Link>

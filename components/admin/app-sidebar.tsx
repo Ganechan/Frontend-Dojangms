@@ -53,6 +53,14 @@ const data = {
       url: "/admin/ujian",
       items: [
         { title: "Ujian Kenaikan Sabuk", url: "/admin/ujianKenaikanSabuk" },
+        {
+          title: "Kelola Peserta Ujian",
+          url: "/admin/ujianKenaikanSabuk/ujian-terjadwal",
+        },
+        {
+          title: "Restore Ujian",
+          url: "/admin/ujianKenaikanSabuk/ujian-terjadwal",
+        },
         { title: "Riwayat Kenaikan Sabuk", url: "/admin/ujian/riwayat" },
       ],
     },
