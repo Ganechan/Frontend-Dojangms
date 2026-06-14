@@ -61,7 +61,7 @@ const data = {
           title: "Restore Ujian",
           url: "/admin/ujianKenaikanSabuk/deleted",
         },
-        { title: "Riwayat Kenaikan Sabuk", url: "/admin/ujian/riwayat" },
+        { title: "Riwayat Kenaikan Sabuk", url: "/admin/ujianKenaikanSabuk/riwayat" },
       ],
     },
     // {
