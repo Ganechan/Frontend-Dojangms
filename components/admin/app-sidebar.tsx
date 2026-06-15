@@ -61,7 +61,10 @@ const data = {
           title: "Restore Ujian",
           url: "/admin/ujianKenaikanSabuk/deleted",
         },
-        { title: "Riwayat Kenaikan Sabuk", url: "/admin/ujianKenaikanSabuk/riwayat" },
+        {
+          title: "Riwayat Kenaikan Sabuk",
+          url: "/admin/ujianKenaikanSabuk/riwayat",
+        },
       ],
     },
     {
@@ -70,9 +73,8 @@ const data = {
       items: [
         { title: "Data Kejuaraan", url: "/admin/kejuaraan" },
         { title: "Kelola Kelas Kyorugi", url: "/admin/kelas-kyorugi" },
-        { title: "Kelola Kelas Poomsae", url: "/admin/kejuaraan" },
-        { title: "Kelola Level Kelas", url: "/admin/kejuaraan" },
-        { title: "Kelola Kategori Usia", url: "/admin/kejuaraan" },
+        { title: "Kelola Kelas Poomsae", url: "/admin/kelas-poomsae" },
+        { title: "Kelola Peserta Kejuaraan", url: "/admin/kejuaraan" },
         { title: "Rekap Prestasi", url: "/admin/kejuaraan/rekap" },
       ],
     },
