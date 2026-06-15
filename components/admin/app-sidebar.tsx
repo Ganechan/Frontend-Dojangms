@@ -69,6 +69,10 @@ const data = {
       url: "/admin/kejuaraan",
       items: [
         { title: "Data Kejuaraan", url: "/admin/kejuaraan" },
+        { title: "Kelola Kelas Kyorugi", url: "/admin/kelas-kyorugi" },
+        { title: "Kelola Kelas Poomsae", url: "/admin/kejuaraan" },
+        { title: "Kelola Level Kelas", url: "/admin/kejuaraan" },
+        { title: "Kelola Kategori Usia", url: "/admin/kejuaraan" },
         { title: "Rekap Prestasi", url: "/admin/kejuaraan/rekap" },
       ],
     },
