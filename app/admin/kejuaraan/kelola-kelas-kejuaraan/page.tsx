@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Eye, Loader2, Edit } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SiteHeader } from "@/components/admin/site-header";
@@ -55,14 +55,13 @@ export default function ScheduledChampionshipsPage() {
       setLoading(true);
       const response = await fetch(
         "/api/admin/kejuaraan/getall?page=1&per_page=100",
-      ); // ambil semua, filter status di client
+      );
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.message || "Gagal memuat data");
       }
 
-      // Filter hanya yang belum selesai (akan_datang atau berlangsung)
       const allData = data.data || [];
       const scheduled = allData.filter(
         (champ: Championship) =>
@@ -71,7 +70,6 @@ export default function ScheduledChampionshipsPage() {
 
       setChampionships(scheduled);
 
-      // Hitung summary berdasarkan data terjadwal
       const summaryData = {
         total: scheduled.length,
         kota: scheduled.filter((c: Championship) => c.level === "kota").length,
@@ -146,7 +144,6 @@ export default function ScheduledChampionshipsPage() {
         <SiteHeader />
 
         <div className="p-4 md:p-6 max-w-7xl w-full mx-auto space-y-6">
-          {/* Header */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
@@ -164,7 +161,6 @@ export default function ScheduledChampionshipsPage() {
             </Link>
           </div>
 
-          {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
             <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
               <p className="text-xs md:text-sm font-medium text-muted-foreground mb-1">
@@ -208,7 +204,6 @@ export default function ScheduledChampionshipsPage() {
             </div>
           </div>
 
-          {/* Toolbar Level Filter */}
           <div className="bg-card rounded-xl border border-border p-4 shadow-sm">
             <div className="space-y-1.5">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -245,7 +240,6 @@ export default function ScheduledChampionshipsPage() {
             </div>
           </div>
 
-          {/* Table */}
           <div className="bg-card rounded-xl border border-border overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
               <Table>
@@ -317,25 +311,27 @@ export default function ScheduledChampionshipsPage() {
                         <TableCell className="text-right">
                           <div className="flex gap-2 justify-end">
                             <Link
-                              href={`/admin/kejuaraan/${champ.id}/kelas/edit`}
+                              href={`/admin/kejuaraan/${champ.id}/kelas/tambah/kyorugi`}
                             >
                               <Button
                                 size="sm"
                                 variant="outline"
                                 className="shadow-xs"
                               >
-                                <Edit className="w-4 h-4 mr-1.5" />
-                                Edit Peserta
+                                <Plus className="w-4 h-4 mr-1.5" />
+                                Tambah Kyorugi
                               </Button>
                             </Link>
-                            <Link href={`/admin/kejuaraan/${champ.id}/kelas`}>
+                            <Link
+                              href={`/admin/kejuaraan/${champ.id}/kelas/tambah/poomsae`}
+                            >
                               <Button
                                 size="sm"
                                 variant="outline"
                                 className="shadow-xs text-blue-600"
                               >
                                 <Plus className="w-4 h-4 mr-1.5" />
-                                Tambah Peserta
+                                Tambah Poomsae
                               </Button>
                             </Link>
                           </div>

@@ -133,21 +133,13 @@ export default function ChampionshipClassesPage() {
                 <Link
                   href={`/admin/kejuaraan/${kejuaraanId}/kelas/tambah/kyorugi`}
                 >
-                  <Button size="sm" variant="outline" className="shadow-xs">
-                    <Plus className="w-4 h-4 mr-1.5" />
-                    Kyorugi
-                  </Button>
+                  <Button size="sm">+ Tambah Kyorugi</Button>
                 </Link>
                 <Link
                   href={`/admin/kejuaraan/${kejuaraanId}/kelas/tambah/poomsae`}
                 >
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="shadow-xs text-blue-600"
-                  >
-                    <Plus className="w-4 h-4 mr-1.5" />
-                    Poomsae
+                  <Button size="sm" variant="outline">
+                    + Tambah Poomsae
                   </Button>
                 </Link>
               </div>
@@ -220,11 +212,11 @@ export default function ChampionshipClassesPage() {
                           <TableCell className="text-right">
                             <div className="flex gap-2 justify-end">
                               <Link
-                                href={`/admin/kejuaraan/${kejuaraanId}/kelas/${kelas.id}/tambah-peserta`}
+                                href={`/admin/kejuaraan/${kejuaraanId}/kelas/${kelas.id}/edit-peserta`}
                               >
                                 <Button size="sm" variant="ghost">
-                                  <Plus className="w-4 h-4" />
-                                  Tambah Peserta
+                                  <Edit className="w-4 h-4" />
+                                  Edit Peserta
                                 </Button>
                               </Link>
                             </div>

@@ -279,7 +279,9 @@ export default function ChampionshipDetailPage() {
                         </p>
                       </div>
                       <div className="flex gap-3">
-                        <Link href={`/admin/kejuaraan/${championship.id}/edit`}>
+                        <Link
+                          href={`/admin/kejuaraan/${championship.id}/kelas/edit`}
+                        >
                           <Button variant="outline">
                             <Edit className="w-4 h-4 mr-2" /> Edit
                           </Button>
