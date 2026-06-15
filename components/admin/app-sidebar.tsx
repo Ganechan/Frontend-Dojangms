@@ -74,7 +74,7 @@ const data = {
         { title: "Data Kejuaraan", url: "/admin/kejuaraan" },
         { title: "Kelola Kelas Kyorugi", url: "/admin/kelas-kyorugi" },
         { title: "Kelola Kelas Poomsae", url: "/admin/kelas-poomsae" },
-        { title: "Kelola Peserta Kejuaraan", url: "/admin/kejuaraan" },
+        { title: "Kelola Peserta Kejuaraan", url: "/admin/kejuaraan/peserta-kejuaraan" },
         { title: "Rekap Prestasi", url: "/admin/kejuaraan/rekap" },
       ],
     },

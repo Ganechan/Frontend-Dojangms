@@ -32,6 +32,18 @@ interface ChampionshipData {
   year: number;
   start_date: string;
   end_date: string;
+  aturan_usia: AturanUsia[];
+}
+
+interface AturanUsia {
+  kategori_usia_id: number;
+  tahun_lahir_min: number | null;
+  tahun_lahir_max: number;
+}
+
+interface KategoriUsia {
+  id: number;
+  name: string;
 }
 
 export default function EditChampionshipPage() {
@@ -44,6 +56,9 @@ export default function EditChampionshipPage() {
   const [championship, setChampionship] = useState<ChampionshipData | null>(
     null,
   );
+  const [kategoriOptions, setKategoriOptions] = useState<KategoriUsia[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+
   const [formData, setFormData] = useState({
     name: "",
     level: "",
@@ -52,7 +67,34 @@ export default function EditChampionshipPage() {
     end_date: "",
   });
 
-  // Fetch championship data via internal API
+  // Rules state: key = kategori_usia_id, value = { tahun_lahir_min, tahun_lahir_max }
+  const [rules, setRules] = useState<Map<number, { min: string; max: string }>>(
+    new Map(),
+  );
+
+  // Fetch semua kategori usia
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("/api/admin/kategori-usia");
+        const data = await response.json();
+        if (response.ok && data.success) {
+          setKategoriOptions(data.data);
+          // Inisialisasi rules kosong (nanti diisi dari aturan_usia setelah fetch detail)
+        } else {
+          toast.error("Gagal memuat data kategori usia");
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        toast.error("Gagal memuat data kategori usia");
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Fetch detail kejuaraan
   useEffect(() => {
     const fetchChampionship = async () => {
       try {
@@ -64,7 +106,7 @@ export default function EditChampionshipPage() {
           throw new Error(data.message || "Gagal mengambil data kejuaraan");
         }
 
-        const champData = data.data;
+        const champData = data.data as ChampionshipData;
         setChampionship(champData);
         setFormData({
           name: champData.name,
@@ -73,6 +115,28 @@ export default function EditChampionshipPage() {
           start_date: champData.start_date,
           end_date: champData.end_date,
         });
+
+        // Map aturan_usia ke state rules
+        if (champData.aturan_usia && champData.aturan_usia.length) {
+          const rulesMap = new Map();
+          champData.aturan_usia.forEach((rule) => {
+            rulesMap.set(rule.kategori_usia_id, {
+              min:
+                rule.tahun_lahir_min !== null
+                  ? rule.tahun_lahir_min.toString()
+                  : "",
+              max: rule.tahun_lahir_max.toString(),
+            });
+          });
+          setRules(rulesMap);
+        } else {
+          // Jika tidak ada aturan, buat aturan default dengan nilai kosong
+          const defaultMap = new Map();
+          kategoriOptions.forEach((cat) => {
+            defaultMap.set(cat.id, { min: "", max: "" });
+          });
+          setRules(defaultMap);
+        }
       } catch (err: any) {
         console.error("Error fetching championship:", err);
         toast.error(err.message || "Gagal memuat data kejuaraan");
@@ -81,24 +145,35 @@ export default function EditChampionshipPage() {
       }
     };
 
-    if (championshipId) {
+    if (championshipId && kategoriOptions.length) {
       fetchChampionship();
     }
-  }, [championshipId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [championshipId, kategoriOptions]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleLevelChange = (value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      level: value,
-    }));
+    setFormData((prev) => ({ ...prev, level: value }));
+  };
+
+  const handleRuleChange = (
+    kategoriId: number,
+    field: "min" | "max",
+    value: string,
+  ) => {
+    setRules((prev) => {
+      const newMap = new Map(prev);
+      const existing = newMap.get(kategoriId) || { min: "", max: "" };
+      newMap.set(kategoriId, {
+        ...existing,
+        [field]: value,
+      });
+      return newMap;
+    });
   };
 
   const validateForm = (): boolean => {
@@ -124,43 +199,73 @@ export default function EditChampionshipPage() {
       );
       return false;
     }
+
+    // Validasi rules
+    for (const kategori of kategoriOptions) {
+      const rule = rules.get(kategori.id);
+      if (!rule) continue;
+      const isSenior = kategori.name.toLowerCase() === "senior";
+      if (!rule.max) {
+        toast.error(`Tahun lahir maksimal untuk ${kategori.name} harus diisi`);
+        return false;
+      }
+      if (!isSenior && !rule.min) {
+        toast.error(`Tahun lahir minimal untuk ${kategori.name} harus diisi`);
+        return false;
+      }
+      if (rule.min && rule.max) {
+        const minYear = parseInt(rule.min);
+        const maxYear = parseInt(rule.max);
+        if (minYear > maxYear) {
+          toast.error(
+            `Tahun lahir minimal (${minYear}) tidak boleh lebih besar dari maksimal (${maxYear}) untuk ${kategori.name}`,
+          );
+          return false;
+        }
+      }
+    }
     return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setSubmitting(true);
-
     try {
+      // Siapkan payload kategori_usia_rules
+      const kategori_usia_rules = kategoriOptions.map((kategori) => {
+        const rule = rules.get(kategori.id);
+        const minRaw = rule?.min?.trim() ?? "";
+        const maxRaw = rule?.max?.trim() ?? "";
+        return {
+          kategori_usia_id: kategori.id,
+          tahun_lahir_min: minRaw ? parseInt(minRaw) : null,
+          tahun_lahir_max: maxRaw ? parseInt(maxRaw) : null,
+        };
+      });
+
       const payload = {
         name: formData.name,
         level: formData.level,
         location: formData.location,
         start_date: formData.start_date,
         end_date: formData.end_date,
+        kategori_usia_rules,
       };
 
       const response = await fetch(
         `/api/admin/kejuaraan/update/${championshipId}`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         },
       );
 
       const data = await response.json();
-
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(data.message || "Gagal memperbarui kejuaraan");
-      }
 
       toast.success(data.message || "Kejuaraan berhasil diperbarui");
       router.push(`/admin/kejuaraan/${championshipId}`);
@@ -174,7 +279,7 @@ export default function EditChampionshipPage() {
     }
   };
 
-  if (loading) {
+  if (loading || loadingCategories) {
     return (
       <SidebarProvider
         style={
@@ -214,7 +319,7 @@ export default function EditChampionshipPage() {
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
               <div className="min-h-screen bg-background p-6">
-                <div className="max-w-2xl mx-auto">
+                <div className="max-w-3xl mx-auto">
                   <div className="mb-8">
                     <Button
                       variant="outline"
@@ -229,7 +334,7 @@ export default function EditChampionshipPage() {
                       Edit Kejuaraan
                     </h1>
                     <p className="text-muted-foreground">
-                      Perbarui informasi kejuaraan
+                      Perbarui informasi kejuaraan dan aturan usia
                     </p>
                   </div>
 
@@ -336,6 +441,77 @@ export default function EditChampionshipPage() {
                               required
                             />
                           </div>
+                        </div>
+
+                        {/* Aturan Usia per Kategori */}
+                        <div className="border-t pt-4">
+                          <h3 className="text-lg font-semibold mb-3">
+                            Aturan Kategori Usia
+                          </h3>
+                          <div className="space-y-4">
+                            {kategoriOptions.map((cat) => {
+                              const rule = rules.get(cat.id) || {
+                                min: "",
+                                max: "",
+                              };
+                              const isSenior =
+                                cat.name.toLowerCase() === "senior";
+                              return (
+                                <div
+                                  key={cat.id}
+                                  className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 border rounded-md"
+                                >
+                                  <div className="font-medium">{cat.name}</div>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                      <label className="text-xs text-muted-foreground">
+                                        {isSenior
+                                          ? "Tahun Lahir Min (opsional)"
+                                          : "Tahun Lahir Min *"}
+                                      </label>
+                                      <Input
+                                        type="number"
+                                        placeholder="Minimal tahun"
+                                        value={rule.min}
+                                        onChange={(e) =>
+                                          handleRuleChange(
+                                            cat.id,
+                                            "min",
+                                            e.target.value,
+                                          )
+                                        }
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="text-xs text-muted-foreground">
+                                        Tahun Lahir Max *
+                                      </label>
+                                      <Input
+                                        type="number"
+                                        placeholder="Maksimal tahun"
+                                        value={rule.max}
+                                        onChange={(e) =>
+                                          handleRuleChange(
+                                            cat.id,
+                                            "max",
+                                            e.target.value,
+                                          )
+                                        }
+                                        required
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            * Untuk Senior, tahun lahir minimal bersifat
+                            opsional (boleh kosong).
+                            <br />
+                            ** Tahun lahir maksimal wajib diisi untuk semua
+                            kategori.
+                          </p>
                         </div>
 
                         <div className="flex gap-4 pt-6">
