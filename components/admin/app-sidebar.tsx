@@ -86,7 +86,7 @@ const data = {
           title: "Hapus Kelas Kejuaraan",
           url: "/admin/kejuaraan/hapus-kelas-kejuaraan",
         },
-        { title: "Rekap Prestasi", url: "/admin/kejuaraan/rekap" },
+        { title: "Rekap Prestasi", url: "/admin/kejuaraan/rekap-kejuaraan" },
       ],
     },
     // {
@@ -108,15 +108,11 @@ const data = {
     //     { title: "Export Data", url: "/admin/laporan/export" },
     //   ],
     // },
-    // {
-    //   title: "Setting",
-    //   url: "/admin/setting",
-    //   items: [
-    //     { title: "Manajemen Role dan Akun", url: "/admin/setting/akun" },
-    //     { title: "Tingkatan Sabuk", url: "/admin/setting/sabuk" },
-    //     { title: "BackUp Data", url: "/admin/setting/backup" },
-    //   ],
-    // },
+    {
+      title: "Setting",
+      url: "/admin/users",
+      items: [{ title: "Manajemen Role dan Akun", url: "/admin/users" }],
+    },
   ],
   user: {
     name: "shadcn",
