@@ -79,8 +79,12 @@ const data = {
           url: "/admin/kejuaraan/peserta-kejuaraan",
         },
         {
-          title: "Kelola Kelas Kejuaraan",
+          title: "Tambah Kelas Kejuaraan",
           url: "/admin/kejuaraan/kelola-kelas-kejuaraan",
+        },
+        {
+          title: "Hapus Kelas Kejuaraan",
+          url: "/admin/kejuaraan/hapus-kelas-kejuaraan",
         },
         { title: "Rekap Prestasi", url: "/admin/kejuaraan/rekap" },
       ],
