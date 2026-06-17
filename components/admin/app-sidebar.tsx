@@ -95,6 +95,7 @@ const data = {
       items: [
         { title: "Kelola Pengumuman", url: "/admin/pengumuman" },
         { title: "Kirim Draft", url: "/admin/pengumuman/draft" },
+        { title: "Kelola Grup", url: "/admin/pengumuman/group-whatsapp" },
       ],
     },
     {
