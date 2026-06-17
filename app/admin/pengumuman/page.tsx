@@ -247,7 +247,7 @@ export default function AnnouncementsPage() {
                         Kelola pengumuman untuk murid, pelatih, dan admin
                       </p>
                     </div>
-                    <Link href="/admin/pengumuman/create">
+                    <Link href="/admin/pengumuman/tambah">
                       <Button>
                         <Plus className="w-4 h-4 mr-2" />
                         Buat Pengumuman
