@@ -2,14 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { serverFetch } from "@/lib/serverFetch";
 import { ApiError } from "@/lib/apiClient";
 
-// GET handler (sudah ada)
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
-    const data = await serverFetch(`/api/admin/pengumuman/${id}`, {
+    const data = await serverFetch(`/api/admin/whatsapp-groups/${id}`, {
       method: "GET",
     });
     return NextResponse.json(data);
@@ -27,7 +26,6 @@ export async function GET(
   }
 }
 
-// PUT handler (sudah ada)
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -35,7 +33,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await req.json();
-    const data = await serverFetch(`/api/admin/pengumuman/${id}`, {
+    const data = await serverFetch(`/api/admin/whatsapp-groups/${id}`, {
       method: "PUT",
       body: JSON.stringify(body),
     });
@@ -54,16 +52,24 @@ export async function PUT(
   }
 }
 
-// DELETE handler (tambahkan ini)
+// Tambahkan DELETE handler
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
-    const data = await serverFetch(`/api/admin/pengumuman/${id}`, {
-      method: "DELETE",
+
+    // Backend menggunakan PATCH untuk hapus (soft delete atau ubah status)
+    // Misalnya kirim { status: "nonaktif" } atau { deleted: true }
+    // Sesuaikan dengan yang diharapkan backend
+    const body = { status: "nonaktif" };
+
+    const data = await serverFetch(`/api/admin/whatsapp-groups/${id}`, {
+      method: "PATCH", // ← method PATCH sesuai backend
+      body: JSON.stringify(body),
     });
+
     return NextResponse.json(data);
   } catch (err) {
     if (err instanceof ApiError) {

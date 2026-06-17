@@ -178,7 +178,7 @@ export default function WhatsAppGroupsPage() {
                   Kelola grup WhatsApp yang terdaftar di sistem
                 </p>
               </div>
-              <Link href="/admin/whatsapp-groups/create">
+              <Link href="/admin/pengumuman/group-whatsapp/tambah">
                 <Button>
                   <Plus className="w-4 h-4 mr-2" />
                   Tambah Grup
@@ -298,13 +298,15 @@ export default function WhatsAppGroupsPage() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex gap-2 justify-end">
-                            <Link href={`/admin/whatsapp-groups/${group.id}`}>
+                            <Link
+                              href={`/admin/pengumuman/group-whatsapp/${group.id}`}
+                            >
                               <Button size="sm" variant="ghost">
                                 <Eye className="w-4 h-4" />
                               </Button>
                             </Link>
                             <Link
-                              href={`/admin/whatsapp-groups/${group.id}/edit`}
+                              href={`/admin/pengumuman/group-whatsapp/${group.id}/edit`}
                             >
                               <Button size="sm" variant="ghost">
                                 <Edit className="w-4 h-4" />
