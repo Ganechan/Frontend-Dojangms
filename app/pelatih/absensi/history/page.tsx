@@ -1,4 +1,4 @@
-// app\pelatih\absensi\edit\page.tsx
+// app\pelatih\absensi\page.tsx
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -227,10 +227,10 @@ export default function SchedulesPage() {
                     <div className="mb-6">
                       <div className="mt-4">
                         <h1 className="text-3xl font-bold text-slate-900">
-                          Edit Absensi
+                          History Absensi
                         </h1>
                         <p className="text-slate-600 mt-1">
-                          Lakukan Edit Absensi semua jadwal mengajar Anda.
+                          Lihat Riwayat Absensi semua jadwal mengajar Anda.
                         </p>
                       </div>
                     </div>
@@ -457,15 +457,15 @@ export default function SchedulesPage() {
                                     </td>
                                     <td className="px-6 py-4">
                                       <Link
-                                        href={`/pelatih/absensi/history/${jadwal.id}`}
+                                        href={`/pelatih/absensi/${jadwal.id}?tanggal=${format(selectedDate, "yyyy-MM-dd")}`}
                                       >
                                         <Button
                                           variant="ghost"
                                           size="sm"
                                           className="text-blue-600 hover:text-blue-700"
                                         >
-                                          <Edit className="h-4 w-4 mr-1" />
-                                          Edit Absensi
+                                          <Eye className="h-4 w-4 mr-1" />
+                                          Detail Absensi
                                         </Button>
                                       </Link>
                                     </td>

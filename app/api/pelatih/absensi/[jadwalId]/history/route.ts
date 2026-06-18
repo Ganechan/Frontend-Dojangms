@@ -1,23 +1,21 @@
-// app/api/pelatih/absensi/[id]/history/route.ts
+// app\api\pelatih\absensi\[jadwalId]\history\route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { serverFetch } from "@/lib/serverFetch";
 import { ApiError } from "@/lib/apiClient";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ jadwalId: string }> },
 ) {
   try {
-    const { id } = await params;
+    const { jadwalId } = await params;
     const searchParams = req.nextUrl.searchParams;
     const page = searchParams.get("page") || "1";
     const limit = searchParams.get("limit") || "10";
-    const start = searchParams.get("start") || "";
-    const end = searchParams.get("end") || "";
+    const filter = searchParams.get("filter") || "";
 
-    let url = `/api/pelatih/absensi/${id}/history?page=${page}&limit=${limit}`;
-    if (start) url += `&start=${start}`;
-    if (end) url += `&end=${end}`;
+    let url = `/api/pelatih/absensi/history/${jadwalId}?page=${page}&limit=${limit}`;
+    if (filter) url += `&filter=${filter}`;
 
     const data = await serverFetch(url, { method: "GET" });
     return NextResponse.json(data);

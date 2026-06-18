@@ -38,7 +38,7 @@ const data = {
       items: [
         { title: "Absensi", url: "/pelatih/absensi" },
         { title: "Edit Absensi", url: "/pelatih/absensi/edit" },
-        { title: "Riwayat Absensi", url: "/pelatih/absensi" },
+        { title: "Riwayat Absensi", url: "/pelatih/absensi/history" },
       ],
     },
   ],
