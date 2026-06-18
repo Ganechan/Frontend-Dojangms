@@ -1,3 +1,4 @@
+// app\pelatih\absensi\page.tsx
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -11,6 +12,7 @@ import {
   AlertCircle,
   Filter,
   X,
+  CheckSquare,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -36,6 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { format } from "date-fns";
 
 interface Jadwal {
   id: number;
@@ -159,6 +162,7 @@ export default function SchedulesPage() {
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const limit = 10;
 
   const loadData = useCallback(async () => {
@@ -222,10 +226,10 @@ export default function SchedulesPage() {
                     <div className="mb-6">
                       <div className="mt-4">
                         <h1 className="text-3xl font-bold text-slate-900">
-                          Jadwal Saya
+                          Absensi
                         </h1>
                         <p className="text-slate-600 mt-1">
-                          Lihat semua jadwal mengajar Anda.
+                          Lakukan Absensi semua jadwal mengajar Anda.
                         </p>
                       </div>
                     </div>
@@ -234,6 +238,17 @@ export default function SchedulesPage() {
                     <div className="bg-white rounded-lg border border-slate-200 p-6 mb-8 shadow-sm">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                         <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2">
+                            Tanggal Absensi
+                          </label>
+                          <Input
+                            type="date"
+                            value={format(selectedDate, "yyyy-MM-dd")}
+                            onChange={(e) => {
+                              const date = new Date(e.target.value);
+                              if (!isNaN(date.getTime())) setSelectedDate(date);
+                            }}
+                          />
                           <label className="block text-sm font-medium text-slate-700 mb-2">
                             Status
                           </label>
@@ -441,15 +456,15 @@ export default function SchedulesPage() {
                                     </td>
                                     <td className="px-6 py-4">
                                       <Link
-                                        href={`/pelatih/jadwal/${jadwal.id}`}
+                                        href={`/pelatih/absensi/${jadwal.id}?tanggal=${format(selectedDate, "yyyy-MM-dd")}`}
                                       >
                                         <Button
                                           variant="ghost"
                                           size="sm"
                                           className="text-blue-600 hover:text-blue-700"
                                         >
-                                          <Eye className="h-4 w-4 mr-1" />
-                                          Detail
+                                          <CheckSquare className="h-4 w-4 mr-1" />
+                                          Absensi
                                         </Button>
                                       </Link>
                                     </td>

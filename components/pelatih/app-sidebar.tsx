@@ -31,7 +31,14 @@ const data = {
       items: [
         { title: "Kelas", url: "/pelatih/kelasJadwal" },
         { title: "Jadwal", url: "/pelatih/jadwal" },
-        { title: "Absensi", url: "/pelatih/jadwal" },
+      ],
+    },
+    {
+      title: "Absensi Murid",
+      items: [
+        { title: "Absensi", url: "/pelatih/absensi" },
+        { title: "Edit Absensi", url: "/pelatih/absensi/edit" },
+        { title: "Riwayat Absensi", url: "/pelatih/absensi" },
       ],
     },
   ],
