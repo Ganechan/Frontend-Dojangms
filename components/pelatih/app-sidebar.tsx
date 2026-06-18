@@ -27,80 +27,12 @@ import { VersionSwitcher } from "@/components/admin/version-switcher";
 const data = {
   navMain: [
     {
-      title: "Manajemen Anggota",
+      title: "Kelas dan Jadwal",
       items: [
-        { title: "Data Murid", url: "/admin/anggota/murid" },
-        { title: "Data Pelatih", url: "/admin/anggota/pelatih" },
-        { title: "Data Admin", url: "/admin/anggota/admin" },
-        { title: "Buat Data User Baru", url: "/admin/anggota/addUser" },
+        { title: "Kelas", url: "/pelatih/kelasJadwal" },
+        { title: "Jadwal", url: "/pelatih/jadwal" },
+        { title: "Absensi", url: "/pelatih/jadwal" },
       ],
-    },
-    {
-      title: "Kelas dan Jadwal Latihan",
-      url: "/admin/jadwal",
-      items: [
-        { title: "Jadwal Latihan", url: "/admin/jadwal/jadwal" },
-        { title: "Jadwal Libur Latihan", url: "/admin/libur" },
-        { title: "Jadwal Libur Global", url: "/admin/liburGlobal" },
-        { title: "Buat Jadwal Latihan", url: "/admin/jadwal/create" },
-        { title: "Daftar Kelas", url: "/admin/kelas" },
-        { title: "Tambah Murid Kelas", url: "/admin/kelas/addMurid" },
-        { title: "Tambah Pelatih Kelas", url: "/admin/kelas/addPelatih" },
-      ],
-    },
-    {
-      title: "Ujian dan Sabuk",
-      url: "/admin/ujian",
-      items: [
-        { title: "Ujian Kenaikan Sabuk", url: "/admin/ujianKenaikanSabuk" },
-        {
-          title: "Kelola Peserta Ujian",
-          url: "/admin/ujianKenaikanSabuk/ujian-terjadwal",
-        },
-        {
-          title: "Restore Ujian",
-          url: "/admin/ujianKenaikanSabuk/deleted",
-        },
-        {
-          title: "Riwayat Kenaikan Sabuk",
-          url: "/admin/ujianKenaikanSabuk/riwayat",
-        },
-      ],
-    },
-    {
-      title: "Kejuaraan dan Prestasi",
-      url: "/admin/kejuaraan",
-      items: [
-        { title: "Data Kejuaraan", url: "/admin/kejuaraan" },
-        { title: "Kelola Kelas Kyorugi", url: "/admin/kelas-kyorugi" },
-        { title: "Kelola Kelas Poomsae", url: "/admin/kelas-poomsae" },
-        {
-          title: "Kelola Peserta Kejuaraan",
-          url: "/admin/kejuaraan/peserta-kejuaraan",
-        },
-        {
-          title: "Tambah Kelas Kejuaraan",
-          url: "/admin/kejuaraan/kelola-kelas-kejuaraan",
-        },
-        {
-          title: "Hapus Kelas Kejuaraan",
-          url: "/admin/kejuaraan/hapus-kelas-kejuaraan",
-        },
-        { title: "Rekap Prestasi", url: "/admin/kejuaraan/rekap-kejuaraan" },
-      ],
-    },
-    {
-      title: "Pengumuman",
-      url: "/admin/pengumuman",
-      items: [
-        { title: "Kelola Pengumuman", url: "/admin/pengumuman" },
-        { title: "Kirim Draft", url: "/admin/pengumuman/draft" },
-      ],
-    },
-    {
-      title: "Setting",
-      url: "/admin/users",
-      items: [{ title: "Manajemen Role dan Akun", url: "/admin/users" }],
     },
   ],
   user: {
