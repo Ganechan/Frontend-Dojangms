@@ -1,19 +1,16 @@
-// app\pelatih\absensi\page.tsx
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
+  BookOpen,
+  Users,
   Calendar,
-  Clock,
-  MapPin,
+  GraduationCap,
+  Search,
   RefreshCw,
   Eye,
   AlertCircle,
-  Filter,
-  X,
-  CheckSquare,
-  Edit,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -32,40 +29,21 @@ import {
 import { AppSidebar } from "@/components/pelatih/app-sidebar";
 import { SiteHeader } from "@/components/pelatih/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { format } from "date-fns";
 
-interface Jadwal {
+interface Kelas {
   id: number;
   nama: string;
-  tipe: string;
-  hari: string;
-  effective_from: string;
-  effective_until: string | null;
-  tanggal_mulai: string | null;
-  tanggal_selesai: string | null;
-  jam_mulai: string;
-  jam_selesai: string;
-  lokasi: string;
-  keterangan: string | null;
+  deskripsi: string;
   status: "aktif" | "nonaktif";
-  kelas: {
-    id: number;
-    nama: string;
-    status: string;
-  } | null;
+  created_at: string;
+  jumlah_murid: number;
+  jumlah_jadwal: number;
 }
 
 interface ApiResponse {
   success: boolean;
   message: string;
-  data: Jadwal[];
+  data: Kelas[];
   meta: {
     pagination: {
       current_page: number;
@@ -78,20 +56,20 @@ interface ApiResponse {
   };
 }
 
-const fetchSchedules = async (
+const fetchClasses = async (
   page: number,
   limit: number,
-  status: string,
-  hari: string,
+  search: string,
 ): Promise<ApiResponse> => {
   const params = new URLSearchParams({
     page: page.toString(),
     limit: limit.toString(),
   });
-  if (status) params.append("status", status);
-  if (hari) params.append("hari", hari);
+  if (search) {
+    params.append("search", search);
+  }
 
-  const response = await fetch(`/api/pelatih/jadwal?${params}`);
+  const response = await fetch(`/api/pelatih/kelas?${params}`);
   if (!response.ok) {
     const errorData = await response
       .json()
@@ -101,8 +79,7 @@ const fetchSchedules = async (
   return await response.json();
 };
 
-const formatDate = (dateString: string | null): string => {
-  if (!dateString) return "-";
+const formatDate = (dateString: string): string => {
   try {
     const date = new Date(dateString);
     const months = [
@@ -125,83 +102,55 @@ const formatDate = (dateString: string | null): string => {
   }
 };
 
-const formatTime = (timeString: string): string => {
-  if (!timeString) return "-";
-  try {
-    const [hours, minutes] = timeString.split(":");
-    return `${hours}:${minutes}`;
-  } catch {
-    return timeString;
-  }
-};
-
-const getStatusBadgeVariant = (status: string) => {
-  if (status === "aktif") return "default";
-  return "secondary";
-};
-
-const getStatusLabel = (status: string) =>
-  status === "aktif" ? "Aktif" : "Nonaktif";
-
-const getHariLabel = (hari: string) => {
-  const map: Record<string, string> = {
-    senin: "Senin",
-    selasa: "Selasa",
-    rabu: "Rabu",
-    kamis: "Kamis",
-    jumat: "Jumat",
-    sabtu: "Sabtu",
-    minggu: "Minggu",
-  };
-  return map[hari] || hari;
-};
-
-export default function SchedulesPage() {
+export default function ClassesPage() {
   const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState<string>("");
-  const [hariFilter, setHariFilter] = useState<string>("");
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const limit = 10;
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await fetchSchedules(
-        page,
-        limit,
-        statusFilter,
-        hariFilter,
-      );
+      const result = await fetchClasses(page, limit, debouncedSearch);
       setData(result);
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Gagal memuat data"));
     } finally {
       setLoading(false);
     }
-  }, [page, statusFilter, hariFilter]);
+  }, [page, debouncedSearch]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
   const pagination = data?.meta?.pagination;
-  const schedules = data?.data || [];
+  const classes = data?.data || [];
 
-  const isEmpty = !loading && schedules.length === 0 && !error;
+  // Summary stats
+  const totalClasses = pagination?.total_data || 0;
+  const activeClasses = classes.filter((k) => k.status === "aktif").length;
+  const totalStudents = classes.reduce((sum, k) => sum + k.jumlah_murid, 0);
+  const totalSchedules = classes.reduce((sum, k) => sum + k.jumlah_jadwal, 0);
+
+  const isEmpty = !loading && classes.length === 0 && !error;
   const hasError = error !== null;
 
   const handleRefresh = () => {
     loadData();
-  };
-
-  const handleResetFilters = () => {
-    setStatusFilter("");
-    setHariFilter("");
-    setPage(1);
   };
 
   return (
@@ -223,95 +172,105 @@ export default function SchedulesPage() {
                 <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
                   {/* Main Content */}
                   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    {/* Header & Breadcrumb */}
-                    <div className="mb-6">
-                      <div className="mt-4">
-                        <h1 className="text-3xl font-bold text-slate-900">
-                          History Absensi
-                        </h1>
-                        <p className="text-slate-600 mt-1">
-                          Lihat Riwayat Absensi semua jadwal mengajar Anda.
-                        </p>
-                      </div>
+                    {/* Summary Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                      <Card className="border-slate-200 hover:shadow-lg transition-shadow">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-sm font-medium text-slate-700">
+                            Total Kelas
+                          </CardTitle>
+                          <BookOpen className="h-4 w-4 text-blue-500" />
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold text-slate-900">
+                            {totalClasses}
+                          </div>
+                          <p className="text-xs text-slate-500 mt-1">
+                            Semua kelas yang diampu
+                          </p>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-slate-200 hover:shadow-lg transition-shadow">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-sm font-medium text-slate-700">
+                            Kelas Aktif
+                          </CardTitle>
+                          <GraduationCap className="h-4 w-4 text-green-500" />
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold text-slate-900">
+                            {activeClasses}
+                          </div>
+                          <p className="text-xs text-slate-500 mt-1">
+                            Kelas dengan status aktif
+                          </p>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-slate-200 hover:shadow-lg transition-shadow">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-sm font-medium text-slate-700">
+                            Total Murid
+                          </CardTitle>
+                          <Users className="h-4 w-4 text-purple-500" />
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold text-slate-900">
+                            {totalStudents}
+                          </div>
+                          <p className="text-xs text-slate-500 mt-1">
+                            Semua siswa di kelas
+                          </p>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-slate-200 hover:shadow-lg transition-shadow">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-sm font-medium text-slate-700">
+                            Total Jadwal
+                          </CardTitle>
+                          <Calendar className="h-4 w-4 text-orange-500" />
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold text-slate-900">
+                            {totalSchedules}
+                          </div>
+                          <p className="text-xs text-slate-500 mt-1">
+                            Jadwal latihan
+                          </p>
+                        </CardContent>
+                      </Card>
                     </div>
 
-                    {/* Filter Section */}
+                    {/* Search & Filter */}
                     <div className="bg-white rounded-lg border border-slate-200 p-6 mb-8 shadow-sm">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                        <div>
+                      <div className="flex flex-col sm:flex-row gap-4 items-end">
+                        <div className="flex-1 min-w-0">
                           <label className="block text-sm font-medium text-slate-700 mb-2">
-                            Tanggal Absensi
+                            Cari Kelas
                           </label>
-                          <Input
-                            type="date"
-                            value={format(selectedDate, "yyyy-MM-dd")}
-                            onChange={(e) => {
-                              const date = new Date(e.target.value);
-                              if (!isNaN(date.getTime())) setSelectedDate(date);
-                            }}
-                          />
-                          <label className="block text-sm font-medium text-slate-700 mb-2">
-                            Status
-                          </label>
-                          <Select
-                            value={statusFilter}
-                            onValueChange={setStatusFilter}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Semua Status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="all">Semua Status</SelectItem>
-                              <SelectItem value="aktif">Aktif</SelectItem>
-                              <SelectItem value="nonaktif">Nonaktif</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-slate-700 mb-2">
-                            Hari
-                          </label>
-                          <Select
-                            value={hariFilter}
-                            onValueChange={setHariFilter}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Semua Hari" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="all">Semua Hari</SelectItem>
-                              <SelectItem value="senin">Senin</SelectItem>
-                              <SelectItem value="selasa">Selasa</SelectItem>
-                              <SelectItem value="rabu">Rabu</SelectItem>
-                              <SelectItem value="kamis">Kamis</SelectItem>
-                              <SelectItem value="jumat">Jumat</SelectItem>
-                              <SelectItem value="sabtu">Sabtu</SelectItem>
-                              <SelectItem value="minggu">Minggu</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={handleRefresh}
-                            disabled={loading}
-                            title="Refresh data"
-                          >
-                            <RefreshCw
-                              className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+                          <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                            <Input
+                              placeholder="Cari nama kelas..."
+                              className="pl-10"
+                              value={search}
+                              onChange={(e) => setSearch(e.target.value)}
                             />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleResetFilters}
-                            disabled={!statusFilter && !hariFilter}
-                          >
-                            <X className="h-4 w-4 mr-1" />
-                            Reset Filter
-                          </Button>
+                          </div>
                         </div>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={handleRefresh}
+                          disabled={loading}
+                          title="Refresh data"
+                        >
+                          <RefreshCw
+                            className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+                          />
+                        </Button>
                       </div>
                     </div>
 
@@ -322,7 +281,7 @@ export default function SchedulesPage() {
                         <AlertTitle>Gagal Memuat Data</AlertTitle>
                         <AlertDescription>
                           {error?.message ||
-                            "Terjadi kesalahan saat mengambil data jadwal."}
+                            "Terjadi kesalahan saat mengambil data kelas."}
                         </AlertDescription>
                         <Button
                           variant="outline"
@@ -355,60 +314,53 @@ export default function SchedulesPage() {
                       <Card className="border-slate-200 text-center py-12">
                         <CardContent className="flex flex-col items-center gap-4">
                           <div className="rounded-full bg-slate-100 p-4">
-                            <Calendar className="h-8 w-8 text-slate-400" />
+                            <BookOpen className="h-8 w-8 text-slate-400" />
                           </div>
                           <div>
                             <h3 className="text-lg font-semibold text-slate-900">
-                              Tidak Ada Jadwal
+                              Belum Ada Kelas
                             </h3>
                             <p className="text-slate-500 text-sm mt-1">
-                              {statusFilter || hariFilter
-                                ? "Tidak ada jadwal yang sesuai dengan filter yang dipilih."
-                                : "Anda belum memiliki jadwal mengajar."}
+                              Anda belum ditugaskan pada kelas mana pun.
                             </p>
                           </div>
-                          {(statusFilter || hariFilter) && (
-                            <Button
-                              variant="outline"
-                              onClick={handleResetFilters}
-                              className="mt-4"
-                            >
-                              <X className="h-4 w-4 mr-2" />
-                              Hapus Filter
-                            </Button>
-                          )}
+                          <Button
+                            onClick={handleRefresh}
+                            variant="outline"
+                            className="mt-4"
+                          >
+                            <RefreshCw className="h-4 w-4 mr-2" />
+                            Refresh
+                          </Button>
                         </CardContent>
                       </Card>
                     )}
 
-                    {/* Data Table */}
+                    {/* Desktop Table View */}
                     {!loading && !isEmpty && !hasError && (
                       <>
-                        <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+                        <div className="hidden md:block bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
                           <div className="overflow-x-auto">
                             <table className="w-full">
                               <thead className="border-b border-slate-200 bg-slate-50">
                                 <tr>
                                   <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">
-                                    Nama Jadwal
+                                    Nama Kelas
                                   </th>
                                   <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">
-                                    Hari
+                                    Deskripsi
                                   </th>
                                   <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">
-                                    Jam
+                                    Murid
                                   </th>
                                   <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">
-                                    Lokasi
-                                  </th>
-                                  <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">
-                                    Kelas
+                                    Jadwal
                                   </th>
                                   <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">
                                     Status
                                   </th>
                                   <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">
-                                    Efektif
+                                    Dibuat
                                   </th>
                                   <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">
                                     Aksi
@@ -416,48 +368,61 @@ export default function SchedulesPage() {
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-slate-200">
-                                {schedules.map((jadwal) => (
+                                {classes.map((kelas) => (
                                   <tr
-                                    key={jadwal.id}
+                                    key={kelas.id}
                                     className="hover:bg-slate-50 transition-colors"
                                   >
-                                    <td className="px-6 py-4 font-semibold text-slate-900">
-                                      {jadwal.nama}
+                                    <td className="px-6 py-4">
+                                      <span className="font-semibold text-slate-900">
+                                        {kelas.nama}
+                                      </span>
                                     </td>
-                                    <td className="px-6 py-4 text-sm text-slate-700">
-                                      {getHariLabel(jadwal.hari)}
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-slate-700">
-                                      {formatTime(jadwal.jam_mulai)} -{" "}
-                                      {formatTime(jadwal.jam_selesai)}
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-slate-600">
-                                      {jadwal.lokasi}
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-slate-600">
-                                      {jadwal.kelas?.nama || "-"}
+                                    <td className="px-6 py-4 text-sm text-slate-600 max-w-xs">
+                                      <div className="line-clamp-2">
+                                        {kelas.deskripsi}
+                                      </div>
                                     </td>
                                     <td className="px-6 py-4">
                                       <Badge
-                                        variant={getStatusBadgeVariant(
-                                          jadwal.status,
-                                        )}
+                                        variant="secondary"
+                                        className="bg-purple-100 text-purple-800 hover:bg-purple-100"
                                       >
-                                        {getStatusLabel(jadwal.status)}
+                                        👥 {kelas.jumlah_murid} Murid
+                                      </Badge>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                      <Badge
+                                        variant="secondary"
+                                        className="bg-orange-100 text-orange-800 hover:bg-orange-100"
+                                      >
+                                        📅 {kelas.jumlah_jadwal} Jadwal
+                                      </Badge>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                      <Badge
+                                        variant={
+                                          kelas.status === "aktif"
+                                            ? "default"
+                                            : "secondary"
+                                        }
+                                        className={
+                                          kelas.status === "aktif"
+                                            ? "bg-green-100 text-green-800 hover:bg-green-100"
+                                            : "bg-slate-100 text-slate-800 hover:bg-slate-100"
+                                        }
+                                      >
+                                        {kelas.status === "aktif"
+                                          ? "✓ Aktif"
+                                          : "Nonaktif"}
                                       </Badge>
                                     </td>
                                     <td className="px-6 py-4 text-sm text-slate-600">
-                                      {formatDate(jadwal.effective_from)}
-                                      {jadwal.effective_until && (
-                                        <span className="text-xs text-slate-400 block">
-                                          s/d{" "}
-                                          {formatDate(jadwal.effective_until)}
-                                        </span>
-                                      )}
+                                      {formatDate(kelas.created_at)}
                                     </td>
                                     <td className="px-6 py-4">
                                       <Link
-                                        href={`/pelatih/absensi/${jadwal.id}?tanggal=${format(selectedDate, "yyyy-MM-dd")}`}
+                                        href={`/pelatih/absensi/riwayat/${kelas.id}`}
                                       >
                                         <Button
                                           variant="ghost"
@@ -465,7 +430,7 @@ export default function SchedulesPage() {
                                           className="text-blue-600 hover:text-blue-700"
                                         >
                                           <Eye className="h-4 w-4 mr-1" />
-                                          Detail Absensi
+                                          Detail
                                         </Button>
                                       </Link>
                                     </td>
@@ -476,13 +441,78 @@ export default function SchedulesPage() {
                           </div>
                         </div>
 
+                        {/* Mobile Card View */}
+                        <div className="md:hidden space-y-4">
+                          {classes.map((kelas) => (
+                            <Card
+                              key={kelas.id}
+                              className="border-slate-200 hover:shadow-lg transition-shadow"
+                            >
+                              <CardContent className="pt-6">
+                                <div className="flex justify-between items-start mb-3">
+                                  <div>
+                                    <h3 className="font-semibold text-slate-900">
+                                      {kelas.nama}
+                                    </h3>
+                                    <p className="text-sm text-slate-600 line-clamp-2">
+                                      {kelas.deskripsi}
+                                    </p>
+                                  </div>
+                                  <Badge
+                                    variant={
+                                      kelas.status === "aktif"
+                                        ? "default"
+                                        : "secondary"
+                                    }
+                                    className={
+                                      kelas.status === "aktif"
+                                        ? "bg-green-100 text-green-800"
+                                        : "bg-slate-100 text-slate-800"
+                                    }
+                                  >
+                                    {kelas.status === "aktif"
+                                      ? "✓ Aktif"
+                                      : "Nonaktif"}
+                                  </Badge>
+                                </div>
+
+                                <div className="flex gap-3 mb-4">
+                                  <Badge
+                                    variant="secondary"
+                                    className="bg-purple-100 text-purple-800"
+                                  >
+                                    👥 {kelas.jumlah_murid}
+                                  </Badge>
+                                  <Badge
+                                    variant="secondary"
+                                    className="bg-orange-100 text-orange-800"
+                                  >
+                                    📅 {kelas.jumlah_jadwal}
+                                  </Badge>
+                                </div>
+
+                                <div className="text-xs text-slate-500 mb-4">
+                                  Dibuat: {formatDate(kelas.created_at)}
+                                </div>
+
+                                <Link href={`/pelatih/kelas/${kelas.id}`}>
+                                  <Button variant="outline" className="w-full">
+                                    <Eye className="h-4 w-4 mr-2" />
+                                    Detail
+                                  </Button>
+                                </Link>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+
                         {/* Pagination */}
                         {pagination && (
                           <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
                             <div className="text-sm text-slate-600">
                               Menampilkan {(page - 1) * limit + 1} -{" "}
                               {Math.min(page * limit, pagination.total_data)}{" "}
-                              dari {pagination.total_data} jadwal
+                              dari {pagination.total_data} kelas
                             </div>
                             <div className="flex gap-2">
                               <Button

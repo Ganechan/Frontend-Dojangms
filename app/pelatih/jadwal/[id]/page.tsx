@@ -31,8 +31,8 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { AppSidebar } from "@/components/admin/app-sidebar";
-import { SiteHeader } from "@/components/admin/site-header";
+import { AppSidebar } from "@/components/pelatih/app-sidebar";
+import { SiteHeader } from "@/components/pelatih/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 // ============ INTERFACES ============
