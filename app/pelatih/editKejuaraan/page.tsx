@@ -54,8 +54,8 @@ interface Championship {
   year: number;
   start_date: string;
   end_date: string;
-  status_input: "berlangsung" | "selesai" | "belum_mulai";
-  jumlah_peserta: number;
+  total_peserta: number;
+  peserta_belum_diedit: string; // dari response, bisa string atau number
 }
 
 interface ApiResponse {
@@ -79,7 +79,7 @@ export default function KejuaraanPage() {
     try {
       setRefreshing(true);
       setError(null);
-      const response = await fetch("/api/pelatih/kejuaraan/inputable");
+      const response = await fetch("/api/pelatih/kejuaraan/editable");
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
         throw new Error(errData.message || "Gagal memuat data");
@@ -134,32 +134,6 @@ export default function KejuaraanPage() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "berlangsung":
-        return "bg-green-100 text-green-800";
-      case "selesai":
-        return "bg-gray-100 text-gray-800";
-      case "belum_mulai":
-        return "bg-yellow-100 text-yellow-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "berlangsung":
-        return "Berlangsung";
-      case "selesai":
-        return "Selesai";
-      case "belum_mulai":
-        return "Belum Mulai";
-      default:
-        return status;
-    }
-  };
-
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr + "T00:00:00");
     return date.toLocaleDateString("id-ID", {
@@ -170,16 +144,14 @@ export default function KejuaraanPage() {
   };
 
   const totalKejuaraan = championships.length;
-  const sedangBerlangsung = championships.filter(
-    (c) => c.status_input === "berlangsung",
-  ).length;
   const totalPeserta = championships.reduce(
-    (sum, c) => sum + c.jumlah_peserta,
+    (sum, c) => sum + c.total_peserta,
     0,
   );
-  const siapDiinput = championships.filter(
-    (c) => c.status_input !== "selesai",
-  ).length;
+  const totalBelumDiedit = championships.reduce(
+    (sum, c) => sum + Number(c.peserta_belum_diedit),
+    0,
+  );
 
   return (
     <SidebarProvider
@@ -201,11 +173,11 @@ export default function KejuaraanPage() {
                   {/* Header */}
                   <div className="space-y-2">
                     <h1 className="text-3xl font-bold tracking-tight text-foreground">
-                      Input Hasil Kejuaraan
+                      Edit Hasil Kejuaraan
                     </h1>
                     <p className="text-muted-foreground">
-                      Kelola dan input hasil peserta kejuaraan yang menjadi
-                      tanggung jawab Anda.
+                      Edit hasil peserta kejuaraan yang menjadi tanggung jawab
+                      Anda.
                     </p>
                   </div>
 
@@ -228,29 +200,6 @@ export default function KejuaraanPage() {
                             </div>
                             <p className="text-xs text-muted-foreground">
                               kejuaraan tersedia
-                            </p>
-                          </>
-                        )}
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">
-                          Sedang Berlangsung
-                        </CardTitle>
-                        <CalendarClock className="h-4 w-4 text-muted-foreground" />
-                      </CardHeader>
-                      <CardContent>
-                        {loading ? (
-                          <Skeleton className="h-8 w-12" />
-                        ) : (
-                          <>
-                            <div className="text-2xl font-bold text-green-600">
-                              {sedangBerlangsung}
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                              sedang berlangsung
                             </p>
                           </>
                         )}
@@ -283,9 +232,32 @@ export default function KejuaraanPage() {
                     <Card>
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">
-                          Siap Diinput
+                          Belum Diedit
                         </CardTitle>
-                        <ClipboardPen className="h-4 w-4 text-muted-foreground" />
+                        <ClipboardPen className="h-4 w-4 text-yellow-600" />
+                      </CardHeader>
+                      <CardContent>
+                        {loading ? (
+                          <Skeleton className="h-8 w-12" />
+                        ) : (
+                          <>
+                            <div className="text-2xl font-bold text-yellow-600">
+                              {totalBelumDiedit}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              peserta belum diedit
+                            </p>
+                          </>
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                          Siap Diedit
+                        </CardTitle>
+                        <ClipboardPen className="h-4 w-4 text-blue-600" />
                       </CardHeader>
                       <CardContent>
                         {loading ? (
@@ -293,10 +265,10 @@ export default function KejuaraanPage() {
                         ) : (
                           <>
                             <div className="text-2xl font-bold text-blue-600">
-                              {siapDiinput}
+                              {totalKejuaraan}
                             </div>
                             <p className="text-xs text-muted-foreground">
-                              siap diinput
+                              kejuaraan dapat diedit
                             </p>
                           </>
                         )}
@@ -358,8 +330,8 @@ export default function KejuaraanPage() {
                               <TableHead>Level</TableHead>
                               <TableHead>Lokasi</TableHead>
                               <TableHead>Tanggal</TableHead>
-                              <TableHead>Peserta</TableHead>
-                              <TableHead>Status</TableHead>
+                              <TableHead>Total Peserta</TableHead>
+                              <TableHead>Belum Diedit</TableHead>
                               <TableHead className="text-right">Aksi</TableHead>
                             </TableRow>
                           </TableHeader>
@@ -383,7 +355,7 @@ export default function KejuaraanPage() {
                                     <Skeleton className="h-4 w-12" />
                                   </TableCell>
                                   <TableCell>
-                                    <Skeleton className="h-4 w-20" />
+                                    <Skeleton className="h-4 w-12" />
                                   </TableCell>
                                   <TableCell>
                                     <Skeleton className="h-8 w-20" />
@@ -403,8 +375,8 @@ export default function KejuaraanPage() {
                                         Belum Ada Kejuaraan
                                       </h3>
                                       <p className="text-sm text-muted-foreground">
-                                        Tidak ada kejuaraan yang dapat dilakukan
-                                        input hasil saat ini.
+                                        Tidak ada kejuaraan yang dapat diedit
+                                        saat ini.
                                       </p>
                                     </div>
                                   </div>
@@ -450,31 +422,28 @@ export default function KejuaraanPage() {
                                   </TableCell>
                                   <TableCell>
                                     <Badge variant="outline">
-                                      <Users className="h-3 w-3 mr-1" />
-                                      {championship.jumlah_peserta} Peserta
+                                      {championship.total_peserta} Peserta
                                     </Badge>
                                   </TableCell>
                                   <TableCell>
                                     <Badge
-                                      className={getStatusColor(
-                                        championship.status_input,
-                                      )}
+                                      variant="secondary"
+                                      className="bg-yellow-100 text-yellow-800"
                                     >
-                                      {getStatusLabel(
-                                        championship.status_input,
-                                      )}
+                                      {championship.peserta_belum_diedit}{" "}
+                                      Peserta
                                     </Badge>
                                   </TableCell>
                                   <TableCell className="text-right">
                                     <Link
-                                      href={`/pelatih/kejuaraan/${championship.id}`}
+                                      href={`/pelatih/editKejuaraan/${championship.id}`}
                                     >
                                       <Button
                                         size="sm"
-                                        title="Input hasil peserta kejuaraan"
+                                        title="Edit hasil peserta kejuaraan"
                                       >
                                         <ClipboardPen className="h-4 w-4 mr-1" />
-                                        Input Hasil
+                                        Edit Hasil
                                       </Button>
                                     </Link>
                                   </TableCell>
@@ -504,8 +473,7 @@ export default function KejuaraanPage() {
                               Belum Ada Kejuaraan
                             </h3>
                             <p className="text-sm text-muted-foreground">
-                              Tidak ada kejuaraan yang dapat dilakukan input
-                              hasil saat ini.
+                              Tidak ada kejuaraan yang dapat diedit saat ini.
                             </p>
                           </div>
                         ) : (
@@ -549,28 +517,24 @@ export default function KejuaraanPage() {
 
                                 <div className="grid grid-cols-2 gap-2 pt-2">
                                   <Badge variant="outline">
-                                    <Users className="h-3 w-3 mr-1" />
-                                    {championship.jumlah_peserta} Peserta
+                                    {championship.total_peserta} Peserta
                                   </Badge>
                                   <Badge
-                                    className={getStatusColor(
-                                      championship.status_input,
-                                    )}
+                                    variant="secondary"
+                                    className="bg-yellow-100 text-yellow-800"
                                   >
-                                    {getStatusLabel(championship.status_input)}
+                                    {championship.peserta_belum_diedit} Belum
+                                    Diedit
                                   </Badge>
                                 </div>
 
                                 <Link
-                                  href={`/pelatih/kejuaraan/${championship.id}`}
+                                  href={`/pelatih/editKejuaraan/${championship.id}`}
                                   className="block"
                                 >
-                                  <Button
-                                    className="w-full"
-                                    title="Input hasil peserta kejuaraan"
-                                  >
+                                  <Button className="w-full">
                                     <ClipboardPen className="h-4 w-4 mr-2" />
-                                    Input Hasil
+                                    Edit Hasil
                                   </Button>
                                 </Link>
                               </CardContent>

@@ -1,28 +1,29 @@
-// app\api\pelatih\kejuaraan\[id]\peserta\[pesertaId]\route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { serverFetch } from "@/lib/serverFetch";
 import { ApiError } from "@/lib/apiClient";
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string; pesertaId: string }> }, // perhatikan: id, bukan kejuaraanId
+  { params }: { params: Promise<{ id: string; pesertaId: string }> },
 ) {
   try {
-    const { id: kejuaraanId, pesertaId } = await params; // alias id menjadi kejuaraanId
+    const { id: kejuaraanId, pesertaId } = await params;
     const body = await req.json();
 
     const data = await serverFetch(
-      `/api/pelatih/kejuaraan/${kejuaraanId}/peserta/${pesertaId}`,
+      `/api/pelatih/kejuaraan/${kejuaraanId}/peserta/${pesertaId}/edit`,
       {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         body: JSON.stringify(body),
       },
     );
     return NextResponse.json(data);
   } catch (err) {
     if (err instanceof ApiError) {
-      // Coba ambil response body dari error untuk detail
       let errorDetail = err.message;
       if ((err as any).response) {
         try {

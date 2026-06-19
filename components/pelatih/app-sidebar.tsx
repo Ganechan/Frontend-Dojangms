@@ -45,7 +45,7 @@ const data = {
       title: "Hasil Kejuaraan",
       items: [
         { title: "Input Hasil", url: "/pelatih/kejuaraan" },
-        { title: "Edit Absensi", url: "/pelatih/absensi/edit" },
+        { title: "Edit Hasil", url: "/pelatih/editKejuaraan" },
       ],
     },
   ],
