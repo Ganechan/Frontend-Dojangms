@@ -41,6 +41,13 @@ const data = {
         { title: "Riwayat Absensi", url: "/pelatih/absensi/history" },
       ],
     },
+    {
+      title: "Hasil Kejuaraan",
+      items: [
+        { title: "Input Hasil", url: "/pelatih/kejuaraan" },
+        { title: "Edit Absensi", url: "/pelatih/absensi/edit" },
+      ],
+    },
   ],
   user: {
     name: "shadcn",
