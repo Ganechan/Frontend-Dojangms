@@ -48,6 +48,13 @@ const data = {
         { title: "Edit Hasil", url: "/pelatih/editKejuaraan" },
       ],
     },
+    {
+      title: "Hasil Ujian Kenaikan Sabuk",
+      items: [
+        { title: "Input Ujian Kenaikan Sabuk", url: "/pelatih/kejuaraan" },
+        { title: "Edit Ujian Kenaikan Sabuk", url: "/pelatih/editKejuaraan" },
+      ],
+    },
   ],
   user: {
     name: "shadcn",

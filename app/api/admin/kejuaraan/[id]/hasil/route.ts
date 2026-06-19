@@ -2,17 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { serverFetch } from "@/lib/serverFetch";
 import { ApiError } from "@/lib/apiClient";
 
-export async function GET(req: NextRequest) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
-    const searchParams = req.nextUrl.searchParams;
-    const page = searchParams.get("page") || "1";
-    const per_page = searchParams.get("per_page") || "10";
-    const status = searchParams.get("status") || "";
-
-    let url = `/api/admin/kejuaraan/getall?page=${page}&per_page=${per_page}`;
-    if (status) url += `&status=${status}`;
-
-    const data = await serverFetch(url, { method: "GET" });
+    const { id } = await params;
+    const data = await serverFetch(`/api/admin/kejuaraan/${id}/hasil`, {
+      method: "GET",
+    });
     return NextResponse.json(data);
   } catch (err) {
     if (err instanceof ApiError) {
@@ -33,7 +31,7 @@ export async function GET(req: NextRequest) {
         { status: err.status },
       );
     }
-    console.error("Error fetching championships:", err);
+    console.error("Error fetching championship results:", err);
     return NextResponse.json(
       { message: "Terjadi kesalahan server" },
       { status: 500 },

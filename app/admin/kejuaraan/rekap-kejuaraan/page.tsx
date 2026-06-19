@@ -29,74 +29,77 @@ interface Championship {
 }
 
 interface Summary {
-  total: number;
-  kota: number;
-  provinsi: number;
-  nasional: number;
-  internasional: number;
+  total_championship: number;
+  akan_datang: string;
+  berlangsung: string;
+  selesai: string;
 }
 
-export default function ScheduledChampionshipsPage() {
-  const [championships, setChampionships] = useState<Championship[]>([]);
-  const [summary, setSummary] = useState<Summary>({
-    total: 0,
-    kota: 0,
-    provinsi: 0,
-    nasional: 0,
-    internasional: 0,
-  });
-  const [levelFilter, setLevelFilter] = useState<
-    "all" | "kota" | "provinsi" | "nasional" | "internasional"
-  >("all");
-  const [loading, setLoading] = useState(true);
+interface Pagination {
+  current_page: number;
+  per_page: number;
+  total_page: number;
+  total_data: number;
+  has_next: boolean;
+  has_prev: boolean;
+}
 
-  const fetchScheduledChampionships = async () => {
+interface ApiResponse {
+  success: boolean;
+  message: string;
+  data: Championship[];
+  meta: {
+    pagination: Pagination;
+    summary: Summary;
+  };
+}
+
+export default function CompletedChampionshipsPage() {
+  const [championships, setChampionships] = useState<Championship[]>([]);
+  const [pagination, setPagination] = useState<Pagination>({
+    current_page: 1,
+    per_page: 10,
+    total_page: 1,
+    total_data: 0,
+    has_next: false,
+    has_prev: false,
+  });
+  const [summary, setSummary] = useState<Summary>({
+    total_championship: 0,
+    akan_datang: "0",
+    berlangsung: "0",
+    selesai: "0",
+  });
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const fetchCompletedChampionships = async (page: number = 1) => {
     try {
       setLoading(true);
       const response = await fetch(
-        "/api/admin/kejuaraan/getall?page=1&per_page=100",
+        `/api/admin/kejuaraan/getall?page=${page}&per_page=10&status=selesai`,
       );
-      const data = await response.json();
+      const data: ApiResponse = await response.json();
 
       if (!response.ok) {
         throw new Error(data.message || "Gagal memuat data");
       }
 
-      const allData = data.data || [];
-      const scheduled = allData.filter(
-        (champ: Championship) =>
-          champ.status === "akan_datang" || champ.status === "berlangsung",
-      );
-
-      setChampionships(scheduled);
-
-      const summaryData = {
-        total: scheduled.length,
-        kota: scheduled.filter((c: Championship) => c.level === "kota").length,
-        provinsi: scheduled.filter((c: Championship) => c.level === "provinsi")
-          .length,
-        nasional: scheduled.filter((c: Championship) => c.level === "nasional")
-          .length,
-        internasional: scheduled.filter(
-          (c: Championship) => c.level === "internasional",
-        ).length,
-      };
-      setSummary(summaryData);
+      setChampionships(data.data || []);
+      setPagination(data.meta.pagination);
+      setSummary(data.meta.summary);
+      setCurrentPage(page);
     } catch (error: any) {
       console.error(error);
-      toast.error(error.message || "Gagal memuat data kejuaraan terjadwal");
+      toast.error(error.message || "Gagal memuat data kejuaraan selesai");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchScheduledChampionships();
+    fetchCompletedChampionships();
   }, []);
-
-  const filteredChampionships = championships.filter((champ) => {
-    return levelFilter === "all" || champ.level === levelFilter;
-  });
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -122,12 +125,8 @@ export default function ScheduledChampionshipsPage() {
     }
   };
 
-  const getStatusBadgeVariant = (status: string) => {
-    return status === "akan_datang" ? "default" : "secondary";
-  };
-
-  const getStatusLabel = (status: string) => {
-    return status === "akan_datang" ? "Akan Datang" : "Berlangsung";
+  const getLevelLabel = (level: string) => {
+    return level.charAt(0).toUpperCase() + level.slice(1);
   };
 
   return (
@@ -147,10 +146,10 @@ export default function ScheduledChampionshipsPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-                Kejuaraan Terjadwal
+                Kejuaraan Selesai
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                Daftar kejuaraan yang akan datang atau sedang berlangsung
+                Daftar kejuaraan yang telah selesai
               </p>
             </div>
             <Link href="/admin/kejuaraan/create" className="w-full sm:w-auto">
@@ -161,85 +160,43 @@ export default function ScheduledChampionshipsPage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
               <p className="text-xs md:text-sm font-medium text-muted-foreground mb-1">
-                Total Terjadwal
+                Total
               </p>
               <p className="text-xl md:text-2xl font-bold text-foreground">
-                {summary.total}
+                {summary.total_championship}
               </p>
             </div>
             <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
               <p className="text-xs md:text-sm font-medium text-muted-foreground mb-1">
-                Tingkat Kota
+                Akan Datang
               </p>
               <p className="text-xl md:text-2xl font-bold text-blue-600">
-                {summary.kota}
+                {summary.akan_datang}
               </p>
             </div>
             <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
               <p className="text-xs md:text-sm font-medium text-muted-foreground mb-1">
-                Tingkat Provinsi
+                Berlangsung
               </p>
-              <p className="text-xl md:text-2xl font-bold text-indigo-600">
-                {summary.provinsi}
-              </p>
-            </div>
-            <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
-              <p className="text-xs md:text-sm font-medium text-muted-foreground mb-1">
-                Tingkat Nasional
-              </p>
-              <p className="text-xl md:text-2xl font-bold text-purple-600">
-                {summary.nasional}
+              <p className="text-xl md:text-2xl font-bold text-amber-600">
+                {summary.berlangsung}
               </p>
             </div>
             <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
               <p className="text-xs md:text-sm font-medium text-muted-foreground mb-1">
-                Tingkat Internasional
+                Selesai
               </p>
-              <p className="text-xl md:text-2xl font-bold text-rose-600">
-                {summary.internasional}
+              <p className="text-xl md:text-2xl font-bold text-green-600">
+                {summary.selesai}
               </p>
             </div>
           </div>
 
-          <div className="bg-card rounded-xl border border-border p-4 shadow-sm">
-            <div className="space-y-1.5">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Filter Tingkat Kejuaraan
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {(
-                  [
-                    "all",
-                    "kota",
-                    "provinsi",
-                    "nasional",
-                    "internasional",
-                  ] as const
-                ).map((level) => {
-                  const count =
-                    level === "all" ? summary.total : summary[level];
-                  return (
-                    <Button
-                      key={level}
-                      variant={levelFilter === level ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setLevelFilter(level)}
-                      className="capitalize text-xs h-8 shadow-xs"
-                    >
-                      {level === "all" ? "Semua Tingkat" : level}
-                      <span className="ml-1.5 text-[10px] opacity-75 font-normal">
-                        ({count})
-                      </span>
-                    </Button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
+          {/* Table */}
           <div className="bg-card rounded-xl border border-border overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
               <Table>
@@ -260,17 +217,17 @@ export default function ScheduledChampionshipsPage() {
                         <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
                       </TableCell>
                     </TableRow>
-                  ) : filteredChampionships.length === 0 ? (
+                  ) : championships.length === 0 ? (
                     <TableRow>
                       <TableCell
                         colSpan={6}
                         className="text-center py-12 text-muted-foreground"
                       >
-                        Tidak ada kejuaraan terjadwal yang ditemukan
+                        Tidak ada kejuaraan selesai yang ditemukan
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredChampionships.map((champ) => (
+                    championships.map((champ) => (
                       <TableRow key={champ.id} className="hover:bg-muted/20">
                         <TableCell>
                           <div>
@@ -300,29 +257,25 @@ export default function ScheduledChampionshipsPage() {
                             variant={getLevelBadgeVariant(champ.level)}
                             className="capitalize font-medium"
                           >
-                            {champ.level}
+                            {getLevelLabel(champ.level)}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={getStatusBadgeVariant(champ.status)}>
-                            {getStatusLabel(champ.status)}
-                          </Badge>
+                          <Badge variant="outline">Selesai</Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex gap-2 justify-end">
-                            <Link
-                              href={`/admin/kejuaraan/${champ.id}/kelas/tambah/poomsae`}
+                          <Link
+                            href={`/admin/kejuaraan/rekap-kejuaraan/${champ.id}`}
+                          >
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="shadow-xs"
                             >
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="shadow-xs text-blue-600"
-                              >
-                                <Eye className="w-4 h-4 mr-1.5" />
-                                Detail
-                              </Button>
-                            </Link>
-                          </div>
+                              <Eye className="w-4 h-4 mr-1.5" />
+                              Detail
+                            </Button>
+                          </Link>
                         </TableCell>
                       </TableRow>
                     ))
@@ -331,6 +284,44 @@ export default function ScheduledChampionshipsPage() {
               </Table>
             </div>
           </div>
+
+          {/* Pagination */}
+          {pagination.total_page > 1 && (
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-2">
+              <div className="text-sm text-muted-foreground text-center sm:text-left">
+                Halaman{" "}
+                <span className="font-medium text-foreground">
+                  {pagination.current_page}
+                </span>{" "}
+                dari{" "}
+                <span className="font-medium text-foreground">
+                  {pagination.total_page}
+                </span>
+              </div>
+              <div className="flex justify-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    fetchCompletedChampionships(pagination.current_page - 1)
+                  }
+                  disabled={!pagination.has_prev || loading}
+                >
+                  Sebelumnya
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    fetchCompletedChampionships(pagination.current_page + 1)
+                  }
+                  disabled={!pagination.has_next || loading}
+                >
+                  Selanjutnya
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </SidebarInset>
     </SidebarProvider>
