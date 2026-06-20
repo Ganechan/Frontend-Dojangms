@@ -1,4 +1,3 @@
-// app\pelatih\kejuaraan\[id]\page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -62,6 +61,8 @@ interface User {
   id: number;
   name: string;
   email?: string;
+  phone?: string;
+  tanggal_lahir?: string;
 }
 
 interface Belt {
@@ -69,33 +70,36 @@ interface Belt {
   name: string;
 }
 
-interface KelasKejuaraan {
-  id: number;
-  tipe: string;
-  detail: string;
-}
-
 interface Peserta {
   peserta_id: number;
   user: User;
-  belt: Belt;
-  kelas_kejuaraan: KelasKejuaraan;
-  hasil: string | null;
-  is_edited: boolean;
+  belt_asal: Belt;
+  belt_tujuan: Belt;
+  status: string;
+  tanggal_lulus: string | null;
+  tanggal_edit: string | null;
 }
 
-interface Kejuaraan {
+interface Ujian {
   id: number;
-  name: string;
-  start_date: string;
-  end_date: string;
+  level_ujian: string;
+  tanggal_mulai: string;
+  tanggal_selesai: string;
+}
+
+interface Summary {
+  total_peserta: number;
+  sudah_diedit: number;
+  belum_diedit: number;
+  persentase_edit: number;
 }
 
 interface ApiResponse {
   success: boolean;
   message: string;
   data: {
-    kejuaraan: Kejuaraan;
+    ujian: Ujian;
+    summary: Summary;
     peserta: Peserta[];
   };
   pagination: {
@@ -109,23 +113,43 @@ interface ApiResponse {
 }
 
 interface LocalPeserta extends Peserta {
-  localHasil?: string;
+  localStatus?: string;
 }
 
-const HASIL_OPTIONS = [
-  { value: "juara1", label: "Juara 1" },
-  { value: "juara2", label: "Juara 2" },
-  { value: "juara3", label: "Juara 3" },
-  { value: "peserta", label: "Tidak Meraih Medali" },
+const STATUS_OPTIONS = [
+  { value: "lulus", label: "Lulus" },
+  { value: "tidak_lulus", label: "Tidak Lulus" },
+  { value: "terdaftar", label: "Terdaftar" },
 ];
 
-export default function InputHasilKejuaraanPage() {
+const STATUS_BADGE_VARIANT: Record<
+  string,
+  "default" | "secondary" | "destructive" | "outline"
+> = {
+  lulus: "default",
+  tidak_lulus: "destructive",
+  terdaftar: "secondary",
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  lulus: "Lulus",
+  tidak_lulus: "Tidak Lulus",
+  terdaftar: "Terdaftar",
+};
+
+export default function EditHasilUjianPage() {
   const params = useParams();
   const router = useRouter();
-  const kejuaranId = params.id as string;
+  const ujianId = params.id as string;
 
-  const [kejuaraan, setKejuaraan] = useState<Kejuaraan | null>(null);
+  const [ujian, setUjian] = useState<Ujian | null>(null);
   const [pesertaList, setPesertaList] = useState<LocalPeserta[]>([]);
+  const [summary, setSummary] = useState<Summary>({
+    total_peserta: 0,
+    sudah_diedit: 0,
+    belum_diedit: 0,
+    persentase_edit: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -148,7 +172,7 @@ export default function InputHasilKejuaraanPage() {
     try {
       setLoading(true);
       setError(null);
-      const url = `/api/pelatih/kejuaraan/${kejuaranId}/peserta?page=${page}&limit=10`;
+      const url = `/api/pelatih/ujian/${ujianId}/peserta?page=${page}&limit=10`;
       const res = await fetch(url);
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
@@ -156,7 +180,8 @@ export default function InputHasilKejuaraanPage() {
       }
       const data: ApiResponse = await res.json();
       if (data.success) {
-        setKejuaraan(data.data.kejuaraan);
+        setUjian(data.data.ujian);
+        setSummary(data.data.summary);
         setPesertaList(data.data.peserta);
         setPagination(data.pagination);
         setCurrentPage(page);
@@ -175,12 +200,12 @@ export default function InputHasilKejuaraanPage() {
 
   useEffect(() => {
     fetchData(1);
-  }, [kejuaranId]);
+  }, [ujianId]);
 
-  const handleHasilChange = (pesertaId: number, newHasil: string) => {
+  const handleStatusChange = (pesertaId: number, newStatus: string) => {
     setPesertaList((prev) =>
       prev.map((p) =>
-        p.peserta_id === pesertaId ? { ...p, localHasil: newHasil } : p,
+        p.peserta_id === pesertaId ? { ...p, localStatus: newStatus } : p,
       ),
     );
     setHasUnsavedChanges(true);
@@ -189,7 +214,7 @@ export default function InputHasilKejuaraanPage() {
 
   const handleSave = async () => {
     const changedPeserta = pesertaList.filter(
-      (p) => p.localHasil !== undefined && p.localHasil !== p.hasil,
+      (p) => p.localStatus !== undefined && p.localStatus !== p.status,
     );
     if (changedPeserta.length === 0) {
       toast.info("Tidak ada perubahan yang perlu disimpan.");
@@ -203,9 +228,9 @@ export default function InputHasilKejuaraanPage() {
 
     for (const p of changedPeserta) {
       try {
-        const payload = { hasil: p.localHasil };
+        const payload = { status: p.localStatus };
         const res = await fetch(
-          `/api/pelatih/kejuaraan/${kejuaranId}/peserta/${p.peserta_id}`,
+          `/api/pelatih/ujian/${ujianId}/peserta/${p.peserta_id}/edit`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
@@ -228,12 +253,7 @@ export default function InputHasilKejuaraanPage() {
         setPesertaList((prev) =>
           prev.map((item) =>
             item.peserta_id === p.peserta_id
-              ? {
-                  ...item,
-                  hasil: p.localHasil!,
-                  is_edited: true,
-                  localHasil: undefined,
-                }
+              ? { ...item, status: p.localStatus!, localStatus: undefined }
               : item,
           ),
         );
@@ -247,7 +267,7 @@ export default function InputHasilKejuaraanPage() {
 
     setIsSaving(false);
     if (errors.length === 0) {
-      toast.success("Semua hasil berhasil disimpan!");
+      toast.success("Semua status berhasil disimpan!");
       setHasUnsavedChanges(false);
     } else {
       setSavingErrors(errors);
@@ -262,7 +282,7 @@ export default function InputHasilKejuaraanPage() {
     setPesertaList((prev) =>
       prev.map((p) => ({
         ...p,
-        localHasil: undefined,
+        localStatus: undefined,
       })),
     );
     setHasUnsavedChanges(false);
@@ -273,20 +293,16 @@ export default function InputHasilKejuaraanPage() {
     return format(new Date(dateStr), "d MMMM yyyy", { locale: idLocale });
   };
 
-  const filteredPeserta = pesertaList.filter((p) =>
-    `${p.user.name} ${p.kelas_kejuaraan.detail} ${p.kelas_kejuaraan.tipe}`
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase()),
-  );
+  const formatDateTime = (dateStr: string | null) => {
+    if (!dateStr) return "-";
+    return format(new Date(dateStr), "d MMMM yyyy HH:mm", {
+      locale: idLocale,
+    });
+  };
 
-  const sudahDiinput = pesertaList.filter(
-    (p) => p.hasil !== null || (p.localHasil && p.localHasil !== ""),
-  ).length;
-  const belumDiinput = pesertaList.length - sudahDiinput;
-  const persentaseInput =
-    pesertaList.length > 0
-      ? Math.round((sudahDiinput / pesertaList.length) * 100)
-      : 0;
+  const filteredPeserta = pesertaList.filter((p) =>
+    p.user.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   const getStatusBadge = (peserta: LocalPeserta) => {
     const hasError = savingErrors.some(
@@ -296,15 +312,15 @@ export default function InputHasilKejuaraanPage() {
       return { label: "Gagal Simpan", variant: "destructive" };
     }
     if (
-      peserta.localHasil !== undefined &&
-      peserta.localHasil !== peserta.hasil
+      peserta.localStatus !== undefined &&
+      peserta.localStatus !== peserta.status
     ) {
       return { label: "Diubah", variant: "secondary" };
     }
-    if (peserta.is_edited) {
-      return { label: "Sudah Disimpan", variant: "default" };
-    }
-    return { label: "Belum Disimpan", variant: "outline" };
+    return {
+      label: STATUS_LABEL[peserta.status] || peserta.status,
+      variant: STATUS_BADGE_VARIANT[peserta.status] || "outline",
+    };
   };
 
   const startItem = (currentPage - 1) * pagination.per_page + 1;
@@ -313,7 +329,7 @@ export default function InputHasilKejuaraanPage() {
     pagination.total_data,
   );
 
-  if (loading && !kejuaraan) {
+  if (loading && !ujian) {
     return (
       <SidebarProvider
         style={
@@ -361,7 +377,7 @@ export default function InputHasilKejuaraanPage() {
               <div className="min-h-screen bg-background">
                 <div className="container max-w-7xl mx-auto px-4 py-6 space-y-6">
                   <div className="flex items-center justify-between">
-                    <Link href="/pelatih/kejuaraan">
+                    <Link href="/pelatih/ujian">
                       <Button variant="ghost" size="sm">
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Kembali
@@ -371,10 +387,10 @@ export default function InputHasilKejuaraanPage() {
 
                   <div>
                     <h1 className="text-3xl font-bold text-foreground">
-                      Input Hasil Kejuaraan
+                      Edit Hasil Ujian Kenaikan Sabuk
                     </h1>
                     <p className="text-muted-foreground mt-2">
-                      Input dan perbarui hasil peserta kejuaraan.
+                      Edit dan perbarui status kelulusan peserta ujian.
                     </p>
                   </div>
 
@@ -395,19 +411,21 @@ export default function InputHasilKejuaraanPage() {
                     </Alert>
                   )}
 
-                  {kejuaraan && (
+                  {ujian && (
                     <Card>
                       <CardHeader>
-                        <CardTitle>Informasi Kejuaraan</CardTitle>
+                        <CardTitle>Informasi Ujian</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                           <div>
                             <p className="text-sm font-medium text-muted-foreground">
-                              Nama Kejuaraan
+                              Level Ujian
                             </p>
                             <p className="text-base font-semibold text-foreground mt-1">
-                              {kejuaraan.name}
+                              {ujian.level_ujian === "kota"
+                                ? "Kota"
+                                : "Provinsi"}
                             </p>
                           </div>
                           <div>
@@ -415,7 +433,7 @@ export default function InputHasilKejuaraanPage() {
                               Tanggal Mulai
                             </p>
                             <p className="text-base font-semibold text-foreground mt-1">
-                              {formatDate(kejuaraan.start_date)}
+                              {formatDate(ujian.tanggal_mulai)}
                             </p>
                           </div>
                           <div>
@@ -423,14 +441,8 @@ export default function InputHasilKejuaraanPage() {
                               Tanggal Selesai
                             </p>
                             <p className="text-base font-semibold text-foreground mt-1">
-                              {formatDate(kejuaraan.end_date)}
+                              {formatDate(ujian.tanggal_selesai)}
                             </p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-muted-foreground">
-                              Status
-                            </p>
-                            <Badge className="mt-1">Berlangsung</Badge>
                           </div>
                         </div>
                       </CardContent>
@@ -447,7 +459,7 @@ export default function InputHasilKejuaraanPage() {
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">
-                          {pesertaList.length}
+                          {summary.total_peserta}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
                           peserta terdaftar
@@ -458,16 +470,16 @@ export default function InputHasilKejuaraanPage() {
                     <Card>
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">
-                          Sudah Diinput
+                          Sudah Diedit
                         </CardTitle>
                         <ClipboardCheck className="h-4 w-4 text-green-600" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold text-green-600">
-                          {sudahDiinput}
+                          {summary.sudah_diedit}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                          hasil sudah diinput
+                          sudah diedit
                         </p>
                       </CardContent>
                     </Card>
@@ -475,16 +487,16 @@ export default function InputHasilKejuaraanPage() {
                     <Card>
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">
-                          Belum Diinput
+                          Belum Diedit
                         </CardTitle>
                         <ClipboardPen className="h-4 w-4 text-yellow-600" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold text-yellow-600">
-                          {belumDiinput}
+                          {summary.belum_diedit}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                          belum ada hasil
+                          belum diedit
                         </p>
                       </CardContent>
                     </Card>
@@ -492,13 +504,13 @@ export default function InputHasilKejuaraanPage() {
                     <Card>
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">
-                          Persentase Input
+                          Persentase Edit
                         </CardTitle>
                         <TrendingUp className="h-4 w-4 text-blue-600" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold text-blue-600">
-                          {persentaseInput}%
+                          {summary.persentase_edit}%
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
                           dari total peserta
@@ -576,7 +588,7 @@ export default function InputHasilKejuaraanPage() {
                           Belum Ada Peserta
                         </h3>
                         <p className="text-muted-foreground mt-2">
-                          Tidak ada peserta yang terdaftar pada kejuaraan ini.
+                          Tidak ada peserta yang terdaftar pada ujian ini.
                         </p>
                       </div>
                     )}
@@ -590,11 +602,10 @@ export default function InputHasilKejuaraanPage() {
                               <TableHeader>
                                 <TableRow>
                                   <TableHead>Nama Peserta</TableHead>
-                                  <TableHead>Sabuk</TableHead>
-                                  <TableHead>Kategori</TableHead>
-                                  <TableHead>Jenis</TableHead>
-                                  <TableHead>Hasil</TableHead>
+                                  <TableHead>Sabuk Asal</TableHead>
+                                  <TableHead>Sabuk Tujuan</TableHead>
                                   <TableHead>Status</TableHead>
+                                  <TableHead>Tanggal Edit</TableHead>
                                   <TableHead>Aksi</TableHead>
                                 </TableRow>
                               </TableHeader>
@@ -615,39 +626,31 @@ export default function InputHasilKejuaraanPage() {
                                     </TableCell>
                                     <TableCell>
                                       <Badge variant="outline">
-                                        {peserta.belt.name}
+                                        {peserta.belt_asal.name}
                                       </Badge>
                                     </TableCell>
                                     <TableCell>
-                                      {peserta.kelas_kejuaraan.detail}
-                                    </TableCell>
-                                    <TableCell>
-                                      <Badge>
-                                        {peserta.kelas_kejuaraan.tipe ===
-                                        "kyorugi"
-                                          ? "Kyorugi"
-                                          : "Poomsae"}
-                                      </Badge>
+                                      <Badge>{peserta.belt_tujuan.name}</Badge>
                                     </TableCell>
                                     <TableCell>
                                       <Select
                                         value={
-                                          peserta.localHasil !== undefined
-                                            ? peserta.localHasil
-                                            : peserta.hasil || ""
+                                          peserta.localStatus !== undefined
+                                            ? peserta.localStatus
+                                            : peserta.status
                                         }
                                         onValueChange={(value) =>
-                                          handleHasilChange(
+                                          handleStatusChange(
                                             peserta.peserta_id,
                                             value,
                                           )
                                         }
                                       >
                                         <SelectTrigger className="w-40">
-                                          <SelectValue placeholder="Pilih hasil" />
+                                          <SelectValue placeholder="Pilih status" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                          {HASIL_OPTIONS.map((option) => (
+                                          {STATUS_OPTIONS.map((option) => (
                                             <SelectItem
                                               key={option.value}
                                               value={option.value}
@@ -659,16 +662,22 @@ export default function InputHasilKejuaraanPage() {
                                       </Select>
                                     </TableCell>
                                     <TableCell>
-                                      <Badge
-                                        variant={
-                                          getStatusBadge(peserta).variant as any
-                                        }
-                                      >
-                                        {getStatusBadge(peserta).label}
-                                      </Badge>
+                                      {peserta.tanggal_edit ? (
+                                        <Badge variant="secondary">
+                                          {formatDateTime(peserta.tanggal_edit)}
+                                        </Badge>
+                                      ) : (
+                                        <span className="text-xs text-muted-foreground">
+                                          -
+                                        </span>
+                                      )}
                                     </TableCell>
                                     <TableCell>
-                                      <Button variant="ghost" size="sm">
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        title="Edit"
+                                      >
                                         <Pencil className="h-4 w-4" />
                                       </Button>
                                     </TableCell>
@@ -699,77 +708,47 @@ export default function InputHasilKejuaraanPage() {
                                 <div className="grid grid-cols-2 gap-2">
                                   <div>
                                     <p className="text-xs text-muted-foreground mb-1">
-                                      Sabuk
+                                      Sabuk Asal
                                     </p>
                                     <Badge
                                       variant="outline"
                                       className="w-full justify-center"
                                     >
-                                      {peserta.belt.name}
+                                      {peserta.belt_asal.name}
                                     </Badge>
                                   </div>
                                   <div>
                                     <p className="text-xs text-muted-foreground mb-1">
-                                      Kategori
+                                      Sabuk Tujuan
                                     </p>
                                     <Badge className="w-full justify-center">
-                                      {peserta.kelas_kejuaraan.detail}
-                                    </Badge>
-                                  </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-2">
-                                  <div>
-                                    <p className="text-xs text-muted-foreground mb-1">
-                                      Jenis
-                                    </p>
-                                    <Badge
-                                      variant="secondary"
-                                      className="w-full justify-center"
-                                    >
-                                      {peserta.kelas_kejuaraan.tipe ===
-                                      "kyorugi"
-                                        ? "Kyorugi"
-                                        : "Poomsae"}
-                                    </Badge>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs text-muted-foreground mb-1">
-                                      Status
-                                    </p>
-                                    <Badge
-                                      variant={
-                                        getStatusBadge(peserta).variant as any
-                                      }
-                                      className="w-full justify-center"
-                                    >
-                                      {getStatusBadge(peserta).label}
+                                      {peserta.belt_tujuan.name}
                                     </Badge>
                                   </div>
                                 </div>
 
                                 <div>
                                   <p className="text-xs text-muted-foreground mb-2">
-                                    Hasil
+                                    Status
                                   </p>
                                   <Select
                                     value={
-                                      peserta.localHasil !== undefined
-                                        ? peserta.localHasil
-                                        : peserta.hasil || ""
+                                      peserta.localStatus !== undefined
+                                        ? peserta.localStatus
+                                        : peserta.status
                                     }
                                     onValueChange={(value) =>
-                                      handleHasilChange(
+                                      handleStatusChange(
                                         peserta.peserta_id,
                                         value,
                                       )
                                     }
                                   >
                                     <SelectTrigger className="w-full">
-                                      <SelectValue placeholder="Pilih hasil" />
+                                      <SelectValue placeholder="Pilih status" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                      {HASIL_OPTIONS.map((option) => (
+                                      {STATUS_OPTIONS.map((option) => (
                                         <SelectItem
                                           key={option.value}
                                           value={option.value}
@@ -780,6 +759,17 @@ export default function InputHasilKejuaraanPage() {
                                     </SelectContent>
                                   </Select>
                                 </div>
+
+                                {peserta.tanggal_edit && (
+                                  <div>
+                                    <p className="text-xs text-muted-foreground mb-1">
+                                      Tanggal Edit
+                                    </p>
+                                    <Badge variant="secondary">
+                                      {formatDateTime(peserta.tanggal_edit)}
+                                    </Badge>
+                                  </div>
+                                )}
                               </div>
                             </CardContent>
                           </Card>

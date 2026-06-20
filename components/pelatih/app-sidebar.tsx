@@ -51,8 +51,8 @@ const data = {
     {
       title: "Hasil Ujian Kenaikan Sabuk",
       items: [
-        { title: "Input Ujian Kenaikan Sabuk", url: "/pelatih/kejuaraan" },
-        { title: "Edit Ujian Kenaikan Sabuk", url: "/pelatih/editKejuaraan" },
+        { title: "Input Ujian Kenaikan Sabuk", url: "/pelatih/ujian" },
+        { title: "Edit Ujian Kenaikan Sabuk", url: "/pelatih/editUjian" },
       ],
     },
   ],
