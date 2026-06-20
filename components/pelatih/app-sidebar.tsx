@@ -55,6 +55,10 @@ const data = {
         { title: "Edit Ujian Kenaikan Sabuk", url: "/pelatih/editUjian" },
       ],
     },
+    {
+      title: "Pengumuman",
+      items: [{ title: "Baca Pengumuman", url: "/pelatih/pengumuman" }],
+    },
   ],
   user: {
     name: "shadcn",
