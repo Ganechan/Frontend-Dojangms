@@ -236,7 +236,7 @@ export default function ExamHistoryPage() {
                               </TableCell>
                               <TableCell className="text-right">
                                 <Link
-                                  href={`/admin/ujianKenaikanSabuk/${exam.id}`}
+                                  href={`/admin/ujianKenaikanSabuk/riwayat/${exam.id}`}
                                 >
                                   <Button size="sm" variant="outline">
                                     <Eye className="w-4 h-4 mr-2" />
