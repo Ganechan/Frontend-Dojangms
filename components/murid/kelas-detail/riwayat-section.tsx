@@ -62,10 +62,16 @@ export function RiwayatSection({ riwayat }: { riwayat: RiwayatAbsensi[] }) {
     return riwayat.filter((item) => {
       const matchStatus = status === "all" || item.status === status;
       const matchSearch =
-        !query || item.jadwalNama.toLowerCase().includes(query);
+        !query || item.jadwal_nama.toLowerCase().includes(query);
       return matchStatus && matchSearch;
     });
   }, [riwayat, search, status]);
+
+  const formatJam = (jam: string | undefined) => {
+    if (!jam) return "-";
+    // Jika format HH:MM:SS, ambil 5 karakter pertama
+    return jam.length > 5 ? jam.substring(0, 5) : jam;
+  };
 
   return (
     <section className="flex flex-col gap-4" aria-labelledby="riwayat-heading">
@@ -141,14 +147,16 @@ export function RiwayatSection({ riwayat }: { riwayat: RiwayatAbsensi[] }) {
               </TableHeader>
               <TableBody>
                 {filtered.map((item) => (
-                  <TableRow key={item.id}>
+                  <TableRow key={item.absensi_id}>
                     <TableCell className="whitespace-nowrap font-medium">
                       {formatTanggalSingkat(item.tanggal)}
                     </TableCell>
-                    <TableCell>{item.jadwalNama}</TableCell>
+                    <TableCell>{item.jadwal_nama}</TableCell>
                     <TableCell>{item.hari}</TableCell>
                     <TableCell className="whitespace-nowrap tabular-nums">
-                      {item.jam}
+                      {item.jam_mulai && item.jam_selesai
+                        ? `${formatJam(item.jam_mulai)} - ${formatJam(item.jam_selesai)}`
+                        : "-"}
                     </TableCell>
                     <TableCell>
                       <AbsensiBadge status={item.status} />
@@ -165,11 +173,11 @@ export function RiwayatSection({ riwayat }: { riwayat: RiwayatAbsensi[] }) {
           {/* Mobile cards */}
           <div className="flex flex-col gap-3 md:hidden">
             {filtered.map((item) => (
-              <Card key={item.id} className="shadow-sm">
+              <Card key={item.absensi_id} className="shadow-sm">
                 <CardContent className="flex flex-col gap-3 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex flex-col gap-0.5">
-                      <span className="font-medium">{item.jadwalNama}</span>
+                      <span className="font-medium">{item.jadwal_nama}</span>
                       <span className="text-sm text-muted-foreground">
                         {formatTanggalSingkat(item.tanggal)} &middot;{" "}
                         {item.hari}
@@ -180,7 +188,11 @@ export function RiwayatSection({ riwayat }: { riwayat: RiwayatAbsensi[] }) {
                   <div className="flex flex-col gap-1 border-t pt-3 text-sm">
                     <div className="flex justify-between gap-3">
                       <span className="text-muted-foreground">Jam</span>
-                      <span className="tabular-nums">{item.jam}</span>
+                      <span className="tabular-nums">
+                        {item.jam_mulai && item.jam_selesai
+                          ? `${formatJam(item.jam_mulai)} - ${formatJam(item.jam_selesai)}`
+                          : "-"}
+                      </span>
                     </div>
                     <div className="flex justify-between gap-3">
                       <span className="text-muted-foreground">Catatan</span>

@@ -24,7 +24,7 @@ function Field({ label, children }: FieldProps) {
 interface HeroCardProps {
   kelas: Pick<
     KelasDetail,
-    "nama" | "deskripsi" | "status" | "tanggalBergabung"
+    "nama" | "deskripsi" | "status" | "tanggal_bergabung"
   >;
 }
 
@@ -55,7 +55,7 @@ export function HeroCard({ kelas }: HeroCardProps) {
             </Badge>
           </Field>
           <Field label="Tanggal Bergabung">
-            {formatTanggal(kelas.tanggalBergabung)}
+            {formatTanggal(kelas.tanggal_bergabung)}
           </Field>
           <Field label="Deskripsi">
             <span className="leading-relaxed text-muted-foreground">

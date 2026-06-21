@@ -8,7 +8,7 @@ function JadwalCard({ jadwal }: { jadwal: JadwalLatihan }) {
     <Card className="shadow-sm transition-shadow hover:shadow-md">
       <CardHeader>
         <h3 className="text-base font-semibold leading-snug text-balance">
-          {jadwal.nama}
+          {jadwal.jadwal_nama}
         </h3>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
@@ -25,7 +25,7 @@ function JadwalCard({ jadwal }: { jadwal: JadwalLatihan }) {
             aria-hidden="true"
           />
           <span className="text-foreground">
-            {jadwal.jamMulai} - {jadwal.jamSelesai}
+            {jadwal.jam_mulai} - {jadwal.jam_selesai}
           </span>
         </div>
         <div className="flex items-center gap-2.5 text-sm">

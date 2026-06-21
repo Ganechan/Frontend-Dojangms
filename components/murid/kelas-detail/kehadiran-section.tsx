@@ -18,7 +18,7 @@ export function KehadiranSection({
   const items: SummaryItem[] = [
     {
       label: "Total Pertemuan",
-      value: statistik.totalPertemuan,
+      value: statistik.total_pertemuan,
       className: "text-foreground",
     },
     {
@@ -81,10 +81,10 @@ export function KehadiranSection({
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <span className="text-4xl font-semibold tabular-nums leading-none">
-            {statistik.persentaseKehadiran}%
+            {statistik.persentase_kehadiran}%
           </span>
           <Progress
-            value={statistik.persentaseKehadiran}
+            value={statistik.persentase_kehadiran}
             aria-label="Persentase kehadiran"
           />
         </CardContent>

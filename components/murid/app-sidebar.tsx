@@ -30,7 +30,7 @@ const data = {
       title: "Kelas dan Jadwal",
       items: [
         { title: "Kelas", url: "/murid/kelas" },
-        { title: "Jadwal", url: "/admin/anggota/pelatih" },
+        { title: "Jadwal", url: "/murid/jadwal" },
       ],
     },
     {
