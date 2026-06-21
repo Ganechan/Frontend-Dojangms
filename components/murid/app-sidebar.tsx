@@ -37,7 +37,7 @@ const data = {
       title: "Rekap Prestasi dan Sabuk",
       url: "/admin/jadwal",
       items: [
-        { title: "Prestasi", url: "/admin/jadwal/jadwal" },
+        { title: "Prestasi", url: "/murid/prestasi" },
         { title: "History Sabuk", url: "/admin/libur" },
       ],
     },
