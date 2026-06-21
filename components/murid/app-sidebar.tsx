@@ -38,7 +38,7 @@ const data = {
       url: "/admin/jadwal",
       items: [
         { title: "Prestasi", url: "/murid/prestasi" },
-        { title: "History Sabuk", url: "/admin/libur" },
+        { title: "History Sabuk", url: "/murid/ujian-sabuk" },
       ],
     },
     {
