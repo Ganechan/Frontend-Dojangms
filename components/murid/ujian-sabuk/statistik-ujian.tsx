@@ -1,3 +1,4 @@
+// components\murid\ujian-sabuk\statistik-ujian.tsx
 import { Award, BadgeCheck, GraduationCap, Shield } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,7 +15,7 @@ interface StatItem {
 
 const STATS: StatItem[] = [
   {
-    key: "totalUjian",
+    key: "total_ujian",
     label: "Total Ujian",
     icon: GraduationCap,
     iconClasses: "bg-primary/10 text-primary",
@@ -26,13 +27,13 @@ const STATS: StatItem[] = [
     iconClasses: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
   },
   {
-    key: "tidakLulus",
+    key: "tidak_lulus",
     label: "Tidak Lulus",
     icon: Award,
     iconClasses: "bg-destructive/10 text-destructive",
   },
   {
-    key: "sabukSaatIni",
+    key: "sabuk_saat_ini",
     label: "Sabuk Saat Ini",
     icon: Shield,
     iconClasses: "bg-gold/15 text-gold-foreground",
@@ -68,7 +69,11 @@ export function StatistikUjian({ data }: { data: UjianStatistik }) {
                     isNumeric ? "text-2xl tabular-nums" : "text-xl",
                   )}
                 >
-                  {isNumeric ? value.toLocaleString("id-ID") : value || "-"}
+                  {isNumeric
+                    ? value.toLocaleString("id-ID")
+                    : typeof value === "object" && value !== null
+                      ? value.nama
+                      : value || "-"}
                 </span>
                 <span className="text-sm text-muted-foreground">
                   {stat.label}

@@ -147,10 +147,10 @@ export default function ScheduledChampionshipsPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-                Kejuaraan Terjadwal
+                Tambah Kelas Kejuaraan
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                Daftar kejuaraan yang akan datang atau sedang berlangsung
+                Menambahkan Kelas Kejuaraan yang Dipertandingkan
               </p>
             </div>
             <Link href="/admin/kejuaraan/create" className="w-full sm:w-auto">

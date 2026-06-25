@@ -1,3 +1,4 @@
+// components\admin\pelatih\pelatih-card.tsx
 "use client";
 
 import { Badge } from "@/components/ui/badge";

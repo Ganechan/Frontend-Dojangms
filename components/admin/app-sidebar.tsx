@@ -1,8 +1,26 @@
+// components\admin\app-sidebar.tsx
 "use client";
 
 import * as React from "react";
-import { IconChevronRight } from "@tabler/icons-react";
+import {
+  IconUsers,
+  IconCalendar,
+  IconCertificate,
+  IconTrophy,
+  IconSpeakerphone,
+  IconSettings,
+  IconClipboardList,
+  IconHistory,
+  IconUserPlus,
+  IconSchool,
+  IconCalendarOff,
+  IconAward,
+  IconBell,
+  IconUsersGroup,
+  IconShieldCheck,
+} from "@tabler/icons-react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 import { NavUser } from "@/components/admin/nav-user";
 import {
@@ -11,23 +29,16 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent,
 } from "@/components/ui/sidebar";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { VersionSwitcher } from "@/components/admin/version-switcher";
+import { cn } from "@/lib/utils";
 
 const data = {
   navMain: [
     {
       title: "Manajemen Anggota",
+      url: "admin/anggota",
       items: [
         { title: "Data Murid", url: "/admin/anggota/murid" },
         { title: "Data Pelatih", url: "/admin/anggota/pelatih" },
@@ -111,122 +122,97 @@ const data = {
   },
 };
 
-const STORAGE_KEY = "admin-sidebar-open-groups";
+// Mapping icon per item URL
+const ITEM_ICONS: Record<string, React.ElementType> = {
+  "/admin/anggota/murid": IconUsers,
+  "/admin/anggota/pelatih": IconSchool,
+  "/admin/anggota/admin": IconShieldCheck,
+  "/admin/anggota/addUser": IconUserPlus,
+  "/admin/jadwal/jadwal": IconCalendar,
+  "/admin/libur": IconCalendarOff,
+  "/admin/liburGlobal": IconCalendarOff,
+  "/admin/jadwal/create": IconCalendar,
+  "/admin/kelas": IconUsersGroup,
+  "/admin/kelas/addMurid": IconUserPlus,
+  "/admin/kelas/addPelatih": IconUserPlus,
+  "/admin/ujianKenaikanSabuk": IconCertificate,
+  "/admin/ujianKenaikanSabuk/ujian-terjadwal": IconClipboardList,
+  "/admin/ujianKenaikanSabuk/deleted": IconHistory,
+  "/admin/ujianKenaikanSabuk/riwayat": IconHistory,
+  "/admin/kejuaraan": IconTrophy,
+  "/admin/kelas-kyorugi": IconAward,
+  "/admin/kelas-poomsae": IconAward,
+  "/admin/kejuaraan/peserta-kejuaraan": IconUsers,
+  "/admin/kejuaraan/kelola-kelas-kejuaraan": IconTrophy,
+  "/admin/kejuaraan/hapus-kelas-kejuaraan": IconTrophy,
+  "/admin/kejuaraan/rekap-kejuaraan": IconAward,
+  "/admin/pengumuman": IconSpeakerphone,
+  "/admin/pengumuman/draft": IconBell,
+  "/admin/pengumuman/group-whatsapp": IconUsersGroup,
+  "/admin/users": IconSettings,
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
 
-  // Simpan daftar group title yang sedang open
-  const [openGroups, setOpenGroups] = React.useState<Set<string>>(new Set());
-
-  // 1) Saat mount: load dari localStorage
-  React.useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        setOpenGroups(new Set(parsed.filter((x) => typeof x === "string")));
-      }
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  // 2) Kalau route aktif ada di salah satu group, pastikan group itu terbuka juga
-  //    (biar kalau user refresh di halaman /admin/keuangan/spp, group Keuangan tetap open)
-  React.useEffect(() => {
-    const activeGroupTitles = data.navMain
-      .filter((group) =>
-        group.items?.some((item) => pathname.startsWith(item.url)),
-      )
-      .map((g) => g.title);
-
-    if (activeGroupTitles.length === 0) return;
-
-    setOpenGroups((prev) => {
-      const next = new Set(prev);
-      activeGroupTitles.forEach((t) => next.add(t));
-      return next;
-    });
-  }, [pathname]);
-
-  // 3) Persist ke localStorage setiap berubah
-  React.useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(openGroups)));
-    } catch {
-      // ignore
-    }
-  }, [openGroups]);
-
   return (
     <Sidebar collapsible="offcanvas" {...props}>
-      <SidebarHeader className="mb-5">
+      <SidebarHeader className="mb-2">
         <VersionSwitcher navMain={data.navMain} />
       </SidebarHeader>
 
-      <SidebarContent className="gap-0">
-        {data.navMain.map((group) => {
-          const isOpen = openGroups.has(group.title);
+      <SidebarContent className="px-2 py-1">
+        {data.navMain.map((group) => (
+          <div key={group.title} className="mb-4">
+            {/* Section label */}
+            <p className="px-2 mb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 select-none">
+              {group.title}
+            </p>
 
-          return (
-            <Collapsible
-              key={group.title}
-              open={isOpen}
-              onOpenChange={(nextOpen) => {
-                setOpenGroups((prev) => {
-                  const next = new Set(prev);
-                  if (nextOpen) next.add(group.title);
-                  else next.delete(group.title);
-                  return next;
-                });
-              }}
-              className="group/collapsible"
-            >
-              <SidebarGroup>
-                <SidebarGroupLabel
-                  asChild
-                  className="group/label text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                >
-                  <CollapsibleTrigger>
-                    {group.title}
-                    <IconChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
-                  </CollapsibleTrigger>
-                </SidebarGroupLabel>
+            {/* Flat menu items */}
+            <SidebarMenu>
+              {group.items.map((item) => {
+                const isActive =
+                  pathname === item.url ||
+                  pathname.startsWith(item.url + "/");
+                const Icon = ITEM_ICONS[item.url];
 
-                <CollapsibleContent>
-                  <SidebarGroupContent>
-                    <SidebarMenu>
-                      {group.items.map((item) => {
-                        const isActive =
-                          pathname === item.url ||
-                          pathname.startsWith(item.url + "/");
+                return (
+                  <SidebarMenuItem key={item.url}>
+                    <Link
+                      href={item.url}
+                      className={cn(
+                        "relative flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors",
+                        "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                        isActive
+                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                          : "text-sidebar-foreground/70"
+                      )}
+                    >
+                      {/* Active indicator bar */}
+                      {isActive && (
+                        <span className="absolute left-0 top-1 bottom-1 w-0.5 rounded-r bg-primary" />
+                      )}
 
-                        return (
-                          <SidebarMenuItem key={item.title}>
-                            <SidebarMenuButton
-                              asChild
-                              isActive={isActive}
-                              className={
-                                isActive
-                                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                                  : ""
-                              }
-                            >
-                              <a href={item.url}>{item.title}</a>
-                            </SidebarMenuButton>
-                          </SidebarMenuItem>
-                        );
-                      })}
-                    </SidebarMenu>
-                  </SidebarGroupContent>
-                </CollapsibleContent>
-              </SidebarGroup>
-            </Collapsible>
-          );
-        })}
+                      {Icon && (
+                        <Icon
+                          className={cn(
+                            "size-4 shrink-0",
+                            isActive
+                              ? "text-primary"
+                              : "text-muted-foreground"
+                          )}
+                        />
+                      )}
+
+                      <span className="truncate">{item.title}</span>
+                    </Link>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </div>
+        ))}
       </SidebarContent>
 
       <SidebarFooter>

@@ -1,3 +1,4 @@
+// app\admin\kejuaraan\rekap-kejuaraan\[id]\page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -76,6 +77,7 @@ interface SemuaPeserta {
 
 interface ApiResponse {
   success: boolean;
+  message?: string;
   data: {
     kejuaraan: Kejuaraan;
     total_medali: TotalMedali;

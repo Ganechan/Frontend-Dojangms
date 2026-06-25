@@ -95,10 +95,7 @@ export function PelatihEditForm({ pelatih }: PelatihEditFormProps) {
   // form state — sabuk
   const [beltId, setBeltId] = React.useState<string>("");
   const [originalBeltId, setOriginalBeltId] = React.useState<string>("");
-  const [beltAchievedAt, setBeltAchievedAt] = React.useState(
-    toDateInputValue(
-      pelatih.belt_history?.find((b) => b.is_current === 1)?.achieved_at,
-    ) || todayISO(),
+  const [beltAchievedAt, setBeltAchievedAt] = React.useState(todayISO(),
   );
 
   // form state — spesialisasi
@@ -198,9 +195,9 @@ export function PelatihEditForm({ pelatih }: PelatihEditFormProps) {
         spesialisasi: spesialisasi || undefined,
         ...(beltId &&
           beltId !== originalBeltId && {
-            belt_id: Number(beltId),
-            belt_achieved_at: beltAchievedAt,
-          }),
+          belt_id: Number(beltId),
+          belt_achieved_at: beltAchievedAt,
+        }),
       };
 
       await updatePelatih(pelatih.id, payload);

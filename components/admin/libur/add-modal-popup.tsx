@@ -181,14 +181,14 @@ export function AddHolidayModal({
   // ─── Helper: info jadwal terpilih ─────────────────────────────────────────
   const jadwalInfo = selectedJadwal
     ? [
-        selectedJadwal.hari
-          ? (HARI_LABELS[selectedJadwal.hari] ?? selectedJadwal.hari)
-          : null,
-        `${formatJam(selectedJadwal.jam_mulai)} – ${formatJam(selectedJadwal.jam_selesai)}`,
-        selectedJadwal.lokasi,
-      ]
-        .filter(Boolean)
-        .join(" · ")
+      selectedJadwal.hari
+        ? (HARI_LABELS[selectedJadwal.hari] ?? selectedJadwal.hari)
+        : null,
+      `${formatJam(selectedJadwal.jam_mulai)} – ${formatJam(selectedJadwal.jam_selesai)}`,
+      selectedJadwal.lokasi,
+    ]
+      .filter(Boolean)
+      .join(" · ")
     : null;
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -275,7 +275,7 @@ export function AddHolidayModal({
                           "flex w-full flex-col gap-0.5 px-3 py-2.5 text-left text-sm transition-colors",
                           "hover:bg-accent hover:text-accent-foreground",
                           selectedJadwal?.id === j.id &&
-                            "bg-accent text-accent-foreground",
+                          "bg-accent text-accent-foreground",
                         )}
                         onClick={() => {
                           setSelectedJadwal(j);
@@ -335,8 +335,8 @@ export function AddHolidayModal({
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {tanggal
                     ? format(tanggal, "EEEE, dd MMMM yyyy", {
-                        locale: localeId,
-                      })
+                      locale: localeId,
+                    })
                     : "Pilih tanggal…"}
                 </Button>
               </PopoverTrigger>
@@ -348,7 +348,6 @@ export function AddHolidayModal({
                     setTanggal(date);
                     setIsCalendarOpen(false);
                   }}
-                  initialFocus
                 />
               </PopoverContent>
             </Popover>

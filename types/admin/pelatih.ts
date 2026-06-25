@@ -18,7 +18,7 @@ export interface CoachData {
   status: CoachStatus;
   pelatih: {
     spesialisasi: string | null;
-    sertifikasi: string | null;
+    sertifikasi: SertifikasiItem[];
   };
   sabuk_saat_ini: {
     id: number;

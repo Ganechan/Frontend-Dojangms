@@ -176,16 +176,20 @@ export function AnnouncementForm({
   };
 
   const handleToggleUser = (userId: number) => {
-    const current = form.getValues("user_ids") || [];
+    const current: number[] = form.getValues("user_ids") || [];
+
     const updated = current.includes(userId)
-      ? current.filter((id) => id !== userId)
+      ? current.filter((id: number) => id !== userId)
       : [...current, userId];
+
     form.setValue("user_ids", updated);
   };
 
   const handleRemoveUser = (userId: number) => {
-    const current = form.getValues("user_ids") || [];
-    const updated = current.filter((id) => id !== userId);
+    const current: number[] = form.getValues("user_ids") || [];
+
+    const updated = current.filter((id: number) => id !== userId);
+
     form.setValue("user_ids", updated);
   };
 
@@ -461,7 +465,7 @@ export function AnnouncementForm({
                 <div className="space-y-2">
                   <Label>Dipilih ({selectedUserIds.length})</Label>
                   <div className="flex flex-wrap gap-2">
-                    {selectedUserIds.map((userId) => {
+                    {selectedUserIds.map((userId: number) => {
                       const user = users.find((u) => u.id === userId);
                       return (
                         <Badge

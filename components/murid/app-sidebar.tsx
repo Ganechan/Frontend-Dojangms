@@ -1,10 +1,11 @@
+// components\murid\app-sidebar.tsx
 "use client";
 
 import * as React from "react";
 import { IconChevronRight } from "@tabler/icons-react";
 import { usePathname } from "next/navigation";
 
-import { NavUser } from "@/components/admin/nav-user";
+import { NavUser } from "@/components/pelatih/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -22,12 +23,13 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { VersionSwitcher } from "@/components/admin/version-switcher";
+import { VersionSwitcher } from "@/components/pelatih/version-switcher";
 
 const data = {
   navMain: [
     {
       title: "Kelas dan Jadwal",
+      url: "/murid/kelas",
       items: [
         { title: "Kelas", url: "/murid/kelas" },
         { title: "Jadwal", url: "/murid/jadwal" },

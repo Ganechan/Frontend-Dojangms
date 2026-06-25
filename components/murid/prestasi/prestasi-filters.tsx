@@ -1,3 +1,4 @@
+// components\murid\prestasi\prestasi-filters.tsx
 "use client"
 
 import { Search } from "lucide-react"
@@ -97,9 +98,7 @@ export function PrestasiFilters({
         <FilterField label="Tahun" htmlFor="filter-tahun">
           <Select value={tahun} onValueChange={onTahunChange}>
             <SelectTrigger id="filter-tahun" className="h-9 w-full lg:w-32">
-              <SelectValue placeholder="Semua Tahun">
-                {(value: string) => (value === "all" ? "Semua Tahun" : value)}
-              </SelectValue>
+              <SelectValue placeholder="Semua Tahun" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
@@ -117,9 +116,7 @@ export function PrestasiFilters({
         <FilterField label="Level" htmlFor="filter-level">
           <Select value={level} onValueChange={onLevelChange}>
             <SelectTrigger id="filter-level" className="h-9 w-full lg:w-40">
-              <SelectValue placeholder="Semua Level">
-                {(value: string) => (value === "all" ? "Semua Level" : value)}
-              </SelectValue>
+              <SelectValue placeholder="Semua Level" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
@@ -137,9 +134,7 @@ export function PrestasiFilters({
         <FilterField label="Hasil" htmlFor="filter-hasil">
           <Select value={hasil} onValueChange={onHasilChange}>
             <SelectTrigger id="filter-hasil" className="h-9 w-full lg:w-36">
-              <SelectValue placeholder="Semua Hasil">
-                {(value: string) => (value === "all" ? "Semua Hasil" : value)}
-              </SelectValue>
+              <SelectValue placeholder="Semua Hasil" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>

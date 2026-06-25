@@ -1,3 +1,4 @@
+// components\murid\ujian-sabuk\ujian-filter.tsx
 "use client";
 
 import { Label } from "@/components/ui/label";
@@ -31,9 +32,7 @@ export function UjianFilters({
         <Label htmlFor="filter-status">Status</Label>
         <Select value={status} onValueChange={onStatusChange}>
           <SelectTrigger id="filter-status" className="h-9 w-full">
-            <SelectValue placeholder="Semua Status">
-              {(value: string) => (value === "all" ? "Semua Status" : value)}
-            </SelectValue>
+            <SelectValue placeholder="Semua Status" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>

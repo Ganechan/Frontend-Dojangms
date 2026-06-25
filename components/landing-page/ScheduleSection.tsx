@@ -1,43 +1,38 @@
-import { Clock, User } from "lucide-react";
+import { Clock, User, MapPin } from "lucide-react";
 
 const schedules = [
   {
-    day: "Senin – Jumat",
+    day: "Senin",
     time: "15:00 – 16:30",
-    category: "Anak-anak",
-    trainer: "Trainer Junior",
+    location: "Sjdklajdlkajsdlka",
     color: "bg-blue-500",
     badge: "bg-blue-100 text-blue-700",
   },
   {
-    day: "Senin – Jumat",
+    day: "Selasa",
     time: "16:45 – 18:15",
-    category: "Remaja",
-    trainer: "Trainer Senior",
+    location: "akdjalskdjkasjdas",
     color: "bg-purple-500",
     badge: "bg-purple-100 text-purple-700",
   },
   {
-    day: "Senin – Jumat",
+    day: "Rabu",
     time: "18:30 – 20:00",
-    category: "Dewasa",
-    trainer: "Master Utama",
+    location: "aksjdlakjsflkajsf",
     color: "bg-red-500",
     badge: "bg-red-100 text-red-700",
   },
   {
-    day: "Sabtu",
+    day: "Kamis",
     time: "10:00 – 12:00",
-    category: "Prestasi",
-    trainer: "Master & Pelatih",
+    location: "asdlkajsdlksajdlka",
     color: "bg-amber-500",
     badge: "bg-amber-100 text-amber-700",
   },
   {
     day: "Minggu",
     time: "10:00 – 12:00",
-    category: "Poomsae",
-    trainer: "Spesialis",
+    location: "ajalksjdlkajsdlk",
     color: "bg-emerald-500",
     badge: "bg-emerald-100 text-emerald-700",
   },
@@ -87,21 +82,12 @@ export default function ScheduleSection() {
               {/* Divider */}
               <div className="hidden sm:block h-10 w-px bg-gray-200" />
 
-              {/* Category */}
-              <div className="flex-1">
-                <span
-                  className={`inline-block text-xs font-bold px-3 py-1 rounded-full ${schedule.badge}`}
-                >
-                  {schedule.category}
-                </span>
-              </div>
-
-              {/* Trainer */}
-              <div className="flex items-center gap-2 text-gray-600">
+              {/* Location */}
+              <div className="flex items-center gap-2 text-gray-600 ml-auto">
                 <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                  <User size={14} className="text-red-600" />
+                  <MapPin size={14} className="text-red-600" />
                 </div>
-                <span className="text-sm font-semibold">{schedule.trainer}</span>
+                <span className="text-sm font-semibold">{schedule.location}</span>
               </div>
             </div>
           ))}

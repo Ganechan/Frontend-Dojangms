@@ -1,10 +1,11 @@
+// components\pelatih\app-sidebar.tsx
 "use client";
 
 import * as React from "react";
 import { IconChevronRight } from "@tabler/icons-react";
 import { usePathname } from "next/navigation";
 
-import { NavUser } from "@/components/admin/nav-user";
+import { NavUser } from "@/components/pelatih/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -22,12 +23,13 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { VersionSwitcher } from "@/components/admin/version-switcher";
+import { VersionSwitcher } from "@/components/pelatih/version-switcher";
 
 const data = {
   navMain: [
     {
       title: "Kelas dan Jadwal",
+      url: "/pelatih/kelasJadwal",
       items: [
         { title: "Kelas", url: "/pelatih/kelasJadwal" },
         { title: "Jadwal", url: "/pelatih/jadwal" },
@@ -35,6 +37,7 @@ const data = {
     },
     {
       title: "Absensi Murid",
+      url: "/pelatih/absensi",
       items: [
         { title: "Absensi", url: "/pelatih/absensi" },
         { title: "Edit Absensi", url: "/pelatih/absensi/edit" },
@@ -43,6 +46,7 @@ const data = {
     },
     {
       title: "Hasil Kejuaraan",
+      url: "/pelatih/kejuaraan",
       items: [
         { title: "Input Hasil", url: "/pelatih/kejuaraan" },
         { title: "Edit Hasil", url: "/pelatih/editKejuaraan" },
@@ -50,6 +54,7 @@ const data = {
     },
     {
       title: "Hasil Ujian Kenaikan Sabuk",
+      url: "/pelatih/ujian",
       items: [
         { title: "Input Ujian Kenaikan Sabuk", url: "/pelatih/ujian" },
         { title: "Edit Ujian Kenaikan Sabuk", url: "/pelatih/editUjian" },
@@ -57,6 +62,7 @@ const data = {
     },
     {
       title: "Pengumuman",
+      url: "/pelatih/pengumuman",
       items: [{ title: "Baca Pengumuman", url: "/pelatih/pengumuman" }],
     },
   ],
