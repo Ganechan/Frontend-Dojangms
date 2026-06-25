@@ -1,3 +1,4 @@
+// components\admin\nav-user.tsx
 "use client";
 
 import { useAuth } from "@/hooks/Useauth";
@@ -85,14 +86,6 @@ export function NavUser({
               <DropdownMenuItem>
                 <IconUserCircle />
                 Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <IconCreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <IconNotification />
-                Notifications
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

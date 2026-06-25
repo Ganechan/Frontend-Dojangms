@@ -41,7 +41,7 @@ export default function HeroSection() {
         {/* Badge */}
         <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 mb-8 text-sm font-medium text-white/90 animate-fade-in">
           <Shield size={14} className="text-red-400" />
-          <span>Salatiga, Jawa Tengah · Berdiri 2004</span>
+          <span>Salatiga, Jawa Tengah · Berdiri 2015</span>
         </div>
 
         {/* Main Heading */}
@@ -85,8 +85,8 @@ export default function HeroSection() {
         {/* Stats Row */}
         <div className="mt-20 grid grid-cols-3 gap-4 max-w-lg mx-auto">
           {[
-            { value: "300+", label: "Anggota" },
-            { value: "20+", label: "Tahun" },
+            { value: "200+", label: "Anggota" },
+            { value: "10+", label: "Tahun" },
             { value: "100+", label: "Prestasi" },
           ].map((s, i) => (
             <div

@@ -19,12 +19,6 @@ const facilities = [
     icon: <Package size={26} />,
     gradient: "from-purple-500 to-violet-400",
   },
-  {
-    title: "Loker & Fasilitas",
-    desc: "Ruang ganti bersih, loker aman, dan kamar mandi untuk kenyamanan anggota.",
-    icon: <ShowerHead size={26} />,
-    gradient: "from-emerald-500 to-teal-400",
-  },
 ];
 
 export default function FacilitiesSection() {
@@ -49,7 +43,7 @@ export default function FacilitiesSection() {
           Kami menyediakan fasilitas berstandar tinggi untuk mendukung setiap sesi latihan.
         </p>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {facilities.map((facility, index) => (
             <div
               key={index}

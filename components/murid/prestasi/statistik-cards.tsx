@@ -1,3 +1,4 @@
+// components\murid\prestasi\statistik-cards.tsx
 import { Award, Medal, Trophy } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -48,6 +49,7 @@ export function StatistikCards({ data }: { data: PrestasiStatistik }) {
     >
       {STATS.map((stat) => {
         const Icon = stat.icon;
+        const value = data[stat.key] ?? 0;
         return (
           <Card key={stat.key} className="overflow-hidden">
             <CardContent className="flex items-center gap-4">
@@ -62,7 +64,7 @@ export function StatistikCards({ data }: { data: PrestasiStatistik }) {
               </span>
               <div className="flex flex-col">
                 <span className="text-2xl font-semibold tracking-tight tabular-nums">
-                  {data[stat.key].toLocaleString("id-ID")}
+                  {value.toLocaleString("id-ID")}
                 </span>
                 <span className="text-sm text-muted-foreground">
                   {stat.label}

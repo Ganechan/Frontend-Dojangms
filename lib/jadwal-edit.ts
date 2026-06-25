@@ -1,9 +1,7 @@
 // lib\jadwal-edit.ts
 import { z } from "zod";
 
-const statusField = z.enum(["aktif", "nonaktif"], {
-  required_error: "Status wajib dipilih",
-});
+const statusField = z.enum(["aktif", "nonaktif"]);
 
 // Base schema with common fields
 const baseSchema = z.object({

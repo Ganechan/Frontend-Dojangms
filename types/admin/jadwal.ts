@@ -127,6 +127,7 @@ export interface LatihanWajibFormData {
     jam_mulai: string;
     jam_selesai: string;
     lokasi: string;
+    status: ScheduleStatus;
 }
 
 export interface TrainingCampFormData {
@@ -136,6 +137,7 @@ export interface TrainingCampFormData {
     jam_mulai: string;
     jam_selesai: string;
     lokasi: string;
+    status: ScheduleStatus;
 }
 
 export interface KelasRegulerFormData {
@@ -146,6 +148,7 @@ export interface KelasRegulerFormData {
     lokasi: string;
     effective_from: string;
     kelas_id: number;
+    status: ScheduleStatus;
 }
 
 export interface KelasPenggantiFormData {
@@ -155,6 +158,7 @@ export interface KelasPenggantiFormData {
     jam_selesai: string;
     lokasi: string;
     kelas_id: number;
+    status: ScheduleStatus;
 }
 
 export type EditScheduleFormData =

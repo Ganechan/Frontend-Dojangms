@@ -3,6 +3,7 @@ import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SiteHeader } from "@/components/admin/site-header";
 import { AdminList } from "@/components/admin/admin/admin-list";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Suspense } from "react";
 
 export const metadata = {
   title: "Daftar Admin | Admin Dashboard",
@@ -25,7 +26,9 @@ export default function AdminPage() {
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <AdminList />
+              <Suspense fallback={<div>Loading admin list...</div>}>
+                <AdminList />
+              </Suspense>
             </div>
           </div>
         </div>

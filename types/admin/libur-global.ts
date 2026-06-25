@@ -1,3 +1,4 @@
+// types\admin\libur-global.ts
 export interface GlobalHoliday {
   id: number;
   tanggal: string;

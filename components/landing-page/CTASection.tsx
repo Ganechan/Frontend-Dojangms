@@ -51,17 +51,6 @@ export default function CTASection() {
               Daftar Sekarang
               <ArrowRight size={18} />
             </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-white/20 text-white hover:bg-white/10 bg-transparent px-10 py-6 text-base font-semibold transition-all duration-300 hover:border-white/40"
-              onClick={() => {
-                const el = document.getElementById("contact");
-                el?.scrollIntoView({ behavior: "smooth" });
-              }}
-            >
-              Pelajari Lebih Lanjut
-            </Button>
           </div>
         </div>
       </div>
