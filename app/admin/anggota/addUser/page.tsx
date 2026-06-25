@@ -1,8 +1,8 @@
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SiteHeader } from "@/components/admin/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { BackButton } from "@/components/admin/anggota/create/back-button";
-import { AddUserForm } from "@/components/admin/anggota/create/add-user-form";
+import { BackButton } from "@/components/admin/addUser/back-button";
+import CreateUserForm from "@/components/admin/addUser/create-user-form"
 
 export const metadata = {
   title: "Tambah User Murid | Admin Dashboard",
@@ -25,16 +25,8 @@ export default function AddUserPage() {
         <div className="flex flex-1 flex-col gap-6 p-6">
           <div className="flex flex-col gap-2">
             <BackButton />
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                Tambah User Murid
-              </h1>
-              <p className="text-muted-foreground text-sm mt-1">
-                Isi formulir di bawah untuk membuat akun murid baru
-              </p>
-            </div>
+            <CreateUserForm />
           </div>
-          <AddUserForm />
         </div>
       </SidebarInset>
     </SidebarProvider>

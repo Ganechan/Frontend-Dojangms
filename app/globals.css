@@ -40,6 +40,9 @@
   --sidebar-bg: oklch(0.3 0.02 260);
   --sidebar-fg: oklch(0.98 0 0);
   --skeleton: oklch(0.9 0 0);
+  --primary-chart: oklch(0.55 0.18 255);
+  --chart-line: oklch(0.68 0.18 245);
+  --chart-fill: oklch(0.68 0.18 245);
 }
 
 .dark {
@@ -78,6 +81,8 @@
   --sidebar-bg: oklch(0.18 0 0);
   --sidebar-fg: oklch(0.985 0 0);
   --skeleton: oklch(0.25 0 0);
+  --chart-line: oklch(0.75 0.16 245);
+  --chart-fill: oklch(0.75 0.16 245);
 }
 
 @theme inline {
@@ -128,27 +133,50 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   html {
     scroll-behavior: smooth;
   }
 }
 
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(32px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slide-in-left {
-  from { opacity: 0; transform: translateX(-32px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-32px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .animate-fade-in {
@@ -162,4 +190,3 @@
 .animate-slide-left {
   animation: slide-in-left 0.7s ease forwards;
 }
-
