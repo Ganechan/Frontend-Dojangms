@@ -1,7 +1,14 @@
+// components\admin\user\hooks\utils.ts
 import { User } from "./types";
 
-export function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("id-ID", {
+export function formatDate(iso?: string | null) {
+  if (!iso) return "-";
+
+  const date = new Date(iso);
+
+  if (Number.isNaN(date.getTime())) return "-";
+
+  return date.toLocaleDateString("id-ID", {
     day: "2-digit",
     month: "short",
     year: "numeric",

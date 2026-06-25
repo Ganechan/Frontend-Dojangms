@@ -1,3 +1,4 @@
+// app\admin\ujianKenaikanSabuk\[id]\peserta\page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -175,6 +176,7 @@ export default function ParticipantsPage() {
     if (participantToDelete === -1) {
       userIds = Array.from(selectedParticipants);
     } else {
+      if (participantToDelete === null) return;
       userIds = [participantToDelete];
     }
     if (userIds.length === 0) return;
@@ -300,7 +302,7 @@ export default function ParticipantsPage() {
                             <Checkbox
                               checked={
                                 selectedParticipants.size ===
-                                  filteredParticipants.length &&
+                                filteredParticipants.length &&
                                 filteredParticipants.length > 0
                               }
                               onCheckedChange={toggleSelectAll}

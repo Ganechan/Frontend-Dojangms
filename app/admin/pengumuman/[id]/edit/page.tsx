@@ -1,3 +1,4 @@
+// app\admin\pengumuman\[id]\edit\page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -33,13 +34,13 @@ const announcementSchema = z.object({
   target_type: z.enum(["global", "role", "kelas", "individu"]),
   target_role: z.string().optional(),
   kelas_id: z.number().optional(),
-  user_ids: z.array(z.number()).default([]),
-  kirim_whatsapp: z.boolean().default(false),
+  user_ids: z.array(z.number()).optional(),
+  kirim_whatsapp: z.boolean().optional(),
   whatsapp_scope: z
     .enum(["semua_grup", "grup_besar_saja", "grup_tertentu"])
     .optional(),
   whatsapp_group_id: z.number().optional(),
-  status: z.enum(["draft", "terjadwal", "terkirim"]).default("draft"),
+  status: z.enum(["draft", "terjadwal", "terkirim"]).optional(),
   scheduled_at: z.string().optional(),
 });
 

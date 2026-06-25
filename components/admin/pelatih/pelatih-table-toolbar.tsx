@@ -17,7 +17,7 @@ interface CoachTableToolbarProps {
   table: Table<CoachData>;
   statusCounts?: CoachStatusCounts;
   onSearchChange?: (q: string) => void;
-  onStatusChange?: (status: string) => void;
+  onStatusChange?: (status: ActiveStatusTab) => void;
   initialSearch?: string;
   initialStatus?: ActiveStatusTab;
 }

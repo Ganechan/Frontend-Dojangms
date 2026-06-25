@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 
 const stats = [
-  { value: 20, suffix: "+", label: "Tahun Berdiri", icon: "🏛️" },
-  { value: 300, suffix: "+", label: "Anggota Aktif", icon: "👥" },
-  { value: 50, suffix: "+", label: "Sabuk Hitam", icon: "🥋" },
+  { value: 10, suffix: "+", label: "Tahun Berdiri", icon: "🏛️" },
+  { value: 200, suffix: "+", label: "Anggota Aktif", icon: "👥" },
+  { value: 10, suffix: "+", label: "Sabuk Hitam", icon: "🥋" },
   { value: 100, suffix: "+", label: "Prestasi", icon: "🏆" },
 ];
 
@@ -75,7 +75,7 @@ export default function StatisticsSection() {
           Statistik <span className="text-red-400">Dojang</span>
         </h2>
         <p className="text-white/50 text-center mb-16 max-w-md mx-auto">
-          Angka-angka yang mencerminkan dedikasi dan perjalanan kami selama lebih dari dua dekade.
+          Angka-angka yang mencerminkan dedikasi dan perjalanan kami selama lebih dari satu dekade.
         </p>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">

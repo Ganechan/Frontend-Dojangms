@@ -1,3 +1,4 @@
+// components\murid\prestasi\prestasi-view.tsx
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -167,8 +168,8 @@ export function PrestasiView() {
             )
           ) : (
             <ol className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {result.data.map((prestasi) => (
-                <li key={prestasi.id}>
+              {result.data.map((prestasi, index) => (
+                <li key={`${prestasi.kejuaraan_id}-${index}`}>
                   <PrestasiCard prestasi={prestasi} />
                 </li>
               ))}

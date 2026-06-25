@@ -1,3 +1,4 @@
+// components\admin\liburGlobal\global-libur-edit-modal.tsx 
 "use client";
 
 import * as React from "react";
@@ -14,12 +15,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import type { GlobalHolidayDetailData } from "@/types/admin/libur-global";
+import type { GlobalHoliday } from "@/types/admin/libur-global";
 
 interface EditGlobalHolidayModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  holiday: GlobalHolidayDetailData | null;
+  holiday: GlobalHoliday | null;
   onSuccess?: () => void;
 }
 

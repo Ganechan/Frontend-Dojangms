@@ -4,12 +4,9 @@ import Header from "@/components/landing-page/Header";
 import HeroSection from "@/components/landing-page/HeroSection";
 import AboutSection from "@/components/landing-page/AboutSection";
 import StatisticsSection from "@/components/landing-page/StatisticsSection";
-import ProgramsSection from "@/components/landing-page/ProgramsSection";
 import FacilitiesSection from "@/components/landing-page/FacilitiesSection";
 import AchievementsSection from "@/components/landing-page/AchievementsSection";
 import ScheduleSection from "@/components/landing-page/ScheduleSection";
-import TestimonialsSection from "@/components/landing-page/TestimonialsSection";
-import GallerySection from "@/components/landing-page/GallerySection";
 import CTASection from "@/components/landing-page/CTASection";
 import ContactSection from "@/components/landing-page/ContactSection";
 import FloatingWhatsApp from "@/components/landing-page/Floatingwhatsapp";
@@ -27,12 +24,9 @@ export default function Home() {
       <HeroSection />
       <AboutSection />
       <StatisticsSection />
-      <ProgramsSection />
       <FacilitiesSection />
       <AchievementsSection />
       <ScheduleSection />
-      <TestimonialsSection />
-      <GallerySection />
       <CTASection />
       <ContactSection />
       <FloatingWhatsApp />
