@@ -65,3 +65,24 @@ export interface AdminDetailApiResponse {
   message: string;
   data: AdminDetail;
 }
+
+export interface UpdateAdminPayload {
+  name?: string;
+  email?: string;
+  phone?: string;
+  tanggal_lahir?: string; // format: "YYYY-MM-DD"
+  status?: AdminStatus;
+}
+
+export interface UpdateAdminResponse {
+  message: string;
+  data: {
+    id: number;
+    name: string;
+    email: string;
+    phone: string;
+    tanggal_lahir: string;
+    tahun_lahir: number;
+    status: AdminStatus;
+  };
+}

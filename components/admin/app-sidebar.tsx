@@ -36,57 +36,72 @@ const data = {
       ],
     },
     {
-      title: "Latihan",
-      url: "/admin/latihan",
+      title: "Kelas dan Jadwal Latihan",
+      url: "/admin/jadwal",
       items: [
-        { title: "Jadwal Latihan", url: "/admin/latihan/jadwal" },
-        { title: "Absensi Latihan", url: "/admin/latihan/absensi" },
-        { title: "Materi Latihan", url: "/admin/latihan/materi" },
+        { title: "Jadwal Latihan", url: "/admin/jadwal/jadwal" },
+        { title: "Jadwal Libur Latihan", url: "/admin/libur" },
+        { title: "Jadwal Libur Global", url: "/admin/liburGlobal" },
+        { title: "Buat Jadwal Latihan", url: "/admin/jadwal/create" },
+        { title: "Daftar Kelas", url: "/admin/kelas" },
+        { title: "Tambah Murid Kelas", url: "/admin/kelas/addMurid" },
+        { title: "Tambah Pelatih Kelas", url: "/admin/kelas/addPelatih" },
       ],
     },
     {
       title: "Ujian dan Sabuk",
       url: "/admin/ujian",
       items: [
-        { title: "Jadwal Ujian", url: "/admin/ujian/jadwal" },
-        { title: "Riwayat Kenaikan Sabuk", url: "/admin/ujian/riwayat" },
+        { title: "Ujian Kenaikan Sabuk", url: "/admin/ujianKenaikanSabuk" },
+        {
+          title: "Kelola Peserta Ujian",
+          url: "/admin/ujianKenaikanSabuk/ujian-terjadwal",
+        },
+        {
+          title: "Restore Ujian",
+          url: "/admin/ujianKenaikanSabuk/deleted",
+        },
+        {
+          title: "Riwayat Kenaikan Sabuk",
+          url: "/admin/ujianKenaikanSabuk/riwayat",
+        },
       ],
     },
     {
       title: "Kejuaraan dan Prestasi",
       url: "/admin/kejuaraan",
       items: [
-        { title: "Data Kejuaraan", url: "/admin/kejuaraan/data" },
-        { title: "Rekap Prestasi", url: "/admin/kejuaraan/rekap" },
+        { title: "Data Kejuaraan", url: "/admin/kejuaraan" },
+        { title: "Kelola Kelas Kyorugi", url: "/admin/kelas-kyorugi" },
+        { title: "Kelola Kelas Poomsae", url: "/admin/kelas-poomsae" },
+        {
+          title: "Kelola Peserta Kejuaraan",
+          url: "/admin/kejuaraan/peserta-kejuaraan",
+        },
+        {
+          title: "Tambah Kelas Kejuaraan",
+          url: "/admin/kejuaraan/kelola-kelas-kejuaraan",
+        },
+        {
+          title: "Hapus Kelas Kejuaraan",
+          url: "/admin/kejuaraan/hapus-kelas-kejuaraan",
+        },
+        { title: "Rekap Prestasi", url: "/admin/kejuaraan/rekap-kejuaraan" },
       ],
     },
-    // {
-    //   title: "Keuangan",
-    //   url: "/admin/keuangan",
-    //   items: [
-    //     { title: "Pembayaran SPP", url: "/admin/keuangan/spp" },
-    //     { title: "Biaya Pendaftaran", url: "/admin/keuangan/pendaftaran" },
-    //     { title: "Laporan Keuangan", url: "/admin/keuangan/laporan" },
-    //     { title: "Tunggakan", url: "/admin/keuangan/tunggakan" },
-    //   ],
-    // },
-    // {
-    //   title: "Laporan",
-    //   url: "/admin/laporan",
-    //   items: [
-    //     { title: "Laporan Absensi", url: "/admin/laporan/absensi" },
-    //     { title: "Laporan Keuangan", url: "/admin/laporan/keuangan" },
-    //     { title: "Export Data", url: "/admin/laporan/export" },
-    //   ],
-    // },
+    {
+      title: "Pengumuman",
+      url: "/admin/pengumuman",
+      items: [
+        { title: "Kelola Pengumuman", url: "/admin/pengumuman" },
+        { title: "Kirim Draft", url: "/admin/pengumuman/draft" },
+        { title: "Kelola Grup", url: "/admin/pengumuman/group-whatsapp" },
+      ],
+    },
     {
       title: "Setting",
-      url: "/admin/setting",
-      items: [
-        { title: "Manajemen Role dan Akun", url: "/admin/setting/akun" },
-        { title: "Tingkatan Sabuk", url: "/admin/setting/sabuk" },
-        { title: "BackUp Data", url: "/admin/setting/backup" },
-      ],
+      url: "/admin/users",
+      items: [{ title: "Manajemen Role dan Akun", url: "/admin/users" }],
     },
   ],
   user: {
@@ -185,7 +200,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <SidebarGroupContent>
                     <SidebarMenu>
                       {group.items.map((item) => {
-                        const isActive = pathname.startsWith(item.url);
+                        const isActive =
+                          pathname === item.url ||
+                          pathname.startsWith(item.url + "/");
 
                         return (
                           <SidebarMenuItem key={item.title}>
