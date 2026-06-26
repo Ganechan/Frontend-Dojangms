@@ -1,4 +1,3 @@
-// app\admin\kelas\page.tsx
 "use client";
 
 import * as React from "react";
@@ -22,7 +21,6 @@ import { SiteHeader } from "@/components/admin/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-// Import modal komponen
 import { CreateKelasModal } from "@/components/admin/kelas/create-kelas-form";
 
 export default function KelasPage() {
@@ -36,10 +34,8 @@ export default function KelasPage() {
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [activeStatus, setActiveStatus] = useState<ActiveKelasTab>("total");
-  // State untuk modal
   const [modalOpen, setModalOpen] = useState(false);
 
-  // Fetch data
   const fetchKelasList = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -55,12 +51,14 @@ export default function KelasPage() {
         params.append("status", activeStatus);
       }
 
+      // ✅ Gunakan internal API
       const response = await fetch(
-        `http://localhost:3001/api/admin/kelas/getallkelas?${params.toString()}`,
+        `/api/admin/kelas/getallkelas?${params.toString()}`,
       );
 
       if (!response.ok) {
-        throw new Error("Gagal mengambil data kelas");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Gagal mengambil data kelas");
       }
 
       const result: KelasListResponse = await response.json();
@@ -68,7 +66,6 @@ export default function KelasPage() {
       setData(result.data);
       setMeta(result.pagination);
 
-      // Calculate status counts
       const counts: KelasStatusCounts = {
         total: Number(result.summary.total_kelas),
         aktif: Number(result.summary.total_kelas_aktif),
@@ -77,7 +74,9 @@ export default function KelasPage() {
       setStatusCounts(counts);
     } catch (error) {
       console.error("Error fetching kelas:", error);
-      toast.error("Gagal mengambil data kelas");
+      toast.error(
+        error instanceof Error ? error.message : "Gagal mengambil data kelas",
+      );
       setData([]);
       setMeta(null);
     } finally {
@@ -116,7 +115,6 @@ export default function KelasPage() {
     setPage(1);
   };
 
-  // Callback setelah berhasil tambah kelas
   const handleCreateSuccess = () => {
     fetchKelasList();
   };
@@ -136,7 +134,7 @@ export default function KelasPage() {
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-6 py-4 md:gap-8 md:py-6 px-4 lg:px-6">
-              {/* Header section with title and quick action */}
+              {/* Header */}
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b pb-4">
                 <div>
                   <h1 className="text-3xl font-bold tracking-tight">
@@ -147,7 +145,6 @@ export default function KelasPage() {
                   </p>
                 </div>
                 <div>
-                  {/* Ganti Link dengan Button yang membuka modal */}
                   <Button
                     className="w-full sm:w-auto shadow-sm"
                     onClick={() => setModalOpen(true)}
@@ -158,7 +155,7 @@ export default function KelasPage() {
                 </div>
               </div>
 
-              {/* Stats Cards - tetap sama */}
+              {/* Summary Cards */}
               <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
                 <Card className="relative overflow-hidden transition-all duration-200 hover:shadow-md">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
