@@ -7,6 +7,7 @@ import { EditKelasForm } from '@/components/admin/kelas/edit-kelas-form';
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SiteHeader } from "@/components/admin/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { serverFetch } from '@/lib/serverFetch';
 
 interface KelasEditPageProps {
     params: Promise<{
@@ -16,19 +17,14 @@ interface KelasEditPageProps {
 
 async function fetchKelasDetail(id: string) {
     try {
-        const response = await fetch(
-            `http://localhost:3001/api/admin/kelas/getkelasbyid/${id}`,
+        // Gunakan serverFetch langsung pada Server Component (bukan fetch relative)
+        const response = await serverFetch<{ data: any }>(
+            `/api/admin/kelas/getkelasbyid/${id}`,
             {
                 cache: 'no-store',
             }
         );
-
-        if (!response.ok) {
-            throw new Error('Gagal mengambil data kelas');
-        }
-
-        const data = await response.json();
-        return data.data;
+        return response.data;
     } catch (error) {
         console.error('Error fetching kelas:', error);
         return null;

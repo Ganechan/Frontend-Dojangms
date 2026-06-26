@@ -55,37 +55,39 @@ export function ActionBar({ form, onSubmit, isLoading }: ActionBarProps) {
             Batal
           </Button>
 
-          <Button
-            type="button"
-            variant={status === "draft" ? "default" : "outline"}
-            onClick={handleSaveDraft}
-            disabled={!isFormValid || isLoading}
-          >
-            {isLoading && status === "draft" ? "Menyimpan..." : "Simpan Draft"}
-          </Button>
+          {status === "draft" && (
+            <Button
+              type="button"
+              variant="default"
+              onClick={handleSaveDraft}
+              disabled={!isFormValid || isLoading}
+            >
+              {isLoading ? "Menyimpan..." : "Simpan Draft"}
+            </Button>
+          )}
 
-          <Button
-            type="button"
-            variant={status === "terjadwal" ? "default" : "outline"}
-            onClick={handleSchedule}
-            disabled={!isFormValid || isLoading}
-          >
-            {isLoading && status === "terjadwal"
-              ? "Menjadwalkan..."
-              : "Jadwalkan Pengiriman"}
-          </Button>
+          {status === "terjadwal" && (
+            <Button
+              type="button"
+              variant="default"
+              onClick={handleSchedule}
+              disabled={!isFormValid || isLoading}
+            >
+              {isLoading ? "Menjadwalkan..." : "Jadwalkan Pengiriman"}
+            </Button>
+          )}
 
-          <Button
-            type="button"
-            variant={status === "terkirim" ? "default" : "outline"}
-            onClick={handleSendNow}
-            disabled={!isFormValid || isLoading}
-            className="bg-green-600 hover:bg-green-700"
-          >
-            {isLoading && status === "terkirim"
-              ? "Mengirim..."
-              : "Kirim Sekarang"}
-          </Button>
+          {status === "terkirim" && (
+            <Button
+              type="button"
+              variant="default"
+              onClick={handleSendNow}
+              disabled={!isFormValid || isLoading}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              {isLoading ? "Mengirim..." : "Kirim Sekarang"}
+            </Button>
+          )}
         </div>
       </div>
     </div>

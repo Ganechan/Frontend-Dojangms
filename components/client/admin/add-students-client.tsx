@@ -156,7 +156,7 @@ export default function AddStudentsPage() {
           <div className="flex flex-1 flex-col items-center justify-center">
             <p className="text-muted-foreground">ID Kelas tidak ditemukan.</p>
             <Button variant="outline" className="mt-4" asChild>
-              <Link href="/admin/kelas">Kembali ke Daftar Kelas</Link>
+              <Link href="/admin/addMurid">Kembali ke Daftar Kelas</Link>
             </Button>
           </div>
         </SidebarInset>
@@ -181,7 +181,7 @@ export default function AddStudentsPage() {
             <div className="mx-auto max-w-4xl w-full px-4 py-6 md:px-6 md:py-8 space-y-6">
               {/* Back Link */}
               <div className="flex items-center">
-                <Link href={`/admin/kelas/${classId}`}>
+                <Link href={`/admin/kelas/addMurid`}>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -276,11 +276,10 @@ export default function AddStudentsPage() {
                       filteredStudents.map((student) => (
                         <div
                           key={student.id}
-                          className={`flex items-center gap-4 p-3.5 rounded-xl border transition-all duration-150 ${
-                            selectedStudents.has(student.id)
-                              ? "border-primary/40 bg-primary/[0.02]"
-                              : "border-neutral-200 hover:bg-neutral-50/80"
-                          }`}
+                          className={`flex items-center gap-4 p-3.5 rounded-xl border transition-all duration-150 ${selectedStudents.has(student.id)
+                            ? "border-primary/40 bg-primary/[0.02]"
+                            : "border-neutral-200 hover:bg-neutral-50/80"
+                            }`}
                         >
                           <Checkbox
                             id={`student-${student.id}`}
