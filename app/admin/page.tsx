@@ -31,7 +31,6 @@ export default function Page() {
                 <ChartAreaInteractiveServer />
               </div>
               <SectionPieChartsServer />
-              <DataTable data={data} />
             </div>
           </div>
         </div>
