@@ -1,4 +1,3 @@
-// app\admin\libur\page.tsx
 "use client";
 
 import * as React from "react";
@@ -18,7 +17,7 @@ import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SiteHeader } from "@/components/admin/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
-// IMPORT MODAL BARU ANDA DISINI (Sesuaikan path jika berbeda)
+// IMPORT MODAL
 import { AddHolidayModal } from "@/components/admin/libur/add-modal-popup";
 
 export default function HolidaySchedulePage() {
@@ -32,7 +31,6 @@ export default function HolidaySchedulePage() {
     tanggal_end: "",
   });
 
-  // STATE BARU UNTUK KONTROL MODAL ADD
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const fetchHolidays = async () => {
@@ -48,12 +46,14 @@ export default function HolidaySchedulePage() {
         params.append("tanggal_end", filters.tanggal_end);
       }
 
+      // 🔥 PERUBAHAN: Gunakan internal API (bukan localhost:3001)
       const response = await fetch(
-        `http://localhost:3001/api/admin/jadwal/libur/all?${params.toString()}`,
+        `/api/admin/jadwal/libur/all?${params.toString()}`,
       );
 
       if (!response.ok) {
-        throw new Error("Failed to fetch holidays");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to fetch holidays");
       }
 
       const result: HolidayApiResponse = await response.json();
@@ -61,7 +61,11 @@ export default function HolidaySchedulePage() {
       setMeta(result.pagination);
     } catch (error) {
       console.error("Error fetching holidays:", error);
-      toast.error("Gagal mengambil data libur jadwal");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Gagal mengambil data libur jadwal",
+      );
       setData([]);
     } finally {
       setIsLoading(false);
@@ -115,7 +119,6 @@ export default function HolidaySchedulePage() {
                     </p>
                   </div>
 
-                  {/* MENGUBAH LINK MENJADI ACTION TRIGGER UNTUK MODAL */}
                   <Button onClick={() => setIsAddModalOpen(true)}>
                     <Plus className="mr-2 h-4 w-4" />
                     Tambah Libur Jadwal
@@ -150,13 +153,12 @@ export default function HolidaySchedulePage() {
         </div>
       </SidebarInset>
 
-      {/* PASANG MODAL ADD DISINI */}
       <AddHolidayModal
         open={isAddModalOpen}
         onOpenChange={setIsAddModalOpen}
         onSuccess={() => {
-          setIsAddModalOpen(false); // Tutup modal otomatis setelah berhasil
-          fetchHolidays(); // Refresh data pada tabel utama
+          setIsAddModalOpen(false);
+          fetchHolidays();
         }}
       />
     </SidebarProvider>
