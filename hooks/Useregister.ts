@@ -25,7 +25,7 @@ export function useRegister(): UseRegisterReturn {
     setIsBeltsLoading(true);
     try {
       // Panggil API Route Next.js — bukan backend langsung
-      const res = await fetch("/api/public/belts");
+      const res = await fetch("/api/public/belt");
       const data = await res.json();
 
       if (!res.ok) {
