@@ -89,7 +89,7 @@ export async function resetPassword(
 ): Promise<ResetPasswordResponse> {
   try {
     const response = await fetch(
-      "http://localhost:3001/api/auth/reset-password",
+      "https://api.jokotingkir-tc.online/api/auth/reset-password",
       {
         method: "POST",
         headers: {
