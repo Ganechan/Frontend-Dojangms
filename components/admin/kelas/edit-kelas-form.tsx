@@ -116,8 +116,9 @@ export function EditKelasForm({ kelas }: EditKelasFormProps) {
                 status: formData.status,
             };
 
+            // 🔥 Gunakan internal API
             const response = await fetch(
-                `http://localhost:3001/api/admin/kelas/updatekelas/${kelas.id}`,
+                `/api/admin/kelas/updatekelas/${kelas.id}`,
                 {
                     method: 'PATCH',
                     headers: {
@@ -130,15 +131,16 @@ export function EditKelasForm({ kelas }: EditKelasFormProps) {
             const data = await response.json();
 
             if (!response.ok) {
-                toast.error(data.message || 'Gagal memperbarui kelas');
-                return;
+                throw new Error(data.message || 'Gagal memperbarui kelas');
             }
 
             toast.success(data.message || 'Kelas berhasil diperbarui');
             router.push(`/admin/kelas/${kelas.id}`);
         } catch (error) {
             console.error('Error updating kelas:', error);
-            toast.error('Terjadi kesalahan saat memperbarui kelas');
+            toast.error(
+                error instanceof Error ? error.message : 'Terjadi kesalahan saat memperbarui kelas'
+            );
         } finally {
             setIsSubmitting(false);
         }
@@ -160,7 +162,6 @@ export function EditKelasForm({ kelas }: EditKelasFormProps) {
                     <div className="@container/main flex flex-1 flex-col gap-2">
                         <div className="flex flex-col gap-6 py-4 md:gap-8 md:py-6 px-4 lg:px-6">
                             <div className="mx-auto w-full max-w-2xl space-y-6">
-
                                 {/* Back Navigation & Header */}
                                 <div className="space-y-4">
                                     <Link href={`/admin/kelas/${kelas.id}`} className="inline-flex">

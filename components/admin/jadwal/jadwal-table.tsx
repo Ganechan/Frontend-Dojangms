@@ -163,8 +163,6 @@ function getScheduleColumns(
                             className="gap-2 text-emerald-600 hover:text-emerald-600 hover:bg-emerald-200/55 border-emerald-200"
                         >
                             <SquarePenIcon className="h-4 w-4" />
-                            <span className="hidden sm:inline">Edit</span>
-                            <span className="sr-only">Edit jadwal</span>
                         </Button>
                     </Link>
                     <Link href={`/admin/jadwal/jadwal/${row.original.id}`}>
@@ -174,8 +172,6 @@ function getScheduleColumns(
                             className="gap-2 text-blue-600 hover:text-blue-600 hover:bg-blue-200/55 border-blue-200"
                         >
                             <Eye className="h-4 w-4" />
-                            <span className="hidden sm:inline">Detail</span>
-                            <span className="sr-only">Lihat detail jadwal</span>
                         </Button>
                     </Link>
                     <Button
@@ -185,8 +181,6 @@ function getScheduleColumns(
                         onClick={() => onDelete(row.original.id, row.original.nama)}
                     >
                         <Trash2 className="h-4 w-4" />
-                        <span className="hidden sm:inline">Hapus</span>
-                        <span className="sr-only">Hapus jadwal</span>
                     </Button>
                 </div>
             ),

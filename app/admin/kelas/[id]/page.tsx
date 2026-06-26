@@ -92,13 +92,14 @@ export default function KelasDetailPage() {
       setError(null);
 
       try {
-        // Mengarah ke endpoint data-lengkap yang baru
+        // 🔥 Gunakan internal API
         const response = await fetch(
-          `http://localhost:3001/api/admin/kelas/${id}/data-lengkap`,
+          `/api/admin/kelas/${id}/data-lengkap`
         );
 
         if (!response.ok) {
-          throw new Error("Gagal mengambil detail lengkap data kelas");
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || "Gagal mengambil detail lengkap data kelas");
         }
 
         const result = await response.json();
@@ -108,7 +109,7 @@ export default function KelasDetailPage() {
         setError(
           err instanceof Error
             ? err.message
-            : "Kelas tidak ditemukan atau terjadi kesalahan saat mengambil data",
+            : "Kelas tidak ditemukan atau terjadi kesalahan saat mengambil data"
         );
         toast.error("Gagal memuat informasi lengkap kelas.");
       } finally {
@@ -401,7 +402,6 @@ export default function KelasDetailPage() {
             <Card className="shadow-sm border-neutral-200">
               <CardHeader className="border-b py-4 bg-neutral-50/30">
                 <CardTitle className="text-sm font-bold flex items-center gap-2 text-neutral-800">
-                  <img src={undefined} alt="" /> {/* Spacer layout */}
                   <Users className="size-4 text-neutral-500" />
                   Daftar Murid Terdaftar ({kelas.murid.length})
                 </CardTitle>

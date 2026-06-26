@@ -1,4 +1,4 @@
-//app\admin\jadwal\jadwal\[id]\edit\page.tsx
+// app/admin/jadwal/jadwal/[id]/edit/page.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -46,22 +46,23 @@ export default function EditSchedulePage({ params }: EditSchedulePageProps) {
                 setIsLoading(true);
                 setError(null);
 
-                // Fetch schedule detail
+                // 🔥 Fetch schedule detail via internal API
                 const scheduleResponse = await fetch(
-                    `http://localhost:3001/api/admin/jadwal/${id}`
+                    `/api/admin/jadwal/${id}`
                 );
 
                 if (!scheduleResponse.ok) {
-                    throw new Error('Gagal mengambil detail jadwal');
+                    const errData = await scheduleResponse.json().catch(() => ({}));
+                    throw new Error(errData.message || 'Gagal mengambil detail jadwal');
                 }
 
                 const scheduleRes: ScheduleDetailResponse =
                     await scheduleResponse.json();
                 setScheduleData(scheduleRes.data);
 
-                // Fetch kelas list
+                // Fetch kelas list via internal API
                 const kelasResponse = await fetch(
-                    'http://localhost:3001/api/admin/kelas/getallkelas?page=1&limit=100&status=aktif'
+                    '/api/admin/kelas/getallkelas?page=1&limit=100&status=aktif'
                 );
 
                 if (kelasResponse.ok) {
@@ -69,6 +70,9 @@ export default function EditSchedulePage({ params }: EditSchedulePageProps) {
                     if (kelasData.data) {
                         setKelasList(kelasData.data);
                     }
+                } else {
+                    // Jika gagal ambil kelas, kita tetap lanjutkan (tidak blocking)
+                    console.warn('Gagal mengambil daftar kelas');
                 }
             } catch (err) {
                 const errorMessage =
@@ -131,7 +135,7 @@ export default function EditSchedulePage({ params }: EditSchedulePageProps) {
                                 <Button
                                     variant="ghost"
                                     onClick={() => router.back()}
-                                    className="mb-2"
+                                    className="mb-2 w-fit"
                                 >
                                     <ArrowLeft className="mr-2 h-4 w-4" />
                                     Kembali
