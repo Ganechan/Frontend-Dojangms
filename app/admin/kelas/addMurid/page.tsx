@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   Table,
@@ -14,7 +14,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { SearchIcon, Plus, Loader2, Layers, Edit } from "lucide-react";
+import { SearchIcon, Plus, Loader2, Layers } from "lucide-react";
+import { toast } from "sonner";
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SiteHeader } from "@/components/admin/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -51,13 +52,18 @@ export default function Page() {
   >("all");
   const [loading, setLoading] = useState(true);
 
-  // Fetch classes data from API
-  const fetchClasses = async (page: number = 1) => {
+  // Fetch classes data from internal API
+  const fetchClasses = useCallback(async (page: number = 1) => {
     try {
       setLoading(true);
+      // 🔥 Gunakan internal API (bukan localhost:3001)
       const response = await fetch(
-        `http://localhost:3001/api/admin/kelas/getallkelas?page=${page}&limit=10`,
+        `/api/admin/kelas/getallkelas?page=${page}&limit=10`,
       );
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Gagal mengambil data kelas");
+      }
       const data = await response.json();
       setClasses(data.data || []);
       setPagination({
@@ -70,14 +76,18 @@ export default function Page() {
       });
     } catch (error) {
       console.error("Error fetching classes:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Gagal mengambil data kelas",
+      );
+      setClasses([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchClasses();
-  }, []);
+  }, [fetchClasses]);
 
   // Filter classes based on search input and status tabs
   const filteredClasses = classes.filter((kelas) => {
@@ -102,7 +112,6 @@ export default function Page() {
       <SidebarInset>
         <SiteHeader />
 
-        {/* Main Workspace Wrapper */}
         <div className="flex flex-1 flex-col bg-neutral-50/50">
           <div className="@container/main mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-8 space-y-6">
             {/* Header Section */}
@@ -118,7 +127,6 @@ export default function Page() {
 
             {/* Toolbar Filters Card */}
             <div className="bg-white rounded-xl border border-neutral-200/80 p-4 shadow-sm space-y-4">
-              {/* Search Bar Input */}
               <div className="relative">
                 <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 size-4" />
                 <Input
@@ -130,7 +138,6 @@ export default function Page() {
                 />
               </div>
 
-              {/* Status Segment Control */}
               <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
                 <div className="flex items-center gap-1.5 bg-neutral-100 p-1 rounded-lg border border-neutral-200/40">
                   <Button
@@ -254,14 +261,13 @@ export default function Page() {
                         </TableCell>
                         <TableCell className="text-right py-4">
                           <div className="flex items-center justify-end gap-2">
-                            {/* Button Edit Murid Kelas (Conditional) */}
+                            {/* Button Edit Murid Kelas */}
                             {kelas.status === "aktif" ? (
                               <Link href={`/admin/kelas/addMurid/${kelas.id}`}>
                                 <Button
                                   size="sm"
                                   variant="outline"
                                   className="shadow-sm border-neutral-200 hover:bg-neutral-500 font-medium"
-                                  distribute-id="btn-add"
                                 >
                                   <Plus className="size-3.5 mr-1.5 stroke-[2.5]" />
                                   Edit
@@ -278,7 +284,7 @@ export default function Page() {
                                 Edit
                               </Button>
                             )}
-                            {/* Button Tambah Murid (Conditional) */}
+                            {/* Button Tambah Murid */}
                             {kelas.status === "aktif" ? (
                               <Link
                                 href={`/admin/kelas/addMurid/create?classId=${kelas.id}`}
@@ -287,7 +293,6 @@ export default function Page() {
                                   size="sm"
                                   variant="outline"
                                   className="shadow-sm border-neutral-200 hover:bg-neutral-500 font-medium"
-                                  distribute-id="btn-add"
                                 >
                                   <Plus className="size-3.5 mr-1.5 stroke-[2.5]" />
                                   Tambah Murid
@@ -313,7 +318,7 @@ export default function Page() {
               </Table>
             </div>
 
-            {/* Pagination Controls Section */}
+            {/* Pagination Controls */}
             {!loading && pagination.total_page > 1 && (
               <div className="flex items-center justify-between pt-2">
                 <div className="text-sm text-neutral-500 font-medium">
