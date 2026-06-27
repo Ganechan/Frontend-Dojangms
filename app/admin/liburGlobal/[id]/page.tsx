@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -97,33 +97,40 @@ export default function GlobalHolidayDetailPage({
   const [isLoading, setIsLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
 
-  useEffect(() => {
-    const fetchHoliday = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch(
-          `http://localhost:3001/api/admin/jadwal/libur-global/get/${id}`,
-        );
+  const fetchHoliday = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/admin/jadwal/libur-global/get/${id}`);
 
-        if (!response.ok) {
-          toast.error("Libur global tidak ditemukan");
-          return;
-        }
-
-        const data: GlobalHolidayDetailResponse = await response.json();
-        setHoliday(data.data);
-      } catch (error) {
-        console.error("Error fetching holiday:", error);
-        toast.error(
-          "Libur global tidak ditemukan atau terjadi kesalahan saat mengambil data.",
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || "Gagal mengambil data libur global",
         );
-      } finally {
-        setIsLoading(false);
       }
-    };
 
-    fetchHoliday();
+      const data: GlobalHolidayDetailResponse = await response.json();
+      setHoliday(data.data);
+    } catch (error) {
+      console.error("Error fetching holiday:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Libur global tidak ditemukan atau terjadi kesalahan saat mengambil data.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
   }, [id]);
+
+  useEffect(() => {
+    fetchHoliday();
+  }, [fetchHoliday]);
+
+  const handleEditSuccess = () => {
+    fetchHoliday(); // Refresh data tanpa reload halaman
+    setShowEditModal(false);
+  };
 
   return (
     <SidebarProvider
@@ -140,7 +147,7 @@ export default function GlobalHolidayDetailPage({
         <div className="flex flex-1 flex-col bg-neutral-50/50">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="mx-auto max-w-5xl w-full px-4 py-6 md:px-6 md:py-8 space-y-6">
-              {/* Back Navigation Arrow */}
+              {/* Back Navigation */}
               <div className="flex items-center">
                 <Link href="/admin/liburGlobal">
                   <Button
@@ -196,10 +203,10 @@ export default function GlobalHolidayDetailPage({
                 </Card>
               )}
 
-              {/* MAIN CONTENT STATE */}
+              {/* MAIN CONTENT */}
               {!isLoading && holiday && (
                 <>
-                  {/* Title Header Block */}
+                  {/* Title Header */}
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b pb-5">
                     <div className="space-y-1">
                       <h1 className="text-3xl font-bold tracking-tight text-foreground">
@@ -228,7 +235,7 @@ export default function GlobalHolidayDetailPage({
                     </div>
                   </div>
 
-                  {/* Info Cards Grid */}
+                  {/* Info Cards */}
                   <div className="grid gap-4 sm:grid-cols-2">
                     <Card className="shadow-sm">
                       <CardContent className="p-5 flex items-start gap-4">
@@ -263,7 +270,7 @@ export default function GlobalHolidayDetailPage({
                     </Card>
                   </div>
 
-                  {/* Impacted Schedules Table Card */}
+                  {/* Impacted Schedules Table */}
                   <Card className="shadow-sm overflow-hidden rounded-xl border">
                     <CardHeader className="border-b bg-neutral-50/50 py-4">
                       <div className="flex items-center gap-2">
@@ -374,14 +381,13 @@ export default function GlobalHolidayDetailPage({
                   </Card>
                 </>
               )}
+
+              {/* Edit Modal */}
               <EditGlobalHolidayModal
                 open={showEditModal}
                 onOpenChange={setShowEditModal}
                 holiday={holiday}
-                onSuccess={() => {
-                  // Refresh the holiday data
-                  window.location.reload();
-                }}
+                onSuccess={handleEditSuccess}
               />
             </div>
           </div>

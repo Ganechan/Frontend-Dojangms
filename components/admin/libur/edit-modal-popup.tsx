@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -36,7 +36,7 @@ export function EditHolidayModal({
     keterangan: "",
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (holiday) {
       setFormData({
         tanggal: holiday.tanggal,
@@ -93,8 +93,9 @@ export function EditHolidayModal({
 
     setIsSubmitting(true);
     try {
+      // 🔥 Gunakan internal API
       const response = await fetch(
-        `http://localhost:3001/api/admin/jadwal/edit/libur/${holiday.id}`,
+        `/api/admin/jadwal/edit/libur/${holiday.id}`,
         {
           method: "PUT",
           headers: {
@@ -110,8 +111,7 @@ export function EditHolidayModal({
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.message || "Gagal memperbarui libur jadwal");
-        return;
+        throw new Error(data.message || "Gagal memperbarui libur jadwal");
       }
 
       toast.success(data.message || "Libur jadwal berhasil diperbarui");
@@ -119,7 +119,11 @@ export function EditHolidayModal({
       onSuccess?.();
     } catch (error) {
       console.error("Error updating holiday:", error);
-      toast.error("Terjadi kesalahan saat memperbarui libur jadwal");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan saat memperbarui libur jadwal",
+      );
     } finally {
       setIsSubmitting(false);
     }
