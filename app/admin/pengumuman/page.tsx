@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import {
   Table,
@@ -24,13 +24,30 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Eye, Plus, Edit, Trash2, Search, Loader2 } from "lucide-react";
+import { Eye, Plus, Edit, Trash2, Search, Loader2, RefreshCw, Inbox } from "lucide-react";
 import { toast } from "sonner";
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SiteHeader } from "@/components/admin/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
-// Interface untuk data pengumuman
+// ─── WhatsApp Status Types ────────────────────────────────────────────────────
+
+type WAStatus =
+  | "initializing"
+  | "qr"
+  | "authenticated"
+  | "ready"
+  | "disconnected"
+  | "auth_failure";
+
+interface WhatsAppStatusResponse {
+  ready: boolean;
+  status: WAStatus;
+  qr: string | null;
+}
+
+// ─── Interface untuk data pengumuman ──────────────────────────────────────────
+
 interface Announcement {
   id: number;
   judul: string;
@@ -85,6 +102,7 @@ interface AnnouncementResponse {
 }
 
 export default function AnnouncementsPage() {
+  // Announcements & general state
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
     current_page: 1,
@@ -107,10 +125,63 @@ export default function AnnouncementsPage() {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
 
+  // WhatsApp status state
+  const [waStatus, setWaStatus] = useState<WhatsAppStatusResponse | null>(null);
+  const [isLoadingWA, setIsLoadingWA] = useState(false);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   // Delete state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // ── WhatsApp status polling ────────────────────────────────────────────────
+
+  const fetchWAStatus = useCallback(async () => {
+    setIsLoadingWA(true);
+    try {
+      const res = await fetch("/api/admin/whatsapp/status");
+      const data: WhatsAppStatusResponse = await res.json();
+      setWaStatus(data);
+      return data.status;
+    } catch (err) {
+      console.error("Error fetching WA status:", err);
+      return null;
+    } finally {
+      setIsLoadingWA(false);
+    }
+  }, []);
+
+  const startPolling = useCallback(
+    (intervalMs: number) => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+      pollingRef.current = setInterval(async () => {
+        const status = await fetchWAStatus();
+        if (status === "ready" && intervalMs < 30_000) {
+          startPolling(30_000);
+        }
+        if (
+          (status === "qr" || status === "disconnected" || status === "auth_failure") &&
+          intervalMs > 3_000
+        ) {
+          startPolling(3_000);
+        }
+      }, intervalMs);
+    },
+    [fetchWAStatus],
+  );
+
+  useEffect(() => {
+    fetchWAStatus().then((status) => {
+      startPolling(status === "ready" ? 30_000 : 3_000);
+    });
+
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, [fetchWAStatus, startPolling]);
+
+  // ── Fetch Announcements ────────────────────────────────────────────────────
 
   const fetchAnnouncements = async (page: number = 1) => {
     try {
@@ -148,9 +219,9 @@ export default function AnnouncementsPage() {
 
   useEffect(() => {
     fetchAnnouncements();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter]);
 
-  // Filter client-side tambahan (search sudah dihandle di server, tapi kita tetap filter untuk keamanan)
   const filteredAnnouncements = announcements.filter((item) => {
     const matchSearch =
       item.judul.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -158,7 +229,8 @@ export default function AnnouncementsPage() {
     return matchSearch;
   });
 
-  // Delete handler
+  // ── Delete Handler ─────────────────────────────────────────────────────────
+
   const handleDeleteClick = (id: number) => {
     setDeletingId(id);
     setDeleteDialogOpen(true);
@@ -220,6 +292,8 @@ export default function AnnouncementsPage() {
     });
   };
 
+  const isWAReady = waStatus?.status === "ready";
+
   return (
     <SidebarProvider
       style={
@@ -232,278 +306,285 @@ export default function AnnouncementsPage() {
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader />
-        <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <div className="min-h-screen bg-background p-6">
-                <div className="max-w-7xl mx-auto">
-                  {/* Header */}
-                  <div className="mb-8 flex items-start justify-between">
-                    <div>
-                      <h1 className="text-3xl font-bold text-foreground mb-2">
-                        Pengumuman
-                      </h1>
-                      <p className="text-muted-foreground">
-                        Kelola pengumuman untuk murid, pelatih, dan admin
-                      </p>
-                    </div>
-                    <Link href="/admin/pengumuman/tambah">
-                      <Button>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Buat Pengumuman
-                      </Button>
-                    </Link>
-                  </div>
-
-                  {/* Summary Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                    <Card>
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">
-                          Total
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-2xl font-bold">{summary.total}</p>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">
-                          Draft
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-2xl font-bold text-amber-600">
-                          {summary.draft}
-                        </p>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">
-                          Terjadwal
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-2xl font-bold text-blue-600">
-                          {summary.terjadwal}
-                        </p>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">
-                          Terkirim
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-2xl font-bold text-green-600">
-                          {summary.terkirim}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* Toolbar & Filters */}
-                  <div className="bg-card rounded-lg border border-border p-4 mb-6 space-y-4">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground size-4" />
-                      <Input
-                        type="text"
-                        placeholder="Cari judul atau isi pengumuman..."
-                        value={searchTerm}
-                        onChange={(e) => {
-                          setSearchTerm(e.target.value);
-                          // auto search after typing (debounce bisa ditambahkan)
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") fetchAnnouncements(1);
-                        }}
-                        className="pl-10"
-                      />
-                    </div>
-
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground mb-2">
-                        Status
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          variant={
-                            statusFilter === "all" ? "default" : "outline"
-                          }
-                          size="sm"
-                          onClick={() => setStatusFilter("all")}
-                        >
-                          Semua
-                        </Button>
-                        <Button
-                          variant={
-                            statusFilter === "draft" ? "default" : "outline"
-                          }
-                          size="sm"
-                          onClick={() => setStatusFilter("draft")}
-                        >
-                          Draft
-                        </Button>
-                        <Button
-                          variant={
-                            statusFilter === "terjadwal" ? "default" : "outline"
-                          }
-                          size="sm"
-                          onClick={() => setStatusFilter("terjadwal")}
-                        >
-                          Terjadwal
-                        </Button>
-                        <Button
-                          variant={
-                            statusFilter === "terkirim" ? "default" : "outline"
-                          }
-                          size="sm"
-                          onClick={() => setStatusFilter("terkirim")}
-                        >
-                          Terkirim
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="text-sm text-muted-foreground">
-                      Menampilkan {filteredAnnouncements.length} dari{" "}
-                      {pagination.total_data} pengumuman
-                    </div>
-                  </div>
-
-                  {/* Table */}
-                  <div className="bg-card rounded-lg border border-border overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="hover:bg-transparent">
-                          <TableHead className="w-[30%]">Judul</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Tanggal Publish</TableHead>
-                          <TableHead>Dibuat Oleh</TableHead>
-                          <TableHead>Target</TableHead>
-                          <TableHead className="text-right">Aksi</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {loading ? (
-                          <TableRow>
-                            <TableCell colSpan={6} className="text-center py-8">
-                              <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-                            </TableCell>
-                          </TableRow>
-                        ) : filteredAnnouncements.length === 0 ? (
-                          <TableRow>
-                            <TableCell
-                              colSpan={6}
-                              className="text-center py-8 text-muted-foreground"
-                            >
-                              Tidak ada pengumuman yang ditemukan
-                            </TableCell>
-                          </TableRow>
-                        ) : (
-                          filteredAnnouncements.map((item) => (
-                            <TableRow key={item.id}>
-                              <TableCell className="font-medium">
-                                <div>
-                                  <p className="font-semibold text-foreground">
-                                    {item.judul}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground truncate max-w-xs">
-                                    {item.isi}
-                                  </p>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <Badge
-                                  variant={getStatusBadgeVariant(item.status)}
-                                >
-                                  {getStatusLabel(item.status)}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-sm">
-                                {formatDate(item.tanggal_publish)}
-                              </TableCell>
-                              <TableCell className="text-sm">
-                                {item.dibuat_oleh?.nama || "-"}
-                              </TableCell>
-                              <TableCell className="text-sm">
-                                <Badge variant="outline">
-                                  {item.target.target_type === "global"
-                                    ? "Semua"
-                                    : item.target.target_type === "role"
-                                      ? item.target.target_role
-                                      : item.target.target_type === "kelas"
-                                        ? `Kelas ${item.target.kelas_id}`
-                                        : "Spesifik User"}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <div className="flex gap-2 justify-end">
-                                  <Link href={`/admin/pengumuman/${item.id}`}>
-                                    <Button size="sm" variant="ghost">
-                                      <Eye className="w-4 h-4" />
-                                    </Button>
-                                  </Link>
-                                  <Link
-                                    href={`/admin/pengumuman/${item.id}/edit`}
-                                  >
-                                    <Button size="sm" variant="ghost">
-                                      <Edit className="w-4 h-4" />
-                                    </Button>
-                                  </Link>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="text-destructive hover:text-destructive"
-                                    onClick={() => handleDeleteClick(item.id)}
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
-
-                  {/* Pagination */}
-                  {pagination.total_page > 1 && (
-                    <div className="flex items-center justify-between mt-6">
-                      <div className="text-sm text-muted-foreground">
-                        Halaman {pagination.current_page} dari{" "}
-                        {pagination.total_page}
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            fetchAnnouncements(pagination.current_page - 1)
-                          }
-                          disabled={!pagination.has_prev || loading}
-                        >
-                          Sebelumnya
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            fetchAnnouncements(pagination.current_page + 1)
-                          }
-                          disabled={!pagination.has_next || loading}
-                        >
-                          Selanjutnya
-                        </Button>
-                      </div>
-                    </div>
+        <div className="flex flex-1 flex-col p-4 sm:p-6 bg-[#FAFAFA] dark:bg-zinc-950">
+          <div className="max-w-7xl mx-auto w-full space-y-6">
+            
+            {/* ── Header ── */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">
+                  Pengumuman
+                </h1>
+                <p className="text-sm sm:text-base text-muted-foreground">
+                  Kelola pengumuman untuk murid, pelatih, dan admin
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+                {/* Status Pill Badge */}
+                <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-border px-4 py-2 rounded-full text-sm shadow-sm font-medium">
+                  {isWAReady ? (
+                    <>
+                      <span className="relative flex h-2.5 w-2.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
+                      </span>
+                      <span className="text-green-600 dark:text-green-400 font-semibold">Connected</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="relative flex h-2.5 w-2.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-yellow-500" />
+                      </span>
+                      <span className="text-yellow-600 dark:text-yellow-400 font-semibold">Disconnected</span>
+                    </>
                   )}
+                  <div className="w-px h-4 bg-border mx-1" />
+                  <button
+                    onClick={() => fetchWAStatus()}
+                    disabled={isLoadingWA}
+                    className="text-muted-foreground hover:text-foreground transition-colors p-0.5 rounded-full hover:bg-muted"
+                    title="Perbarui Status"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isLoadingWA ? "animate-spin" : ""}`} />
+                  </button>
+                </div>
+
+                {/* Create Button */}
+                <Link href="/admin/pengumuman/tambah">
+                  <Button className="bg-[#D90429] text-white hover:bg-[#b30322] font-semibold rounded-lg h-10 px-4">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Buat Pengumuman
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            {/* ── Summary Cards ── */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card className="border border-border/60 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] rounded-2xl bg-card">
+                <CardHeader className="pb-2 p-4 sm:p-6 sm:pb-3">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
+                    Total
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+                  <p className="text-2xl sm:text-3xl font-bold text-foreground">{summary.total}</p>
+                </CardContent>
+              </Card>
+              <Card className="border border-border/60 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] rounded-2xl bg-card">
+                <CardHeader className="pb-2 p-4 sm:p-6 sm:pb-3">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
+                    Draft
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+                  <p className="text-2xl sm:text-3xl font-bold text-amber-600">{summary.draft}</p>
+                </CardContent>
+              </Card>
+              <Card className="border border-border/60 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] rounded-2xl bg-card">
+                <CardHeader className="pb-2 p-4 sm:p-6 sm:pb-3">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
+                    Terjadwal
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+                  <p className="text-2xl sm:text-3xl font-bold text-blue-600">{summary.terjadwal}</p>
+                </CardContent>
+              </Card>
+              <Card className="border border-border/60 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] rounded-2xl bg-card">
+                <CardHeader className="pb-2 p-4 sm:p-6 sm:pb-3">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
+                    Terkirim
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+                  <p className="text-2xl sm:text-3xl font-bold text-green-600">{summary.terkirim}</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* ── Toolbar & Filters ── */}
+            <div className="bg-card rounded-2xl border border-border/60 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] p-4 sm:p-6 space-y-4">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground size-4" />
+                <Input
+                  type="text"
+                  placeholder="Cari judul atau isi pengumuman..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") fetchAnnouncements(1);
+                  }}
+                  className="pl-11 bg-[#FAFAFA] dark:bg-zinc-900 border-border rounded-xl h-12 focus-visible:ring-1 focus-visible:ring-ring"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Status
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { key: "all", label: "Semua" },
+                    { key: "draft", label: "Draft" },
+                    { key: "terjadwal", label: "Terjadwal" },
+                    { key: "terkirim", label: "Terkirim" },
+                  ].map((filter) => (
+                    <Button
+                      key={filter.key}
+                      variant={statusFilter === filter.key ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setStatusFilter(filter.key as any)}
+                      className="rounded-lg font-medium"
+                    >
+                      {filter.label}
+                    </Button>
+                  ))}
                 </div>
               </div>
+
+              <div className="text-sm text-muted-foreground pt-1 border-t border-border/40">
+                Menampilkan {filteredAnnouncements.length} dari {pagination.total_data} pengumuman
+              </div>
+            </div>
+
+            {/* ── Table Container ── */}
+            <div className="bg-card rounded-2xl border border-border/60 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] overflow-hidden">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent border-b border-border/40">
+                      <TableHead className="text-xs font-bold tracking-wider text-muted-foreground uppercase py-4 pl-6 w-[35%]">Judul</TableHead>
+                      <TableHead className="text-xs font-bold tracking-wider text-muted-foreground uppercase py-4">Status</TableHead>
+                      <TableHead className="text-xs font-bold tracking-wider text-muted-foreground uppercase py-4">Tanggal Publish</TableHead>
+                      <TableHead className="text-xs font-bold tracking-wider text-muted-foreground uppercase py-4">Dibuat Oleh</TableHead>
+                      <TableHead className="text-xs font-bold tracking-wider text-muted-foreground uppercase py-4">Target</TableHead>
+                      <TableHead className="text-xs font-bold tracking-wider text-muted-foreground uppercase py-4 text-right pr-6">Aksi</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-20">
+                          <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+                        </TableCell>
+                      </TableRow>
+                    ) : filteredAnnouncements.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-24">
+                          <div className="flex flex-col items-center justify-center space-y-4">
+                            <div className="p-4 bg-muted/60 rounded-full text-muted-foreground">
+                              <Inbox className="w-8 h-8 stroke-[1.5]" />
+                            </div>
+                            <div className="space-y-1">
+                              <h3 className="text-base font-semibold text-foreground">Tidak ada pengumuman</h3>
+                              <p className="text-sm text-muted-foreground">Silakan buat pengumuman baru untuk memulai</p>
+                            </div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredAnnouncements.map((item) => (
+                        <TableRow key={item.id} className="border-b border-border/40 last:border-0 hover:bg-muted/5">
+                          <TableCell className="font-semibold text-foreground py-4 pl-6">
+                            <div>
+                              <p className="font-semibold text-foreground">
+                                {item.judul}
+                              </p>
+                              <p className="text-xs text-muted-foreground truncate max-w-[200px] sm:max-w-xs md:max-w-sm font-normal">
+                                {item.isi}
+                              </p>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <Badge
+                              variant={getStatusBadgeVariant(item.status)}
+                              className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                                item.status === "draft"
+                                  ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-400 hover:bg-zinc-100"
+                                  : item.status === "terjadwal"
+                                    ? "bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 hover:bg-blue-100"
+                                    : "bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 hover:bg-green-100"
+                              }`}
+                            >
+                              {getStatusLabel(item.status)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-sm py-4 text-muted-foreground">
+                            {formatDate(item.tanggal_publish)}
+                          </TableCell>
+                          <TableCell className="text-sm py-4 text-muted-foreground">
+                            {item.dibuat_oleh?.nama || "-"}
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <Badge variant="outline" className="rounded-full bg-muted/30">
+                              {item.target.target_type === "global"
+                                ? "Semua"
+                                : item.target.target_type === "role"
+                                  ? item.target.target_role
+                                  : item.target.target_type === "kelas"
+                                    ? `Kelas ${item.target.kelas_id}`
+                                    : "Spesifik User"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right py-4 pr-6">
+                            <div className="flex gap-1 justify-end">
+                              <Link href={`/admin/pengumuman/${item.id}`}>
+                                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 hover:bg-muted">
+                                  <Eye className="w-4 h-4 text-muted-foreground" />
+                                </Button>
+                              </Link>
+                              <Link href={`/admin/pengumuman/${item.id}/edit`}>
+                                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 hover:bg-muted">
+                                  <Edit className="w-4 h-4 text-muted-foreground" />
+                                </Button>
+                              </Link>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={() => handleDeleteClick(item.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Pagination */}
+              {pagination.total_page > 1 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 sm:p-6 border-t border-border/40">
+                  <div className="text-sm text-muted-foreground order-2 sm:order-1">
+                    Halaman {pagination.current_page} dari {pagination.total_page}
+                  </div>
+                  <div className="flex gap-2 order-1 sm:order-2 w-full sm:w-auto justify-between sm:justify-end">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fetchAnnouncements(pagination.current_page - 1)}
+                      disabled={!pagination.has_prev || loading}
+                      className="rounded-lg flex-1 sm:flex-none"
+                    >
+                      Sebelumnya
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fetchAnnouncements(pagination.current_page + 1)}
+                      disabled={!pagination.has_next || loading}
+                      className="rounded-lg flex-1 sm:flex-none"
+                    >
+                      Selanjutnya
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

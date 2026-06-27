@@ -18,7 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SiteHeader } from "@/components/admin/site-header";
@@ -214,8 +216,19 @@ export default function EditKyorugiClassPage() {
         <AppSidebar variant="inset" />
         <SidebarInset>
           <SiteHeader />
-          <div className="flex items-center justify-center h-screen">
-            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+          <div className="flex flex-1 flex-col">
+            <div className="flex flex-col gap-6 py-4 md:gap-8 md:py-6 px-4 lg:px-6">
+              <div className="max-w-2xl mx-auto w-full space-y-6">
+                <div className="flex items-center gap-4">
+                  <Skeleton className="h-9 w-28 rounded-md" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-7 w-48" />
+                    <Skeleton className="h-4 w-64" />
+                  </div>
+                </div>
+                <Skeleton className="h-[520px] rounded-xl" />
+              </div>
+            </div>
           </div>
         </SidebarInset>
       </SidebarProvider>
@@ -234,167 +247,215 @@ export default function EditKyorugiClassPage() {
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader />
-        <div className="flex flex-1 flex-col p-6 bg-background">
-          <div className="max-w-2xl mx-auto w-full space-y-6">
-            {/* Header */}
-            <div className="flex items-center gap-4">
-              <Button variant="outline" size="sm" onClick={() => router.back()}>
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Kembali
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold">Edit Kelas Kyorugi</h1>
-                <p className="text-sm text-muted-foreground">
-                  Perbarui informasi kelas pertandingan
-                </p>
+        <div className="flex flex-1 flex-col">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <div className="flex flex-col gap-6 py-4 md:gap-8 md:py-6 px-4 lg:px-6">
+              <div className="max-w-2xl mx-auto w-full space-y-6">
+                {/* Header */}
+                <div className="space-y-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => router.back()}
+                    className="shadow-sm"
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Kembali
+                  </Button>
+                  <div className="border-b pb-4">
+                    <h1 className="text-3xl font-bold tracking-tight">
+                      Edit Kelas Kyorugi
+                    </h1>
+                    <p className="text-muted-foreground mt-1.5">
+                      Perbarui informasi kelas pertandingan
+                    </p>
+                  </div>
+                </div>
+
+                {/* Form */}
+                <Card>
+                  <CardHeader className="border-b bg-muted/30">
+                    <CardTitle className="text-base">
+                      Form Edit Kelas
+                    </CardTitle>
+                    <CardDescription>
+                      Ubah detail kelas sesuai kebutuhan
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      {/* Kategori Usia & Level Kelas - side by side on desktop */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-foreground">
+                            Kategori Usia{" "}
+                            <span className="text-destructive">*</span>
+                          </label>
+                          <Select
+                            value={formData.kategori_usia_id}
+                            onValueChange={(val) =>
+                              handleSelectChange("kategori_usia_id", val)
+                            }
+                          >
+                            <SelectTrigger className="bg-background">
+                              <SelectValue placeholder="Pilih kategori usia" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {kategoriOptions.map((item) => (
+                                <SelectItem
+                                  key={item.id}
+                                  value={item.id.toString()}
+                                >
+                                  {item.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-foreground">
+                            Level Kelas{" "}
+                            <span className="text-destructive">*</span>
+                          </label>
+                          <Select
+                            value={formData.level_kelas_id}
+                            onValueChange={(val) =>
+                              handleSelectChange("level_kelas_id", val)
+                            }
+                          >
+                            <SelectTrigger className="bg-background">
+                              <SelectValue placeholder="Pilih level kelas" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {levelOptions.map((item) => (
+                                <SelectItem
+                                  key={item.id}
+                                  value={item.id.toString()}
+                                >
+                                  {item.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      {/* Gender & Label - side by side */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-foreground">
+                            Gender{" "}
+                            <span className="text-destructive">*</span>
+                          </label>
+                          <Select
+                            value={formData.gender}
+                            onValueChange={(val) =>
+                              handleSelectChange("gender", val)
+                            }
+                          >
+                            <SelectTrigger className="bg-background">
+                              <SelectValue placeholder="Pilih gender" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="putra">Putra</SelectItem>
+                              <SelectItem value="putri">Putri</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label
+                            htmlFor="label"
+                            className="text-sm font-medium text-foreground"
+                          >
+                            Label Kelas{" "}
+                            <span className="text-destructive">*</span>
+                          </label>
+                          <Input
+                            id="label"
+                            name="label"
+                            placeholder="Contoh: under-42"
+                            value={formData.label}
+                            onChange={handleInputChange}
+                            required
+                            className="bg-background"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Batas Bawah dan Atas */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label
+                            htmlFor="batas_bawah"
+                            className="text-sm font-medium text-foreground"
+                          >
+                            Batas Bawah (kg){" "}
+                            <span className="text-destructive">*</span>
+                          </label>
+                          <Input
+                            id="batas_bawah"
+                            name="batas_bawah"
+                            type="number"
+                            placeholder="35"
+                            value={formData.batas_bawah}
+                            onChange={handleInputChange}
+                            required
+                            className="bg-background"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label
+                            htmlFor="batas_atas"
+                            className="text-sm font-medium text-foreground"
+                          >
+                            Batas Atas (kg){" "}
+                            <span className="text-destructive">*</span>
+                          </label>
+                          <Input
+                            id="batas_atas"
+                            name="batas_atas"
+                            type="number"
+                            placeholder="42"
+                            value={formData.batas_atas}
+                            onChange={handleInputChange}
+                            required
+                            className="bg-background"
+                          />
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => router.back()}
+                          disabled={submitting}
+                          className="shadow-sm"
+                        >
+                          Batal
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={submitting}
+                          className="shadow-sm"
+                        >
+                          {submitting ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Save className="mr-2 h-4 w-4" />
+                          )}
+                          Simpan Perubahan
+                        </Button>
+                      </div>
+                    </form>
+                  </CardContent>
+                </Card>
               </div>
             </div>
-
-            {/* Form */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Form Edit Kelas</CardTitle>
-                <CardDescription>
-                  Ubah detail kelas sesuai kebutuhan
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  {/* Kategori Usia */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">
-                      Kategori Usia *
-                    </label>
-                    <Select
-                      value={formData.kategori_usia_id}
-                      onValueChange={(val) =>
-                        handleSelectChange("kategori_usia_id", val)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Pilih kategori usia" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {kategoriOptions.map((item) => (
-                          <SelectItem key={item.id} value={item.id.toString()}>
-                            {item.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Level Kelas */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Level Kelas *</label>
-                    <Select
-                      value={formData.level_kelas_id}
-                      onValueChange={(val) =>
-                        handleSelectChange("level_kelas_id", val)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Pilih level kelas" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {levelOptions.map((item) => (
-                          <SelectItem key={item.id} value={item.id.toString()}>
-                            {item.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Gender */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Gender *</label>
-                    <Select
-                      value={formData.gender}
-                      onValueChange={(val) => handleSelectChange("gender", val)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Pilih gender" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="putra">Putra</SelectItem>
-                        <SelectItem value="putri">Putri</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Label */}
-                  <div className="space-y-2">
-                    <label htmlFor="label" className="text-sm font-medium">
-                      Label Kelas *
-                    </label>
-                    <Input
-                      id="label"
-                      name="label"
-                      placeholder="Contoh: under-42"
-                      value={formData.label}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-
-                  {/* Batas Bawah dan Atas */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label
-                        htmlFor="batas_bawah"
-                        className="text-sm font-medium"
-                      >
-                        Batas Bawah (kg) *
-                      </label>
-                      <Input
-                        id="batas_bawah"
-                        name="batas_bawah"
-                        type="number"
-                        placeholder="35"
-                        value={formData.batas_bawah}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label
-                        htmlFor="batas_atas"
-                        className="text-sm font-medium"
-                      >
-                        Batas Atas (kg) *
-                      </label>
-                      <Input
-                        id="batas_atas"
-                        name="batas_atas"
-                        type="number"
-                        placeholder="42"
-                        value={formData.batas_atas}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end gap-3 pt-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => router.back()}
-                      disabled={submitting}
-                    >
-                      Batal
-                    </Button>
-                    <Button type="submit" disabled={submitting}>
-                      {submitting && (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      )}
-                      Simpan Perubahan
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </SidebarInset>

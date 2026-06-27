@@ -1,4 +1,3 @@
-// app\admin\kelas-poomsae\[id]\edit\page.tsx
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
@@ -19,7 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SiteHeader } from "@/components/admin/site-header";
@@ -309,8 +310,19 @@ export default function EditPoomsaeClassPage() {
         <AppSidebar variant="inset" />
         <SidebarInset>
           <SiteHeader />
-          <div className="flex items-center justify-center h-screen">
-            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+          <div className="flex flex-1 flex-col">
+            <div className="flex flex-col gap-6 py-4 md:gap-8 md:py-6 px-4 lg:px-6">
+              <div className="max-w-2xl mx-auto w-full space-y-6">
+                <div className="flex items-center gap-4">
+                  <Skeleton className="h-9 w-28 rounded-md" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-7 w-48" />
+                    <Skeleton className="h-4 w-64" />
+                  </div>
+                </div>
+                <Skeleton className="h-[480px] rounded-xl" />
+              </div>
+            </div>
           </div>
         </SidebarInset>
       </SidebarProvider>
@@ -329,183 +341,234 @@ export default function EditPoomsaeClassPage() {
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader />
-        <div className="flex flex-1 flex-col p-6 bg-background">
-          <div className="max-w-2xl mx-auto w-full space-y-6">
-            <div className="flex items-center gap-4">
-              <Button variant="outline" size="sm" onClick={() => router.back()}>
-                <ArrowLeft className="w-4 h-4 mr-2" /> Kembali
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold">Edit Kelas Poomsae</h1>
-                <p className="text-sm text-muted-foreground">
-                  Perbarui informasi kelas pertandingan
-                </p>
+        <div className="flex flex-1 flex-col">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <div className="flex flex-col gap-6 py-4 md:gap-8 md:py-6 px-4 lg:px-6">
+              <div className="max-w-2xl mx-auto w-full space-y-6">
+                {/* Header */}
+                <div className="space-y-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => router.back()}
+                    className="shadow-sm"
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Kembali
+                  </Button>
+                  <div className="border-b pb-4">
+                    <h1 className="text-3xl font-bold tracking-tight">
+                      Edit Kelas Poomsae
+                    </h1>
+                    <p className="text-muted-foreground mt-1.5">
+                      Perbarui informasi kelas pertandingan Poomsae
+                    </p>
+                  </div>
+                </div>
+
+                {/* Form */}
+                <Card>
+                  <CardHeader className="border-b bg-muted/30">
+                    <CardTitle className="text-base">
+                      Form Edit Kelas Poomsae
+                    </CardTitle>
+                    <CardDescription>
+                      Ubah detail kelas sesuai kebutuhan
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      {/* Kategori Usia & Level Kelas */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-foreground">
+                            Kategori Usia{" "}
+                            <span className="text-destructive">*</span>
+                          </label>
+                          <Select
+                            value={formData.kategori_usia_id}
+                            onValueChange={(val) =>
+                              handleSelectChange("kategori_usia_id", val)
+                            }
+                          >
+                            <SelectTrigger className="bg-background">
+                              <SelectValue placeholder="Pilih kategori usia" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {kategoriOptions.map((item) => (
+                                <SelectItem
+                                  key={item.id}
+                                  value={item.id.toString()}
+                                >
+                                  {item.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-foreground">
+                            Level Kelas{" "}
+                            <span className="text-destructive">*</span>
+                          </label>
+                          <Select
+                            value={formData.level_kelas_id}
+                            onValueChange={(val) =>
+                              handleSelectChange("level_kelas_id", val)
+                            }
+                          >
+                            <SelectTrigger className="bg-background">
+                              <SelectValue placeholder="Pilih level kelas" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {levelOptions.map((item) => (
+                                <SelectItem
+                                  key={item.id}
+                                  value={item.id.toString()}
+                                >
+                                  {item.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      {/* Format Poomsae & Jurus */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-foreground">
+                            Format <span className="text-destructive">*</span>
+                          </label>
+                          <Select
+                            value={formData.format_id}
+                            onValueChange={handleFormatChange}
+                          >
+                            <SelectTrigger className="bg-background">
+                              <SelectValue placeholder="Pilih format" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {formatOptions.map((item) => (
+                                <SelectItem
+                                  key={item.id}
+                                  value={item.id.toString()}
+                                >
+                                  {item.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-foreground">
+                            Jurus <span className="text-destructive">*</span>
+                          </label>
+                          <Select
+                            value={formData.jurus_id}
+                            onValueChange={(val) =>
+                              handleSelectChange("jurus_id", val)
+                            }
+                            disabled={isJurusDisabled}
+                          >
+                            <SelectTrigger className="bg-background">
+                              <SelectValue
+                                placeholder={
+                                  isJurusDisabled
+                                    ? "Otomatis (Freestyle)"
+                                    : "Pilih jurus"
+                                }
+                              />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {jurusOptions.map((item) => (
+                                <SelectItem
+                                  key={item.id}
+                                  value={item.id.toString()}
+                                >
+                                  {item.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {isJurusDisabled && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Untuk format freestyle, jurus otomatis
+                              &ldquo;Freestyle&rdquo;.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Gender */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-foreground">
+                          Gender {!isGenderDisabled && <span className="text-destructive">*</span>}
+                        </label>
+                        <Select
+                          value={formData.gender}
+                          onValueChange={(val) =>
+                            handleSelectChange("gender", val)
+                          }
+                          disabled={isGenderDisabled}
+                        >
+                          <SelectTrigger className="bg-background">
+                            <SelectValue
+                              placeholder={
+                                isGenderDisabled
+                                  ? formData.gender
+                                    ? formData.gender === "putra"
+                                      ? "Putra"
+                                      : "Putri"
+                                    : "Otomatis"
+                                  : "Pilih gender"
+                              }
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="putra">Putra</SelectItem>
+                            <SelectItem value="putri">Putri</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {isGenderDisabled && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Gender sudah ditentukan berdasarkan format yang
+                            dipilih.
+                          </p>
+                        )}
+                      </div>
+
+                      <Separator />
+
+                      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => router.back()}
+                          disabled={submitting}
+                          className="shadow-sm"
+                        >
+                          Batal
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={submitting}
+                          className="shadow-sm"
+                        >
+                          {submitting ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Save className="mr-2 h-4 w-4" />
+                          )}
+                          Simpan Perubahan
+                        </Button>
+                      </div>
+                    </form>
+                  </CardContent>
+                </Card>
               </div>
             </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Form Edit Kelas Poomsae</CardTitle>
-                <CardDescription>
-                  Ubah detail kelas sesuai kebutuhan
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  {/* Kategori Usia */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">
-                      Kategori Usia *
-                    </label>
-                    <Select
-                      value={formData.kategori_usia_id}
-                      onValueChange={(val) =>
-                        handleSelectChange("kategori_usia_id", val)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Pilih kategori usia" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {kategoriOptions.map((item) => (
-                          <SelectItem key={item.id} value={item.id.toString()}>
-                            {item.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Level Kelas */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Level Kelas *</label>
-                    <Select
-                      value={formData.level_kelas_id}
-                      onValueChange={(val) =>
-                        handleSelectChange("level_kelas_id", val)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Pilih level kelas" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {levelOptions.map((item) => (
-                          <SelectItem key={item.id} value={item.id.toString()}>
-                            {item.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Format Poomsae */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Format *</label>
-                    <Select
-                      value={formData.format_id}
-                      onValueChange={handleFormatChange}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Pilih format" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {formatOptions.map((item) => (
-                          <SelectItem key={item.id} value={item.id.toString()}>
-                            {item.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Jurus */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Jurus *</label>
-                    <Select
-                      value={formData.jurus_id}
-                      onValueChange={(val) =>
-                        handleSelectChange("jurus_id", val)
-                      }
-                      disabled={isJurusDisabled}
-                    >
-                      <SelectTrigger>
-                        <SelectValue
-                          placeholder={
-                            isJurusDisabled
-                              ? "Otomatis (Freestyle)"
-                              : "Pilih jurus"
-                          }
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {jurusOptions.map((item) => (
-                          <SelectItem key={item.id} value={item.id.toString()}>
-                            {item.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {isJurusDisabled && (
-                      <p className="text-xs text-muted-foreground">
-                        Untuk format freestyle, jurus otomatis "Freestyle".
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Gender */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">
-                      Gender {!isGenderDisabled && "*"}
-                    </label>
-                    <Select
-                      value={formData.gender}
-                      onValueChange={(val) => handleSelectChange("gender", val)}
-                      disabled={isGenderDisabled}
-                    >
-                      <SelectTrigger>
-                        <SelectValue
-                          placeholder={
-                            isGenderDisabled
-                              ? formData.gender
-                                ? formData.gender === "putra"
-                                  ? "Putra"
-                                  : "Putri"
-                                : "Otomatis"
-                              : "Pilih gender"
-                          }
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="putra">Putra</SelectItem>
-                        <SelectItem value="putri">Putri</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {isGenderDisabled && (
-                      <p className="text-xs text-muted-foreground">
-                        Gender sudah ditentukan berdasarkan format yang dipilih.
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="flex justify-end gap-3 pt-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => router.back()}
-                      disabled={submitting}
-                    >
-                      Batal
-                    </Button>
-                    <Button type="submit" disabled={submitting}>
-                      {submitting && (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      )}
-                      Simpan Perubahan
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </SidebarInset>

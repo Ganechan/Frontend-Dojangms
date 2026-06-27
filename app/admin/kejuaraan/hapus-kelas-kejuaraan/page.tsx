@@ -12,7 +12,19 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Loader2, Trash } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Plus,
+  Loader2,
+  Trash,
+  Trophy,
+  MapPin,
+  Compass,
+  Award,
+  Globe,
+} from "lucide-react";
 import { toast } from "sonner";
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SiteHeader } from "@/components/admin/site-header";
@@ -143,204 +155,316 @@ export default function ScheduledChampionshipsPage() {
       <SidebarInset>
         <SiteHeader />
 
-        <div className="p-4 md:p-6 max-w-7xl w-full mx-auto space-y-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-                Hapus Kelas Kejuaraan
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                Menghapus kelas kejuaraan yang tidak dipertandingkan
-              </p>
-            </div>
-            <Link href="/admin/kejuaraan/create" className="w-full sm:w-auto">
-              <Button className="w-full sm:w-auto shadow-sm">
-                <Plus className="w-4 h-4 mr-2" />
-                Buat Kejuaraan
-              </Button>
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
-            <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
-              <p className="text-xs md:text-sm font-medium text-muted-foreground mb-1">
-                Total Terjadwal
-              </p>
-              <p className="text-xl md:text-2xl font-bold text-foreground">
-                {summary.total}
-              </p>
-            </div>
-            <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
-              <p className="text-xs md:text-sm font-medium text-muted-foreground mb-1">
-                Tingkat Kota
-              </p>
-              <p className="text-xl md:text-2xl font-bold text-blue-600">
-                {summary.kota}
-              </p>
-            </div>
-            <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
-              <p className="text-xs md:text-sm font-medium text-muted-foreground mb-1">
-                Tingkat Provinsi
-              </p>
-              <p className="text-xl md:text-2xl font-bold text-indigo-600">
-                {summary.provinsi}
-              </p>
-            </div>
-            <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
-              <p className="text-xs md:text-sm font-medium text-muted-foreground mb-1">
-                Tingkat Nasional
-              </p>
-              <p className="text-xl md:text-2xl font-bold text-purple-600">
-                {summary.nasional}
-              </p>
-            </div>
-            <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
-              <p className="text-xs md:text-sm font-medium text-muted-foreground mb-1">
-                Tingkat Internasional
-              </p>
-              <p className="text-xl md:text-2xl font-bold text-rose-600">
-                {summary.internasional}
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-card rounded-xl border border-border p-4 shadow-sm">
-            <div className="space-y-1.5">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Filter Tingkat Kejuaraan
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {(
-                  [
-                    "all",
-                    "kota",
-                    "provinsi",
-                    "nasional",
-                    "internasional",
-                  ] as const
-                ).map((level) => {
-                  const count =
-                    level === "all" ? summary.total : summary[level];
-                  return (
-                    <Button
-                      key={level}
-                      variant={levelFilter === level ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setLevelFilter(level)}
-                      className="capitalize text-xs h-8 shadow-xs"
-                    >
-                      {level === "all" ? "Semua Tingkat" : level}
-                      <span className="ml-1.5 text-[10px] opacity-75 font-normal">
-                        ({count})
-                      </span>
-                    </Button>
-                  );
-                })}
+        <div className="flex flex-1 flex-col">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <div className="flex flex-col gap-6 py-4 md:gap-8 md:py-6 px-4 lg:px-6">
+              {/* Header */}
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b pb-4">
+                <div>
+                  <h1 className="text-3xl font-bold tracking-tight">
+                    Hapus Kelas Kejuaraan
+                  </h1>
+                  <p className="text-muted-foreground mt-1.5">
+                    Menghapus kelas kejuaraan yang tidak dipertandingkan
+                  </p>
+                </div>
+                <Link href="/admin/kejuaraan/create">
+                  <Button className="w-full sm:w-auto shadow-sm">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Buat Kejuaraan
+                  </Button>
+                </Link>
               </div>
-            </div>
-          </div>
 
-          <div className="bg-card rounded-xl border border-border overflow-hidden shadow-sm">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/40 hover:bg-transparent">
-                    <TableHead className="w-[30%]">Nama Kejuaraan</TableHead>
-                    <TableHead>Lokasi</TableHead>
-                    <TableHead>Tanggal</TableHead>
-                    <TableHead>Tingkat</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right w-[180px]">Aksi</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-12">
-                        <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
-                      </TableCell>
-                    </TableRow>
-                  ) : filteredChampionships.length === 0 ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={6}
-                        className="text-center py-12 text-muted-foreground"
-                      >
-                        Tidak ada kejuaraan terjadwal yang ditemukan
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredChampionships.map((champ) => (
-                      <TableRow key={champ.id} className="hover:bg-muted/20">
-                        <TableCell>
-                          <div>
-                            <p className="font-semibold text-foreground">
-                              {champ.name}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              ID: {champ.id}
-                            </p>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {champ.location}
-                        </TableCell>
-                        <TableCell className="text-sm">
-                          <div className="text-foreground font-medium">
-                            <p>{formatDate(champ.start_date)}</p>
-                            {champ.start_date !== champ.end_date && (
-                              <p className="text-xs text-muted-foreground font-normal mt-0.5">
-                                s/d {formatDate(champ.end_date)}
-                              </p>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={getLevelBadgeVariant(champ.level)}
-                            className="capitalize font-medium"
+              {/* Summary Cards */}
+              <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+                <Card className="relative overflow-hidden transition-all duration-200 hover:shadow-md col-span-2 md:col-span-1">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">
+                      Total Terjadwal
+                    </CardTitle>
+                    <Trophy className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    {loading ? (
+                      <Skeleton className="h-8 w-16" />
+                    ) : (
+                      <div className="text-3xl font-bold">{summary.total}</div>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Kejuaraan terjadwal
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="relative overflow-hidden transition-all duration-200 hover:shadow-md border-l-4 border-l-sky-500">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-sky-700 dark:text-sky-400">
+                      Tingkat Kota
+                    </CardTitle>
+                    <MapPin className="h-4 w-4 text-sky-500" />
+                  </CardHeader>
+                  <CardContent>
+                    {loading ? (
+                      <Skeleton className="h-8 w-16" />
+                    ) : (
+                      <div className="text-3xl font-bold text-sky-600 dark:text-sky-400">
+                        {summary.kota}
+                      </div>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Skala regional kota
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="relative overflow-hidden transition-all duration-200 hover:shadow-md border-l-4 border-l-indigo-500">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-indigo-700 dark:text-indigo-400">
+                      Tingkat Provinsi
+                    </CardTitle>
+                    <Compass className="h-4 w-4 text-indigo-500" />
+                  </CardHeader>
+                  <CardContent>
+                    {loading ? (
+                      <Skeleton className="h-8 w-16" />
+                    ) : (
+                      <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
+                        {summary.provinsi}
+                      </div>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Skala regional provinsi
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="relative overflow-hidden transition-all duration-200 hover:shadow-md border-l-4 border-l-purple-500">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-purple-700 dark:text-purple-400">
+                      Tingkat Nasional
+                    </CardTitle>
+                    <Award className="h-4 w-4 text-purple-500" />
+                  </CardHeader>
+                  <CardContent>
+                    {loading ? (
+                      <Skeleton className="h-8 w-16" />
+                    ) : (
+                      <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+                        {summary.nasional}
+                      </div>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Skala nasional
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="relative overflow-hidden transition-all duration-200 hover:shadow-md border-l-4 border-l-rose-500 col-span-2 md:col-span-1">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-rose-700 dark:text-rose-400">
+                      Tingkat Internasional
+                    </CardTitle>
+                    <Globe className="h-4 w-4 text-rose-500" />
+                  </CardHeader>
+                  <CardContent>
+                    {loading ? (
+                      <Skeleton className="h-8 w-16" />
+                    ) : (
+                      <div className="text-3xl font-bold text-rose-600 dark:text-rose-400">
+                        {summary.internasional}
+                      </div>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Skala global
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Toolbar Level Filter */}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Filter Tingkat Kejuaraan
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {(
+                        [
+                          "all",
+                          "kota",
+                          "provinsi",
+                          "nasional",
+                          "internasional",
+                        ] as const
+                      ).map((level) => {
+                        const count =
+                          level === "all" ? summary.total : summary[level];
+                        return (
+                          <Button
+                            key={level}
+                            variant={levelFilter === level ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setLevelFilter(level)}
+                            className="capitalize text-xs h-8 shadow-xs"
                           >
-                            {champ.level}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={getStatusBadgeVariant(champ.status)}>
-                            {getStatusLabel(champ.status)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex gap-2 justify-end">
-                            <Link
-                              href={`/admin/kejuaraan/${champ.id}/kelas/hapus/kyorugi`}
-                            >
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="shadow-xs"
-                              >
-                                <Trash className="w-4 h-4 mr-1.5" />
-                                Hapus Kyorugi
-                              </Button>
-                            </Link>
-                            <Link
-                              href={`/admin/kejuaraan/${champ.id}/kelas/hapus/poomsae`}
-                            >
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="shadow-xs text-blue-600"
-                              >
-                                <Trash className="w-4 h-4 mr-1.5" />
-                                Hapus Poomsae
-                              </Button>
-                            </Link>
-                          </div>
-                        </TableCell>
+                            {level === "all" ? "Semua Tingkat" : level}
+                            <span className="ml-1.5 text-[10px] opacity-75 font-normal">
+                              ({count})
+                            </span>
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Table */}
+              <Card className="overflow-hidden">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/50 hover:bg-muted/50">
+                        <TableHead className="font-semibold w-[30%]">
+                          Nama Kejuaraan
+                        </TableHead>
+                        <TableHead className="font-semibold">Lokasi</TableHead>
+                        <TableHead className="font-semibold">Tanggal</TableHead>
+                        <TableHead className="font-semibold">Tingkat</TableHead>
+                        <TableHead className="font-semibold">Status</TableHead>
+                        <TableHead className="text-right font-semibold w-[240px]">
+                          Aksi
+                        </TableHead>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {loading ? (
+                        Array.from({ length: 5 }).map((_, i) => (
+                          <TableRow key={i}>
+                            <TableCell>
+                              <Skeleton className="h-5 w-48" />
+                              <Skeleton className="h-3 w-16 mt-1" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-28" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-40" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-5 w-20 rounded-full" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-5 w-24 rounded-full" />
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex gap-2 justify-end">
+                                <Skeleton className="h-8 w-24 rounded-md" />
+                                <Skeleton className="h-8 w-28 rounded-md" />
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : filteredChampionships.length === 0 ? (
+                        <TableRow>
+                          <TableCell
+                            colSpan={6}
+                            className="text-center py-16 text-muted-foreground"
+                          >
+                            <div className="flex flex-col items-center gap-2">
+                              <Trophy className="h-10 w-10 text-muted-foreground/40" />
+                              <p className="text-sm font-medium">
+                                Tidak ada kejuaraan terjadwal yang ditemukan
+                              </p>
+                              <p className="text-xs text-muted-foreground/70">
+                                Coba ubah filter tingkat kejuaraan
+                              </p>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        filteredChampionships.map((champ) => (
+                          <TableRow
+                            key={champ.id}
+                            className="group transition-colors"
+                          >
+                            <TableCell>
+                              <div>
+                                <p className="font-medium text-foreground leading-snug">
+                                  {champ.name}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-0.5 font-mono">
+                                  ID: {champ.id}
+                                </p>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {champ.location}
+                            </TableCell>
+                            <TableCell className="text-sm">
+                              <div className="text-foreground">
+                                <p className="whitespace-nowrap">
+                                  {formatDate(champ.start_date)}
+                                </p>
+                                {champ.start_date !== champ.end_date && (
+                                  <p className="text-xs text-muted-foreground mt-0.5 whitespace-nowrap">
+                                    s/d {formatDate(champ.end_date)}
+                                  </p>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={getLevelBadgeVariant(champ.level)}
+                                className="capitalize"
+                              >
+                                {champ.level}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={getStatusBadgeVariant(champ.status)}
+                              >
+                                {getStatusLabel(champ.status)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex gap-2 justify-end">
+                                <Link
+                                  href={`/admin/kejuaraan/${champ.id}/kelas/hapus/kyorugi`}
+                                >
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="shadow-sm h-8"
+                                  >
+                                    <Trash className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+                                    Hapus Kyorugi
+                                  </Button>
+                                </Link>
+                                <Link
+                                  href={`/admin/kejuaraan/${champ.id}/kelas/hapus/poomsae`}
+                                >
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="shadow-sm h-8 border-primary/30 hover:border-primary/60 text-primary hover:bg-primary/5"
+                                  >
+                                    <Trash className="w-3.5 h-3.5 mr-1.5" />
+                                    Hapus Poomsae
+                                  </Button>
+                                </Link>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </Card>
             </div>
           </div>
         </div>

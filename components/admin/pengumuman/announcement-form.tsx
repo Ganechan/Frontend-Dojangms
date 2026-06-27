@@ -194,7 +194,7 @@ export function AnnouncementForm({
   };
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-28">
       {/* Section 1: Informasi Pengumuman */}
       <Card>
         <CardHeader>

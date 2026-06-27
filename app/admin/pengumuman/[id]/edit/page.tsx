@@ -180,7 +180,7 @@ export default function EditAnnouncementPage() {
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-32">
                 {error && (
                   <Card className="mb-6 bg-red-50 border-red-200 p-4">
                     <p className="text-red-800">{error}</p>
