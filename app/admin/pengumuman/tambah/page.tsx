@@ -1,8 +1,7 @@
-// app\admin\pengumuman\tambah\page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { AnnouncementForm } from "@/components/admin/pengumuman/announcement-form";
@@ -11,13 +10,9 @@ import { ActionBar } from "@/components/admin/pengumuman/action-bar";
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SiteHeader } from "@/components/admin/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 
 const announcementSchema = z.object({
   judul: z
@@ -106,10 +101,10 @@ export default function TambahPengumumanPage() {
 
       // Success
       form.reset();
-      // Tambahkan toast jika ada
-      // toast.success("Pengumuman berhasil dibuat");
+      toast.success("Pengumuman berhasil dibuat");
     } catch (err: any) {
       setError(err.message || "Gagal mengirim pengumuman");
+      toast.error(err.message || "Gagal mengirim pengumuman");
     } finally {
       setIsLoading(false);
     }
@@ -129,40 +124,58 @@ export default function TambahPengumumanPage() {
         <SiteHeader />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {error && (
-                  <Card className="mb-6 bg-red-50 border-red-200 p-4">
-                    <p className="text-red-800">{error}</p>
-                  </Card>
-                )}
+            <div className="flex flex-col gap-6 py-4 md:gap-8 md:py-6 px-4 lg:px-6 pb-32">
+              {/* Header */}
+              <div className="border-b pb-4">
+                <h1 className="text-3xl font-bold tracking-tight">
+                  Tambah Pengumuman
+                </h1>
+                <p className="text-muted-foreground mt-1.5">
+                  Buat dan kirim pengumuman baru ke murid, pelatih, atau semua pengguna
+                </p>
+              </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                  {/* Form Section - Left */}
-                  <div className="lg:col-span-2">
-                    <AnnouncementForm
-                      form={form}
-                      onSubmit={onSubmit}
-                      isLoading={isLoading}
-                    />
-                  </div>
-
-                  {/* Live Preview - Right */}
-                  <div className="lg:col-span-1">
-                    <div className="sticky top-24">
-                      <LivePreview formValues={form.watch()} />
+              {error && (
+                <Card className="border-l-4 border-l-destructive bg-destructive/5 dark:bg-destructive/10">
+                  <CardContent className="flex items-start gap-3 p-4">
+                    <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-semibold text-destructive">
+                        Terjadi Kesalahan
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {error}
+                      </p>
                     </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+                {/* Form Section - Left */}
+                <div className="lg:col-span-2">
+                  <AnnouncementForm
+                    form={form}
+                    onSubmit={onSubmit}
+                    isLoading={isLoading}
+                  />
+                </div>
+
+                {/* Live Preview - Right */}
+                <div className="lg:col-span-1">
+                  <div className="sticky top-20">
+                    <LivePreview formValues={form.watch()} />
                   </div>
                 </div>
               </div>
-
-              {/* Sticky Action Bar */}
-              <ActionBar
-                form={form}
-                onSubmit={onSubmit}
-                isLoading={isLoading}
-              />
             </div>
+
+            {/* Sticky Action Bar */}
+            <ActionBar
+              form={form}
+              onSubmit={onSubmit}
+              isLoading={isLoading}
+            />
           </div>
         </div>
       </SidebarInset>

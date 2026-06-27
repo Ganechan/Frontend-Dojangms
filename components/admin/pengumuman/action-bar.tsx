@@ -1,8 +1,8 @@
-//components\admin\pengumuman\action-bar.tsx
 "use client";
 
 import { UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
+import { useSidebar } from "@/components/ui/sidebar";
 
 interface ActionBarProps {
   form: UseFormReturn<any>;
@@ -11,6 +11,7 @@ interface ActionBarProps {
 }
 
 export function ActionBar({ form, onSubmit, isLoading }: ActionBarProps) {
+  const { state, isMobile } = useSidebar();
   const status = form.watch("status");
   const judul = form.watch("judul");
   const isi = form.watch("isi");
@@ -42,8 +43,14 @@ export function ActionBar({ form, onSubmit, isLoading }: ActionBarProps) {
     }, 0);
   };
 
+  const leftPositionClass = isMobile
+    ? "left-0"
+    : state === "collapsed"
+      ? "left-[var(--sidebar-width-icon)]"
+      : "left-[var(--sidebar-width)]";
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 border-t border-border bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 z-50">
+    <div className={`fixed bottom-0 right-0 ${leftPositionClass} transition-[left] duration-200 ease-linear border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex gap-3 justify-end">
           <Button

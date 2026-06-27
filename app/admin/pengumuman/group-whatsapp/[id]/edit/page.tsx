@@ -163,7 +163,7 @@ export default function EditWhatsAppGroupPage() {
         throw new Error(data.message || "Gagal memperbarui grup");
 
       toast.success(data.message || "Grup berhasil diperbarui");
-      router.push("/admin/whatsapp-groups");
+      router.push("/admin/pengumuman/group-whatsapp");
     } catch (err: any) {
       setError(err.message || "Gagal memperbarui grup");
       toast.error(err.message || "Gagal memperbarui grup");
@@ -209,7 +209,7 @@ export default function EditWhatsAppGroupPage() {
         <div className="flex flex-1 flex-col p-6 bg-background">
           <div className="max-w-3xl mx-auto w-full space-y-6">
             <div className="flex items-center gap-4">
-              <Link href="/admin/whatsapp-groups">
+              <Link href="/admin/pengumuman/group-whatsapp">
                 <Button variant="outline" size="sm">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Kembali
