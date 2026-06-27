@@ -4,7 +4,7 @@ import { ApiError } from "@/lib/apiClient";
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -16,12 +16,15 @@ export async function PATCH(
     return NextResponse.json(data);
   } catch (err) {
     if (err instanceof ApiError) {
-      return NextResponse.json({ message: err.message }, { status: err.status });
+      return NextResponse.json(
+        { message: err.message },
+        { status: err.status },
+      );
     }
     console.error("Error updating championship:", err);
     return NextResponse.json(
       { message: "Terjadi kesalahan server" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
