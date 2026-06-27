@@ -21,8 +21,6 @@ import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SiteHeader } from "@/components/admin/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-
-// 1. IMPORT MODAL POP-UP ANDA DISINI (Sesuaikan path foldernya jika berbeda)
 import { EditHolidayModal } from "@/components/admin/libur/edit-modal-popup";
 
 export default function HolidayDetailPage() {
@@ -34,20 +32,19 @@ export default function HolidayDetailPage() {
     null,
   );
   const [isLoading, setIsLoading] = useState(true);
-
-  // 2. STATE UNTUK KONTROL MODAL POP-UP
   const [showEditModal, setShowEditModal] = useState(false);
 
-  // Fungsi fetch data dipisah agar bisa dipanggil ulang setelah sukses edit data
   const fetchHoliday = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(
-        `http://localhost:3001/api/admin/jadwal/libur-jadwal/${id}`,
-      );
+      // 🔥 Gunakan internal API
+      const response = await fetch(`/api/admin/jadwal/libur-jadwal/${id}`);
 
       if (!response.ok) {
-        throw new Error("Gagal mengambil data libur jadwal");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || "Gagal mengambil data libur jadwal",
+        );
       }
 
       const data: HolidayDetailResponse = await response.json();
@@ -55,7 +52,9 @@ export default function HolidayDetailPage() {
     } catch (error) {
       console.error("Error fetching holiday:", error);
       toast.error(
-        "Libur jadwal tidak ditemukan atau terjadi kesalahan saat mengambil data.",
+        error instanceof Error
+          ? error.message
+          : "Libur jadwal tidak ditemukan atau terjadi kesalahan saat mengambil data.",
       );
     } finally {
       setIsLoading(false);
@@ -178,7 +177,6 @@ export default function HolidayDetailPage() {
                     </div>
                   </div>
 
-                  {/* 3. PERUBAHAN BUTTON: Menggunakan onClick untuk memicu modal pop-up */}
                   <Button
                     size="sm"
                     variant="outline"
@@ -270,12 +268,12 @@ export default function HolidayDetailPage() {
         </div>
       </SidebarInset>
 
-      {/* 4. TEMPATKAN KOMPONEN MODAL DI BAWAH SINI */}
+      {/* Modal Edit */}
       <EditHolidayModal
         open={showEditModal}
         onOpenChange={setShowEditModal}
         holiday={holiday}
-        onSuccess={fetchHoliday} // Otomatis refresh data di halaman detail setelah sukses simpan
+        onSuccess={fetchHoliday}
       />
     </SidebarProvider>
   );

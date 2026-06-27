@@ -1,4 +1,3 @@
-// components/admin/kejuaraan/championship-form.tsx
 "use client";
 
 import { useState } from "react";
@@ -114,33 +113,36 @@ export function ChampionshipForm({
 
       if (onSubmit) {
         await onSubmit(formData);
-      } else {
-        const endpoint = isEditMode
-          ? `http://localhost:3001/api/admin/update/championship/${formData.id}`
-          : `http://localhost:3001/api/admin/create/championship`;
-
-        // Exclude status from payload saat edit (ditentukan backend)
-        const { status, ...payloadWithoutStatus } = formData;
-        const payload = isEditMode ? payloadWithoutStatus : formData;
-
-        const response = await fetch(endpoint, {
-          method: isEditMode ? "PATCH" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-
-        if (!response.ok) {
-          throw new Error("Gagal menyimpan data");
-        }
-
-        toast.success(
-          isEditMode
-            ? "Kejuaraan berhasil diperbarui"
-            : "Kejuaraan berhasil ditambahkan",
-        );
-
-        router.push("/admin/kejuaraan");
+        return;
       }
+
+      // 🔥 Gunakan internal API
+      const endpoint = isEditMode
+        ? `/api/admin/update/championship/${formData.id}`
+        : "/api/admin/create/championship";
+
+      // Exclude status from payload saat edit (ditentukan backend)
+      const { status, ...payloadWithoutStatus } = formData;
+      const payload = isEditMode ? payloadWithoutStatus : formData;
+
+      const response = await fetch(endpoint, {
+        method: isEditMode ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Gagal menyimpan data");
+      }
+
+      toast.success(
+        isEditMode
+          ? "Kejuaraan berhasil diperbarui"
+          : "Kejuaraan berhasil ditambahkan",
+      );
+
+      router.push("/admin/kejuaraan");
     } catch (error) {
       console.error("Error:", error);
       toast.error(
@@ -168,7 +170,6 @@ export function ChampionshipForm({
 
   return (
     <div className="px-4 lg:px-6">
-      {/* Header */}
       <div className="mb-6">
         <Link
           href="/admin/kejuaraan"
@@ -187,7 +188,6 @@ export function ChampionshipForm({
         </p>
       </div>
 
-      {/* Form */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Name Field */}
@@ -209,7 +209,6 @@ export function ChampionshipForm({
             )}
           </div>
 
-          {/* Level and Status Row */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label
@@ -238,7 +237,6 @@ export function ChampionshipForm({
               )}
             </div>
 
-            {/* Status sebagai Badge (hanya tampil saat edit) */}
             {isEditMode && (
               <div>
                 <Label className="text-sm font-medium text-gray-700">
@@ -259,7 +257,6 @@ export function ChampionshipForm({
             )}
           </div>
 
-          {/* Location Field */}
           <div>
             <Label
               htmlFor="location"
@@ -281,7 +278,6 @@ export function ChampionshipForm({
             )}
           </div>
 
-          {/* Dates Row */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label
@@ -324,7 +320,6 @@ export function ChampionshipForm({
             </div>
           </div>
 
-          {/* Form Actions */}
           <div className="flex gap-4 pt-4 border-t border-gray-200">
             <Button
               type="button"

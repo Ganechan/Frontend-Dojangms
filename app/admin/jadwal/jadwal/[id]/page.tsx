@@ -73,14 +73,19 @@ interface JadwalDetail {
   };
 }
 
+// 🔥 PERBAIKAN: Gunakan URL absolut di Server Component
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
 async function getJadwalDetail(id: string): Promise<JadwalDetail | null> {
   try {
-    const response = await fetch(
-      `http://localhost:3001/api/admin/jadwal/${id}`,
-      { cache: "no-store" },
-    );
+    const url = new URL(`/api/admin/jadwal/${id}`, baseUrl);
+    const response = await fetch(url.toString(), {
+      cache: "no-store",
+    });
 
     if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error("Error fetching schedule:", errorData);
       return null;
     }
 

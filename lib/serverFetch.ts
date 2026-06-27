@@ -2,7 +2,7 @@
 import { cookies } from "next/headers";
 import { ApiError } from "./apiClient";
 
-const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:3001";
+const BACKEND_URL = process.env.BACKEND_URL;
 
 interface ServerFetchOptions extends RequestInit {
   timeout?: number;

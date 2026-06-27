@@ -46,7 +46,6 @@ export default function HolidaySchedulePage() {
         params.append("tanggal_end", filters.tanggal_end);
       }
 
-      // PERUBAHAN: Gunakan internal API (bukan localhost:3001)
       const response = await fetch(
         `/api/admin/jadwal/libur/all?${params.toString()}`,
       );

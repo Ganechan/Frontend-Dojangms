@@ -1,7 +1,6 @@
-// components/client/admin/kejuaraan/championship-dashboard-client.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ChampionshipTable } from "@/components/admin/kejuaraan/championship-table";
 import { toast } from "sonner";
@@ -25,29 +24,41 @@ export function ChampionshipDashboardClient() {
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10);
 
-  useEffect(() => {
-    fetchChampionships();
-  }, [currentPage, limit]);
-
-  const fetchChampionships = async () => {
+  const fetchChampionships = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `http://localhost:3001/api/admin/get/championship?limit=${limit}&page=${currentPage}`,
-      );
-      const result = await response.json();
+      // 🔥 Gunakan internal API
+      const params = new URLSearchParams({
+        limit: String(limit),
+        page: String(currentPage),
+      });
+      if (selectedStatus) params.append("status", selectedStatus);
 
+      const response = await fetch(`/api/admin/get/championship?${params}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Gagal mengambil data kejuaraan");
+      }
+      const result = await response.json();
       if (result.data) {
         setChampionships(result.data);
         setTotalItems(result.total || result.data.length);
       }
     } catch (error) {
       console.error("Error fetching championships:", error);
-      toast.error("Gagal mengambil data kejuaraan");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Gagal mengambil data kejuaraan",
+      );
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, limit, selectedStatus]);
+
+  useEffect(() => {
+    fetchChampionships();
+  }, [fetchChampionships]);
 
   const handleAddClick = () => {
     router.push("/admin/kejuaraan/add");
@@ -58,20 +69,17 @@ export function ChampionshipDashboardClient() {
   };
 
   const handleDeleteClick = async (id: number) => {
-    if (!confirm("Apakah Anda yakin ingin menghapus kejuaraan ini?")) {
-      return;
-    }
+    if (!confirm("Apakah Anda yakin ingin menghapus kejuaraan ini?")) return;
 
     try {
-      const response = await fetch(
-        `http://localhost:3001/api/admin/delete/championship/${id}`,
-        { method: "DELETE" },
-      );
-
+      // 🔥 Gunakan internal API
+      const response = await fetch(`/api/admin/delete/championship/${id}`, {
+        method: "DELETE",
+      });
       if (!response.ok) {
-        throw new Error("Gagal menghapus kejuaraan");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Gagal menghapus kejuaraan");
       }
-
       toast.success("Kejuaraan berhasil dihapus");
       fetchChampionships();
     } catch (error) {

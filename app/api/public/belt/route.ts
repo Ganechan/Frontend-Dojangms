@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { ApiError } from "@/lib/apiClient";
 
-const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:3001";
+const BACKEND_URL = process.env.BACKEND_URL;
 
 export async function GET() {
   try {
