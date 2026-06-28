@@ -26,7 +26,17 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+function getAvatarUrl(foto: string | null): string | undefined {
+  if (!foto) return undefined;
+  if (foto.startsWith("http://") || foto.startsWith("https://")) {
+    return foto;
+  }
+  return `/api/auth/avatar?path=${encodeURIComponent(foto)}`;
+}
+
 export function ProfileHeaderCard({ profile }: { profile: UserProfile }) {
+  const avatarUrl = getAvatarUrl(profile.foto);
+
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-6 sm:p-8">
@@ -34,8 +44,8 @@ export function ProfileHeaderCard({ profile }: { profile: UserProfile }) {
           {/* Left: avatar + identity */}
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:text-left">
             <Avatar className="h-24 w-24 border shadow-sm">
-              {profile.foto ? (
-                <AvatarImage src={profile.foto} alt={profile.name} />
+              {avatarUrl ? (
+                <AvatarImage src={avatarUrl} alt={profile.name} />
               ) : null}
               <AvatarFallback className="bg-primary text-2xl font-semibold text-primary-foreground">
                 {getInitials(profile.name)}

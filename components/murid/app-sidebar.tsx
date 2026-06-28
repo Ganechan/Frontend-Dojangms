@@ -5,7 +5,7 @@ import * as React from "react";
 import { IconChevronRight } from "@tabler/icons-react";
 import { usePathname } from "next/navigation";
 
-import { NavUser } from "@/components/pelatih/nav-user";
+import { NavUser } from "@/components/murid/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -23,7 +23,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { VersionSwitcher } from "@/components/pelatih/version-switcher";
+import { VersionSwitcher } from "@/components/murid/version-switcher";
 
 const data = {
   navMain: [
@@ -175,7 +175,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
 
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   );
