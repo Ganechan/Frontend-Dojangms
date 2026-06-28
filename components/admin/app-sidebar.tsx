@@ -173,8 +173,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenu>
               {group.items.map((item) => {
                 const isActive =
-                  pathname === item.url ||
-                  pathname.startsWith(item.url + "/");
+                  pathname === item.url || pathname.startsWith(item.url + "/");
                 const Icon = ITEM_ICONS[item.url];
 
                 return (
@@ -186,7 +185,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                         isActive
                           ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                          : "text-sidebar-foreground/70"
+                          : "text-sidebar-foreground/70",
                       )}
                     >
                       {/* Active indicator bar */}
@@ -198,9 +197,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <Icon
                           className={cn(
                             "size-4 shrink-0",
-                            isActive
-                              ? "text-primary"
-                              : "text-muted-foreground"
+                            isActive ? "text-primary" : "text-muted-foreground",
                           )}
                         />
                       )}
@@ -216,7 +213,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
 
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   );
