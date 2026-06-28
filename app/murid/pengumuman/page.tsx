@@ -431,11 +431,10 @@ export default function AnnouncementListPage() {
                               return (
                                 <Card
                                   key={ann.id}
-                                  className={`transition-all ${
-                                    isUnread
+                                  className={`transition-all ${isUnread
                                       ? "bg-orange-50/50 border-l-4 border-l-orange-500"
                                       : ""
-                                  }`}
+                                    }`}
                                 >
                                   <CardContent className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                                     {/* Info Side */}
@@ -478,7 +477,7 @@ export default function AnnouncementListPage() {
                                     {/* Action Side */}
                                     <div className="flex items-center gap-2 self-end md:self-center shrink-0">
                                       <Link
-                                        href={`/pelatih/pengumuman/${ann.id}`}
+                                        href={`/murid/pengumuman/${ann.id}`}
                                       >
                                         <Button
                                           variant="outline"

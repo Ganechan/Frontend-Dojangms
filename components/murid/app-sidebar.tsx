@@ -1,30 +1,51 @@
-// components\murid\app-sidebar.tsx
+// components/murid/app-sidebar.tsx
 "use client";
 
 import * as React from "react";
-import { IconChevronRight } from "@tabler/icons-react";
+import {
+  IconLayoutDashboard,
+  IconCalendar,
+  IconTrophy,
+  IconCertificate,
+  IconSpeakerphone,
+} from "@tabler/icons-react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 import { NavUser } from "@/components/murid/nav-user";
+import { VersionSwitcher } from "@/components/murid/version-switcher";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent,
 } from "@/components/ui/sidebar";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { VersionSwitcher } from "@/components/murid/version-switcher";
+import { cn } from "@/lib/utils";
 
+const navGroups = [
+  {
+    label: "Kelas & Jadwal",
+    items: [
+      { title: "Kelas", url: "/murid/kelas", icon: IconLayoutDashboard },
+      { title: "Jadwal", url: "/murid/jadwal", icon: IconCalendar },
+    ],
+  },
+  {
+    label: "Prestasi & Sabuk",
+    items: [
+      { title: "Prestasi", url: "/murid/prestasi", icon: IconTrophy },
+      { title: "History Sabuk", url: "/murid/ujian-sabuk", icon: IconCertificate },
+    ],
+  },
+  {
+    label: "Pengumuman",
+    items: [
+      { title: "Lihat Pengumuman", url: "/murid/pengumuman", icon: IconSpeakerphone },
+    ],
+  },
+];
+
+// Tetap ada untuk VersionSwitcher (tidak diubah)
 const data = {
   navMain: [
     {
@@ -49,129 +70,55 @@ const data = {
       items: [{ title: "Lihat Pengumuman", url: "/murid/pengumuman" }],
     },
   ],
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/public/meguri.jpg",
-  },
 };
-
-const STORAGE_KEY = "admin-sidebar-open-groups";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
 
-  // Simpan daftar group title yang sedang open
-  const [openGroups, setOpenGroups] = React.useState<Set<string>>(new Set());
-
-  // 1) Saat mount: load dari localStorage
-  React.useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        setOpenGroups(new Set(parsed.filter((x) => typeof x === "string")));
-      }
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  // 2) Kalau route aktif ada di salah satu group, pastikan group itu terbuka juga
-  //    (biar kalau user refresh di halaman /admin/keuangan/spp, group Keuangan tetap open)
-  React.useEffect(() => {
-    const activeGroupTitles = data.navMain
-      .filter((group) =>
-        group.items?.some((item) => pathname.startsWith(item.url)),
-      )
-      .map((g) => g.title);
-
-    if (activeGroupTitles.length === 0) return;
-
-    setOpenGroups((prev) => {
-      const next = new Set(prev);
-      activeGroupTitles.forEach((t) => next.add(t));
-      return next;
-    });
-  }, [pathname]);
-
-  // 3) Persist ke localStorage setiap berubah
-  React.useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(openGroups)));
-    } catch {
-      // ignore
-    }
-  }, [openGroups]);
-
   return (
     <Sidebar collapsible="offcanvas" {...props}>
-      <SidebarHeader className="mb-5">
+      <SidebarHeader className="mb-2">
         <VersionSwitcher navMain={data.navMain} />
       </SidebarHeader>
 
-      <SidebarContent className="gap-0">
-        {data.navMain.map((group) => {
-          const isOpen = openGroups.has(group.title);
+      <SidebarContent className="px-2 py-1 overflow-y-auto">
+        {navGroups.map((group) => (
+          <div key={group.label} className="mb-3">
+            {/* Section label */}
+            <p className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 select-none">
+              {group.label}
+            </p>
 
-          return (
-            <Collapsible
-              key={group.title}
-              open={isOpen}
-              onOpenChange={(nextOpen) => {
-                setOpenGroups((prev) => {
-                  const next = new Set(prev);
-                  if (nextOpen) next.add(group.title);
-                  else next.delete(group.title);
-                  return next;
-                });
-              }}
-              className="group/collapsible"
-            >
-              <SidebarGroup>
-                <SidebarGroupLabel
-                  asChild
-                  className="group/label text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                >
-                  <CollapsibleTrigger>
-                    {group.title}
-                    <IconChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
-                  </CollapsibleTrigger>
-                </SidebarGroupLabel>
+            {/* Menu items */}
+            <div className="flex flex-col gap-0.5">
+              {group.items.map((item) => {
+                const isActive =
+                  pathname === item.url ||
+                  pathname.startsWith(item.url + "/");
+                const Icon = item.icon;
 
-                <CollapsibleContent>
-                  <SidebarGroupContent>
-                    <SidebarMenu>
-                      {group.items.map((item) => {
-                        const isActive =
-                          pathname === item.url ||
-                          pathname.startsWith(item.url + "/");
-
-                        return (
-                          <SidebarMenuItem key={item.title}>
-                            <SidebarMenuButton
-                              asChild
-                              isActive={isActive}
-                              className={
-                                isActive
-                                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                                  : ""
-                              }
-                            >
-                              <a href={item.url}>{item.title}</a>
-                            </SidebarMenuButton>
-                          </SidebarMenuItem>
-                        );
-                      })}
-                    </SidebarMenu>
-                  </SidebarGroupContent>
-                </CollapsibleContent>
-              </SidebarGroup>
-            </Collapsible>
-          );
-        })}
+                return (
+                  <Link
+                    key={item.url}
+                    href={item.url}
+                    className={cn(
+                      "relative flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors",
+                      isActive
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                        : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                    )}
+                  >
+                    {isActive && (
+                      <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-primary" />
+                    )}
+                    <Icon size={15} className="shrink-0" />
+                    <span className="truncate">{item.title}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </SidebarContent>
 
       <SidebarFooter>

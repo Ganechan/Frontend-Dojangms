@@ -37,9 +37,7 @@ export default function Header({ scrollToSection }: HeaderProps) {
   const menuItems = [
     { label: "Beranda", id: "home" },
     { label: "Tentang", id: "about" },
-    { label: "Program", id: "programs" },
     { label: "Prestasi", id: "achievements" },
-    { label: "Galeri", id: "gallery" },
     { label: "Kontak", id: "contact" },
   ];
 

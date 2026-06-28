@@ -7,11 +7,11 @@ import { ProfileHeaderCard } from "@/components/profile/profile-header-card";
 import { CompletenessAlert } from "@/components/profile/completeness-alert";
 import { ProfileInformation } from "@/components/profile/profile-information";
 import { CompletenessCard } from "@/components/profile/completeness-card";
-import { QuickActions } from "@/components/profile/quick-actions";
+import { QuickActions } from "@/components/pelatih/quick-actions";
 import { ProfileSkeleton } from "@/components/profile/profile-skeleton";
 import { ProfileError } from "@/components/profile/profile-error";
-import { AppSidebar } from "@/components/admin/app-sidebar";
-import { SiteHeader } from "@/components/admin/site-header";
+import { AppSidebar } from "@/components/pelatih/app-sidebar";
+import { SiteHeader } from "@/components/pelatih/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export default function ProfilePage() {

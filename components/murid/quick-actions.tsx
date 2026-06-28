@@ -24,7 +24,7 @@ export function QuickActions() {
         <Button
           variant="outline"
           className="w-full justify-start"
-          onClick={() => router.push("/admin-complete-profile/edit")}
+          onClick={() => router.push("/murid-complete-profile/edit")}
         >
           <SquarePen className="h-4 w-4" />
           Edit Profil
@@ -32,7 +32,7 @@ export function QuickActions() {
         <Button
           variant="outline"
           className="w-full justify-start"
-          onClick={() => router.push("/admin-complete-profile/reset-password")}
+          onClick={() => router.push("/murid-complete-profile/reset-password")}
         >
           <KeyRound className="h-4 w-4" />
           Ubah Password

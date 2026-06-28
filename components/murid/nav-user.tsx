@@ -1,3 +1,4 @@
+// components/admin/nav-user.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -55,8 +56,8 @@ export function NavUser() {
   const { logout, isLoading } = useAuth();
   const router = useRouter();
 
-  const [userData, setUserData] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [userData, setUserData] = useState<UserProfile | null>(null); // ✅ perbaiki typo
+  const [loading, setLoading] = useState(true); // ✅ perbaiki typo
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -89,14 +90,11 @@ export function NavUser() {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   };
 
-  // 🔥 Perbaikan: Gunakan proxy internal, bukan baseUrl
   const getAvatarUrl = (foto: string | null) => {
     if (!foto) return undefined;
-    // Jika sudah URL lengkap (misal dari OAuth), gunakan langsung
     if (foto.startsWith("http://") || foto.startsWith("https://")) {
       return foto;
     }
-    // Gunakan internal proxy untuk gambar
     return `/api/auth/avatar?path=${encodeURIComponent(foto)}`;
   };
 
@@ -159,7 +157,7 @@ export function NavUser() {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem
-                onClick={() => router.push("/admin-complete-profile")}
+                onClick={() => router.push("/murid-complete-profile")}
               >
                 <IconUserCircle className="mr-2 h-4 w-4" />
                 Account
