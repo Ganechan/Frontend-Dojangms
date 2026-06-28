@@ -1,4 +1,4 @@
-// components\admin\nav-user.tsx
+// components/admin/nav-user.tsx
 "use client";
 
 import { useAuth } from "@/hooks/Useauth";
@@ -9,6 +9,7 @@ import {
   IconNotification,
   IconUserCircle,
 } from "@tabler/icons-react";
+import { useRouter } from "next/navigation"; // ✅ Import router
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -38,6 +39,7 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar();
   const { logout, isLoading } = useAuth();
+  const router = useRouter(); // ✅ Initialize router
 
   return (
     <SidebarMenu>
@@ -83,7 +85,9 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => router.push("/admin-complete-profile")} // ✅ Navigate on click
+              >
                 <IconUserCircle />
                 Account
               </DropdownMenuItem>
