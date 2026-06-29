@@ -18,6 +18,7 @@ import {
   IconBell,
   IconUsersGroup,
   IconShieldCheck,
+  IconChecks,
 } from "@tabler/icons-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -44,6 +45,7 @@ const data = {
         { title: "Data Pelatih", url: "/admin/anggota/pelatih" },
         { title: "Data Admin", url: "/admin/anggota/admin" },
         { title: "Buat Data User Baru", url: "/admin/anggota/addUser" },
+        { title: "Approve User Baru", url: "/admin/approve" },
       ],
     },
     {
@@ -106,7 +108,6 @@ const data = {
       items: [
         { title: "Kelola Pengumuman", url: "/admin/pengumuman" },
         { title: "Kirim Draft", url: "/admin/pengumuman/draft" },
-        { title: "Kelola Grup", url: "/admin/pengumuman/group-whatsapp" },
       ],
     },
     {
@@ -150,6 +151,7 @@ const ITEM_ICONS: Record<string, React.ElementType> = {
   "/admin/pengumuman/draft": IconBell,
   "/admin/pengumuman/group-whatsapp": IconUsersGroup,
   "/admin/users": IconSettings,
+  "/admin/approve": IconChecks,
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
