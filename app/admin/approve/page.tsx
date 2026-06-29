@@ -61,10 +61,12 @@ interface WhatsAppStatusData {
 }
 
 interface WhatsAppStatusResponse {
-  success: boolean;
-  data: WhatsAppStatusData;
+  enabled: boolean;
+  ready: boolean;
+  status: string; // misal "qr", "connected", "disconnected", dll.
+  qr: string | null; // base64 data URI jika status "qr", null jika tidak
+  message?: string | null; // optional human-readable message from the API
 }
-
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface PendingUser {
@@ -364,9 +366,11 @@ export default function ApprovalUserPage() {
     setIsLoadingWA(true);
     try {
       const res = await fetch("/api/admin/whatsapp/status");
+      if (!res.ok) throw new Error("Gagal mengambil status WA");
       const json: WhatsAppStatusResponse = await res.json();
       setWaStatus(json);
-      return json.data.connected;
+      // Anggap connected jika ready === true atau status === "connected"
+      return json.ready === true || json.status === "connected";
     } catch (err) {
       console.error("Error fetching WA status:", err);
       return null;
@@ -553,7 +557,6 @@ export default function ApprovalUserPage() {
         <SiteHeader />
         <div className="flex flex-1 flex-col min-w-0 w-full p-4 sm:p-6 bg-background">
           <div className="max-w-7xl mx-auto w-full min-w-0 space-y-6">
-
             {/* Page Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex flex-col gap-1 sm:gap-2">
@@ -570,13 +573,15 @@ export default function ApprovalUserPage() {
                   onClick={() => setWaDialogOpen(true)}
                   className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-border px-4 py-2.5 rounded-full text-sm shadow-xs font-medium cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
                 >
-                  {waStatus?.data?.connected ? (
+                  {waStatus?.ready || waStatus?.status === "connected" ? (
                     <>
                       <span className="relative flex h-2 w-2">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
                       </span>
-                      <span className="text-green-600 dark:text-green-400 font-semibold">WA Connected</span>
+                      <span className="text-green-600 dark:text-green-400 font-semibold">
+                        WA Connected
+                      </span>
                     </>
                   ) : (
                     <>
@@ -584,7 +589,9 @@ export default function ApprovalUserPage() {
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75" />
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-yellow-500" />
                       </span>
-                      <span className="text-yellow-600 dark:text-yellow-400 font-semibold">WA Disconnected</span>
+                      <span className="text-yellow-600 dark:text-yellow-400 font-semibold">
+                        WA Disconnected
+                      </span>
                     </>
                   )}
                   <div className="w-px h-4 bg-border mx-1" />
@@ -597,19 +604,26 @@ export default function ApprovalUserPage() {
                     className="text-muted-foreground hover:text-foreground transition-colors p-0.5 rounded-full hover:bg-muted"
                     title="Perbarui Status"
                   >
-                    <RefreshCw className={`w-3.5 h-3.5 ${isLoadingWA ? "animate-spin" : ""}`} />
+                    <RefreshCw
+                      className={`w-3.5 h-3.5 ${isLoadingWA ? "animate-spin" : ""}`}
+                    />
                   </button>
                 </div>
               </div>
             </div>
 
             {/* WhatsApp Warning Banner */}
-            {waStatus && !waStatus.data?.connected && (
+            {waStatus && !waStatus.ready && waStatus.status !== "connected" && (
               <Alert className="border-amber-200 dark:border-amber-900/40 bg-amber-50/50 dark:bg-amber-950/10 text-amber-800 dark:text-amber-300">
                 <AlertCircle className="size-4 text-amber-600 dark:text-amber-400" />
-                <AlertTitle className="text-amber-900 dark:text-amber-400 font-semibold">WhatsApp Terputus</AlertTitle>
+                <AlertTitle className="text-amber-900 dark:text-amber-400 font-semibold">
+                  WhatsApp Terputus
+                </AlertTitle>
                 <AlertDescription className="text-amber-700 dark:text-amber-300/90 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-1">
-                  <span>WhatsApp tidak terhubung. Pengguna tidak akan menerima notifikasi pesan saat akun mereka disetujui atau ditolak.</span>
+                  <span>
+                    WhatsApp tidak terhubung. Pengguna tidak akan menerima
+                    notifikasi pesan saat akun mereka disetujui atau ditolak.
+                  </span>
                   <Button
                     variant="outline"
                     size="sm"
@@ -630,7 +644,7 @@ export default function ApprovalUserPage() {
             />
 
             {/* ── Content gated on WA connection ── */}
-            {waStatus && !waStatus.data?.connected ? (
+            {waStatus && !waStatus.ready && waStatus.status !== 'connected' ?  (
               // ── Disconnected placeholder ──
               <div className="rounded-xl border border-border bg-card shadow-xs overflow-hidden">
                 <div className="flex flex-col items-center justify-center py-20 px-6 text-center space-y-4">
@@ -638,9 +652,13 @@ export default function ApprovalUserPage() {
                     <AlertCircle className="w-8 h-8" />
                   </div>
                   <div className="space-y-1 max-w-md">
-                    <h3 className="text-lg font-semibold text-foreground">WhatsApp Belum Terhubung</h3>
+                    <h3 className="text-lg font-semibold text-foreground">
+                      WhatsApp Belum Terhubung
+                    </h3>
                     <p className="text-sm text-muted-foreground">
-                      Hubungkan WhatsApp terlebih dahulu agar sistem dapat mengirim notifikasi saat akun pengguna disetujui atau ditolak.
+                      Hubungkan WhatsApp terlebih dahulu agar sistem dapat
+                      mengirim notifikasi saat akun pengguna disetujui atau
+                      ditolak.
                     </p>
                   </div>
                   <Button
@@ -651,344 +669,381 @@ export default function ApprovalUserPage() {
                   </Button>
                 </div>
               </div>
+
+              
             ) : (
-              // ── Connected: show action bar, table, pagination ──
               <>
-
-            {/* Action Bar */}
-            <div className="rounded-xl border border-border bg-card p-4 shadow-xs w-full max-w-full">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="relative w-full sm:max-w-xs">
-                  <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    className="pl-9 bg-background/50 focus-visible:ring-primary/20 w-full"
-                    placeholder="Cari nama, email, atau nomor HP..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                  />
-                </div>
-                <div className="flex flex-wrap items-center justify-between gap-3 sm:justify-end">
-                  <div className="flex items-center gap-2">
-                    <span className="shrink-0 text-xs font-medium text-muted-foreground">
-                      Tampilkan
-                    </span>
-                    <Select value={pageSize} onValueChange={handlePageSizeChange}>
-                      <SelectTrigger className="w-20 bg-background/50">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {PAGE_SIZE_OPTIONS.map((opt) => (
-                          <SelectItem key={opt} value={opt}>
-                            {opt}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <span className="shrink-0 text-xs font-medium text-muted-foreground">
-                      data
-                    </span>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={fetchUsers}
-                    disabled={loading}
-                    className="size-9 bg-background/50 hover:bg-muted shrink-0"
-                    title="Segarkan Data"
-                  >
-                    <RefreshCw className={`size-4 ${loading ? 'animate-spin' : ''}`} />
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {/* Error */}
-            {error && !loading && (
-              <Alert variant="destructive">
-                <AlertCircle className="size-4" />
-                <AlertTitle>Gagal Memuat Data</AlertTitle>
-                <AlertDescription className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <span>
-                    Terjadi kesalahan saat mengambil daftar akun yang menunggu
-                    persetujuan.
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={fetchUsers}
-                    className="shrink-0 border-destructive text-destructive hover:bg-destructive/10"
-                  >
-                    <RefreshCw className="size-4 mr-2" />
-                    Coba Lagi
-                  </Button>
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {/* ── Desktop / Tablet Table ── */}
-            <div className="hidden md:block rounded-xl border border-border bg-card shadow-xs overflow-hidden w-full max-w-full">
-              <div className="overflow-x-auto w-full">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/40 border-b border-border hover:bg-muted/40">
-                      <TableHead className="w-12 text-center font-semibold text-foreground/80">
-                        No
-                      </TableHead>
-                      <TableHead className="min-w-[200px] font-semibold text-foreground/80">
-                        Nama
-                      </TableHead>
-                      <TableHead className="min-w-[200px] font-semibold text-foreground/80">
-                        Email
-                      </TableHead>
-                      <TableHead className="min-w-[140px] font-semibold text-foreground/80">
-                        Nomor HP
-                      </TableHead>
-                      <TableHead className="min-w-[150px] font-semibold text-foreground/80">
-                        Tanggal Lahir
-                      </TableHead>
-                      <TableHead className="min-w-[180px] font-semibold text-foreground/80">
-                        Tanggal Registrasi
-                      </TableHead>
-                      <TableHead className="min-w-[240px] font-semibold text-foreground/80">
-                        Aksi
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {loading ? (
-                      <TableSkeleton
-                        rows={Number(pageSize) > 10 ? 10 : Number(pageSize)}
+                {/* ── Connected: show action bar, table, pagination ── */}
+                <div className="rounded-xl border border-border bg-card p-4 shadow-xs w-full max-w-full">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="relative w-full sm:max-w-xs">
+                      <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        className="pl-9 bg-background/50 focus-visible:ring-primary/20 w-full"
+                        placeholder="Cari nama, email, atau nomor HP..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
                       />
-                    ) : users.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={7}>
-                          <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-                            <div className="rounded-full bg-muted p-4">
-                              <Users className="size-8 text-muted-foreground" />
-                            </div>
-                            <p className="text-base font-semibold text-foreground">
-                              Tidak Ada Akun Menunggu Persetujuan
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              Semua akun telah diproses.
-                            </p>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      users.map((user, idx) => (
-                        <TableRow key={user.id} className="hover:bg-muted/30 transition-colors">
-                          <TableCell className="text-center text-sm text-muted-foreground">
-                            {startEntry + idx}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-3">
+                    </div>
+                    <div className="flex flex-wrap items-center justify-between gap-3 sm:justify-end">
+                      <div className="flex items-center gap-2">
+                        <span className="shrink-0 text-xs font-medium text-muted-foreground">
+                          Tampilkan
+                        </span>
+                        <Select
+                          value={pageSize}
+                          onValueChange={handlePageSizeChange}
+                        >
+                          <SelectTrigger className="w-20 bg-background/50">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {PAGE_SIZE_OPTIONS.map((opt) => (
+                              <SelectItem key={opt} value={opt}>
+                                {opt}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <span className="shrink-0 text-xs font-medium text-muted-foreground">
+                          data
+                        </span>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={fetchUsers}
+                        disabled={loading}
+                        className="size-9 bg-background/50 hover:bg-muted shrink-0"
+                        title="Segarkan Data"
+                      >
+                        <RefreshCw
+                          className={`size-4 ${loading ? "animate-spin" : ""}`}
+                        />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Error */}
+                {error && !loading && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="size-4" />
+                    <AlertTitle>Gagal Memuat Data</AlertTitle>
+                    <AlertDescription className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <span>
+                        Terjadi kesalahan saat mengambil daftar akun yang
+                        menunggu persetujuan.
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={fetchUsers}
+                        className="shrink-0 border-destructive text-destructive hover:bg-destructive/10"
+                      >
+                        <RefreshCw className="size-4 mr-2" />
+                        Coba Lagi
+                      </Button>
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {/* ── Desktop / Tablet Table ── */}
+                <div className="hidden md:block rounded-xl border border-border bg-card shadow-xs overflow-hidden w-full max-w-full">
+                  <div className="overflow-x-auto w-full">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-muted/40 border-b border-border hover:bg-muted/40">
+                          <TableHead className="w-12 text-center font-semibold text-foreground/80">
+                            No
+                          </TableHead>
+                          <TableHead className="min-w-[200px] font-semibold text-foreground/80">
+                            Nama
+                          </TableHead>
+                          <TableHead className="min-w-[200px] font-semibold text-foreground/80">
+                            Email
+                          </TableHead>
+                          <TableHead className="min-w-[140px] font-semibold text-foreground/80">
+                            Nomor HP
+                          </TableHead>
+                          <TableHead className="min-w-[150px] font-semibold text-foreground/80">
+                            Tanggal Lahir
+                          </TableHead>
+                          <TableHead className="min-w-[180px] font-semibold text-foreground/80">
+                            Tanggal Registrasi
+                          </TableHead>
+                          <TableHead className="min-w-[240px] font-semibold text-foreground/80">
+                            Aksi
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {loading ? (
+                          <TableSkeleton
+                            rows={Number(pageSize) > 10 ? 10 : Number(pageSize)}
+                          />
+                        ) : users.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={7}>
+                              <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+                                <div className="rounded-full bg-muted p-4">
+                                  <Users className="size-8 text-muted-foreground" />
+                                </div>
+                                <p className="text-base font-semibold text-foreground">
+                                  Tidak Ada Akun Menunggu Persetujuan
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  Semua akun telah diproses.
+                                </p>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          users.map((user, idx) => (
+                            <TableRow
+                              key={user.id}
+                              className="hover:bg-muted/30 transition-colors"
+                            >
+                              <TableCell className="text-center text-sm text-muted-foreground">
+                                {startEntry + idx}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-3">
+                                  <UserAvatar user={user} />
+                                  <div className="flex flex-col min-w-0">
+                                    <span className="text-sm font-medium text-foreground leading-tight truncate">
+                                      {user.name}
+                                    </span>
+                                    <span className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                                      ID: {user.id}
+                                    </span>
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <a
+                                  href={`mailto:${user.email}`}
+                                  className="inline-flex items-center gap-1.5 text-sm text-foreground hover:text-primary transition-colors hover:underline"
+                                >
+                                  <Mail className="size-3.5 shrink-0 text-muted-foreground" />
+                                  <span className="truncate max-w-[180px]">
+                                    {user.email}
+                                  </span>
+                                </a>
+                              </TableCell>
+                              <TableCell>
+                                <a
+                                  href={`tel:${user.phone}`}
+                                  className="inline-flex items-center gap-1.5 text-sm text-foreground hover:text-primary transition-colors hover:underline"
+                                >
+                                  <Phone className="size-3.5 shrink-0 text-muted-foreground" />
+                                  <span>{user.phone}</span>
+                                </a>
+                              </TableCell>
+                              <TableCell className="text-sm text-foreground/90">
+                                {formatDate(user.birth_date)}
+                              </TableCell>
+                              <TableCell className="text-sm text-foreground/90">
+                                {formatDateTime(user.created_at)}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-wrap items-center gap-1.5">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 px-2.5"
+                                    onClick={() =>
+                                      router.push(`/admin/approve/${user.id}`)
+                                    }
+                                  >
+                                    <Eye className="size-3.5 mr-1" />
+                                    Detail
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 px-2.5 border-emerald-250 dark:border-emerald-900/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 hover:text-emerald-800 dark:hover:text-emerald-300"
+                                    onClick={() => setApproveDialog(user)}
+                                  >
+                                    <UserCheck className="size-3.5 mr-1" />
+                                    Approve
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 px-2.5 border-red-250 dark:border-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-700 dark:hover:text-red-300"
+                                    onClick={() => setRejectDialog(user)}
+                                  >
+                                    <UserX className="size-3.5 mr-1" />
+                                    Tolak
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+
+                {/* ── Mobile Cards ── */}
+                <div className="md:hidden w-full max-w-full">
+                  {loading ? (
+                    <MobileCardSkeleton rows={5} />
+                  ) : users.length === 0 ? (
+                    <div className="rounded-xl border border-border bg-card p-6">
+                      <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+                        <div className="rounded-full bg-muted p-4">
+                          <Users className="size-8 text-muted-foreground" />
+                        </div>
+                        <p className="text-base font-semibold text-foreground">
+                          Tidak Ada Akun Menunggu Persetujuan
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Semua akun telah diproses.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-4 w-full">
+                      {users.map((user, idx) => (
+                        <div
+                          key={user.id}
+                          className="rounded-xl border border-border bg-card p-4 hover:shadow-xs transition-all duration-300 w-full max-w-full"
+                        >
+                          <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-3 mb-3">
+                            <div className="flex items-center gap-3 min-w-0">
                               <UserAvatar user={user} />
                               <div className="flex flex-col min-w-0">
-                                <span className="text-sm font-medium text-foreground leading-tight truncate">
+                                <span className="text-sm font-semibold text-foreground leading-none truncate">
                                   {user.name}
                                 </span>
-                                <span className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                                <span className="text-[10px] text-muted-foreground mt-1 truncate">
                                   ID: {user.id}
                                 </span>
                               </div>
                             </div>
-                          </TableCell>
-                          <TableCell>
-                            <a
-                              href={`mailto:${user.email}`}
-                              className="inline-flex items-center gap-1.5 text-sm text-foreground hover:text-primary transition-colors hover:underline"
+                            <Badge
+                              variant="secondary"
+                              className="shrink-0 text-[10px] px-2 py-0.5"
                             >
-                              <Mail className="size-3.5 shrink-0 text-muted-foreground" />
-                              <span className="truncate max-w-[180px]">{user.email}</span>
-                            </a>
-                          </TableCell>
-                          <TableCell>
-                            <a
-                              href={`tel:${user.phone}`}
-                              className="inline-flex items-center gap-1.5 text-sm text-foreground hover:text-primary transition-colors hover:underline"
-                            >
-                              <Phone className="size-3.5 shrink-0 text-muted-foreground" />
-                              <span>{user.phone}</span>
-                            </a>
-                          </TableCell>
-                          <TableCell className="text-sm text-foreground/90">
-                            {formatDate(user.birth_date)}
-                          </TableCell>
-                          <TableCell className="text-sm text-foreground/90">
-                            {formatDateTime(user.created_at)}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-wrap items-center gap-1.5">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-8 px-2.5"
-                                onClick={() =>
-                                  router.push(`/admin/approve/${user.id}`)
-                                }
-                              >
-                                <Eye className="size-3.5 mr-1" />
-                                Detail
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-8 px-2.5 border-emerald-250 dark:border-emerald-900/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 hover:text-emerald-800 dark:hover:text-emerald-300"
-                                onClick={() => setApproveDialog(user)}
-                              >
-                                <UserCheck className="size-3.5 mr-1" />
-                                Approve
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-8 px-2.5 border-red-250 dark:border-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-700 dark:hover:text-red-300"
-                                onClick={() => setRejectDialog(user)}
-                              >
-                                <UserX className="size-3.5 mr-1" />
-                                Tolak
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
+                              #{startEntry + idx}
+                            </Badge>
+                          </div>
 
-            {/* ── Mobile Cards ── */}
-            <div className="md:hidden w-full max-w-full">
-              {loading ? (
-                <MobileCardSkeleton rows={5} />
-              ) : users.length === 0 ? (
-                <div className="rounded-xl border border-border bg-card p-6">
-                  <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
-                    <div className="rounded-full bg-muted p-4">
-                      <Users className="size-8 text-muted-foreground" />
-                    </div>
-                    <p className="text-base font-semibold text-foreground">
-                      Tidak Ada Akun Menunggu Persetujuan
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Semua akun telah diproses.
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-4 w-full">
-                  {users.map((user, idx) => (
-                    <div key={user.id} className="rounded-xl border border-border bg-card p-4 hover:shadow-xs transition-all duration-300 w-full max-w-full">
-                      <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-3 mb-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <UserAvatar user={user} />
-                          <div className="flex flex-col min-w-0">
-                            <span className="text-sm font-semibold text-foreground leading-none truncate">
-                              {user.name}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground mt-1 truncate">
-                              ID: {user.id}
-                            </span>
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-xs">
+                            <div className="flex flex-col gap-0.5 min-w-0">
+                              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                                Email
+                              </span>
+                              <a
+                                href={`mailto:${user.email}`}
+                                className="truncate hover:underline text-foreground/90 font-medium"
+                              >
+                                {user.email}
+                              </a>
+                            </div>
+                            <div className="flex flex-col gap-0.5 min-w-0">
+                              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                                Nomor HP
+                              </span>
+                              <a
+                                href={`tel:${user.phone}`}
+                                className="truncate hover:underline text-foreground/90 font-medium"
+                              >
+                                {user.phone}
+                              </a>
+                            </div>
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                                Tanggal Lahir
+                              </span>
+                              <span className="text-foreground/90 font-medium">
+                                {formatDate(user.birth_date)}
+                              </span>
+                            </div>
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                                Registrasi
+                              </span>
+                              <span className="text-foreground/90 font-medium">
+                                {formatDateTime(user.created_at)}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="mt-4 pt-3 border-t border-border/40 grid grid-cols-3 gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full text-xs h-8 px-2"
+                              onClick={() =>
+                                router.push(`/admin/approval-user/${user.id}`)
+                              }
+                            >
+                              <Eye className="size-3.5 mr-1 shrink-0" />
+                              Detail
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full text-xs h-8 px-2 border-emerald-200 dark:border-emerald-900/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
+                              onClick={() => setApproveDialog(user)}
+                            >
+                              <UserCheck className="size-3.5 mr-1 shrink-0" />
+                              Setujui
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full text-xs h-8 px-2 border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20"
+                              onClick={() => setRejectDialog(user)}
+                            >
+                              <UserX className="size-3.5 mr-1 shrink-0" />
+                              Tolak
+                            </Button>
                           </div>
                         </div>
-                        <Badge variant="secondary" className="shrink-0 text-[10px] px-2 py-0.5">
-                          #{startEntry + idx}
-                        </Badge>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-xs">
-                        <div className="flex flex-col gap-0.5 min-w-0">
-                          <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Email</span>
-                          <a href={`mailto:${user.email}`} className="truncate hover:underline text-foreground/90 font-medium">
-                            {user.email}
-                          </a>
-                        </div>
-                        <div className="flex flex-col gap-0.5 min-w-0">
-                          <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Nomor HP</span>
-                          <a href={`tel:${user.phone}`} className="truncate hover:underline text-foreground/90 font-medium">
-                            {user.phone}
-                          </a>
-                        </div>
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Tanggal Lahir</span>
-                          <span className="text-foreground/90 font-medium">{formatDate(user.birth_date)}</span>
-                        </div>
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Registrasi</span>
-                          <span className="text-foreground/90 font-medium">{formatDateTime(user.created_at)}</span>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 pt-3 border-t border-border/40 grid grid-cols-3 gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full text-xs h-8 px-2"
-                          onClick={() =>
-                            router.push(`/admin/approval-user/${user.id}`)
-                          }
-                        >
-                          <Eye className="size-3.5 mr-1 shrink-0" />
-                          Detail
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full text-xs h-8 px-2 border-emerald-200 dark:border-emerald-900/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
-                          onClick={() => setApproveDialog(user)}
-                        >
-                          <UserCheck className="size-3.5 mr-1 shrink-0" />
-                          Setujui
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full text-xs h-8 px-2 border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20"
-                          onClick={() => setRejectDialog(user)}
-                        >
-                          <UserX className="size-3.5 mr-1 shrink-0" />
-                          Tolak
-                        </Button>
-                      </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
                 </div>
-              )}
-            </div>
 
-            {/* Pagination */}
-            {!loading && !error && users.length > 0 && (
-              <div className="flex flex-col items-center justify-between gap-4 pt-2 sm:flex-row">
-                <div className="text-sm text-muted-foreground text-center sm:text-left">
-                  Menampilkan {startEntry} – {endEntry} dari {pagination.total_data.toLocaleString("id-ID")} data
-                </div>
-                <div className="flex items-center justify-center gap-2 w-full sm:w-auto">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={!pagination.has_prev}
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    className="w-full sm:w-auto"
-                  >
-                    Sebelumnya
-                  </Button>
-                  <span className="text-sm text-muted-foreground min-w-[60px] text-center whitespace-nowrap">
-                    {pagination.current_page} / {pagination.total_page || 1}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={!pagination.has_next}
-                    onClick={() => setCurrentPage((p) => p + 1)}
-                    className="w-full sm:w-auto"
-                  >
-                    Selanjutnya
-                  </Button>
-                </div>
-              </div>
-            )}
+                {/* Pagination */}
+                {!loading && !error && users.length > 0 && (
+                  <div className="flex flex-col items-center justify-between gap-4 pt-2 sm:flex-row">
+                    <div className="text-sm text-muted-foreground text-center sm:text-left">
+                      Menampilkan {startEntry} – {endEntry} dari{" "}
+                      {pagination.total_data.toLocaleString("id-ID")} data
+                    </div>
+                    <div className="flex items-center justify-center gap-2 w-full sm:w-auto">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={!pagination.has_prev}
+                        onClick={() =>
+                          setCurrentPage((p) => Math.max(1, p - 1))
+                        }
+                        className="w-full sm:w-auto"
+                      >
+                        Sebelumnya
+                      </Button>
+                      <span className="text-sm text-muted-foreground min-w-[60px] text-center whitespace-nowrap">
+                        {pagination.current_page} / {pagination.total_page || 1}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={!pagination.has_next}
+                        onClick={() => setCurrentPage((p) => p + 1)}
+                        className="w-full sm:w-auto"
+                      >
+                        Selanjutnya
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -1029,21 +1084,34 @@ export default function ApprovalUserPage() {
           <DialogHeader>
             <DialogTitle>Status Koneksi WhatsApp</DialogTitle>
             <DialogDescription>
-              WhatsApp digunakan untuk mengirim notifikasi persetujuan akun kepada pengguna.
+              WhatsApp digunakan untuk mengirim notifikasi persetujuan akun
+              kepada pengguna.
             </DialogDescription>
           </DialogHeader>
 
-          {waStatus?.data?.connected ? (
+          {waStatus?.ready || waStatus?.status === "connected" ? (
             <div className="flex flex-col items-center justify-center p-6 space-y-4">
               <div className="h-16 w-16 bg-emerald-100 dark:bg-emerald-950/40 rounded-full flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                <svg
+                  className="w-8 h-8"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
               </div>
               <div className="text-center space-y-1">
-                <h3 className="font-semibold text-lg text-foreground">Terhubung</h3>
+                <h3 className="font-semibold text-lg text-foreground">
+                  Terhubung
+                </h3>
                 <p className="text-sm text-muted-foreground">
-                  {waStatus.data.message || "Sistem WhatsApp siap mengirimkan notifikasi."}
+                  {waStatus?.message || "Sistem WhatsApp siap mengirimkan notifikasi."}
                 </p>
               </div>
             </div>
@@ -1054,13 +1122,14 @@ export default function ApprovalUserPage() {
                   <span className="h-2 w-2 rounded-full bg-amber-500" />
                   Menunggu Scan QR
                 </div>
-                
+
                 <h3 className="text-lg font-bold text-foreground tracking-tight">
                   Hubungkan WhatsApp
                 </h3>
-                
+
                 <p className="text-muted-foreground text-xs leading-relaxed">
-                  Buka WhatsApp di HP Anda, masuk ke Perangkat Tertaut, lalu tautkan perangkat baru dengan memindai kode QR.
+                  Buka WhatsApp di HP Anda, masuk ke Perangkat Tertaut, lalu
+                  tautkan perangkat baru dengan memindai kode QR.
                 </p>
 
                 <div className="space-y-2 pt-1 text-xs text-muted-foreground">
@@ -1087,10 +1156,10 @@ export default function ApprovalUserPage() {
 
               <div className="md:col-span-5 flex flex-col items-center justify-center space-y-2">
                 <div className="w-full max-w-[180px] aspect-square rounded-xl border border-border bg-white p-3 flex items-center justify-center shadow-xs">
-                  {waStatus?.data?.qrCode ? (
+                  {waStatus?.qr ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={waStatus.data.qrCode}
+                      src={waStatus.qr}
                       alt="WhatsApp QR Code"
                       className="w-full h-full object-contain"
                       draggable={false}
@@ -1098,7 +1167,9 @@ export default function ApprovalUserPage() {
                   ) : (
                     <div className="flex flex-col items-center justify-center space-y-2 text-muted-foreground">
                       <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                      <span className="text-[10px] font-medium">Memuat QR Code...</span>
+                      <span className="text-[10px] font-medium">
+                        Memuat QR Code...
+                      </span>
                     </div>
                   )}
                 </div>
