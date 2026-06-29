@@ -1,4 +1,4 @@
-// hooks\Useauth.ts
+// hooks/useAuth.ts
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LoginPayload, User } from "@/types/auth";
@@ -21,7 +21,6 @@ export function useAuth(): UseAuthReturn {
     setError(null);
 
     try {
-      // Panggil API Route Next.js (bukan backend langsung)
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -31,15 +30,30 @@ export function useAuth(): UseAuthReturn {
       const data = await res.json();
 
       if (!res.ok) {
+        // Jika status 403 dan kita punya field status
+        if (res.status === 403) {
+          if (data.status === "pending") {
+            router.push("/account-pending");
+            return;
+          }
+          if (data.status === "rejected" || data.status === "inactive") {
+            setError("Akun Anda tidak aktif atau ditolak. Silakan hubungi admin.");
+            return;
+          }
+          // Fallback jika status tidak ada (misal backend lama)
+          // Kita coba deteksi dari pesan? Atau anggap pending?
+          // Lebih aman: tetap tampilkan error
+          setError(data.message || "Akun tidak aktif");
+          return;
+        }
+        // Error lainnya (401, 500)
         setError(data.message || "Login gagal");
         return;
       }
 
-      // Simpan hanya data user (non-sensitif) di client
+      // Login sukses
       const user: User = data.user;
       saveClientSession(user);
-
-      // Redirect berdasarkan role
       redirectByRole(user.roles, router);
     } catch {
       setError("Gagal terhubung ke server. Periksa koneksi Anda.");
@@ -62,10 +76,7 @@ export function useAuth(): UseAuthReturn {
   return { isLoading, error, login, logout };
 }
 
-function redirectByRole(
-  roles: string[],
-  router: ReturnType<typeof useRouter>,
-): void {
+function redirectByRole(roles: string[], router: ReturnType<typeof useRouter>): void {
   if (roles.includes("admin")) {
     router.push("/admin");
   } else if (roles.includes("pelatih")) {
