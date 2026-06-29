@@ -61,11 +61,13 @@ interface WhatsAppStatusData {
 }
 
 interface WhatsAppStatusResponse {
-  enabled: boolean;
-  ready: boolean;
-  status: string; // misal "qr", "connected", "disconnected", dll.
-  qr: string | null; // base64 data URI jika status "qr", null jika tidak
-  message?: string | null; // optional human-readable message from the API
+  success: boolean;
+  data: {
+    connected: boolean;
+    qrCode: string | null;
+    timestamp: string;
+    message: string;
+  };
 }
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -369,8 +371,7 @@ export default function ApprovalUserPage() {
       if (!res.ok) throw new Error("Gagal mengambil status WA");
       const json: WhatsAppStatusResponse = await res.json();
       setWaStatus(json);
-      // Anggap connected jika ready === true atau status === "connected"
-      return json.ready === true || json.status === "connected";
+      return json.data.connected === true;
     } catch (err) {
       console.error("Error fetching WA status:", err);
       return null;
@@ -573,7 +574,7 @@ export default function ApprovalUserPage() {
                   onClick={() => setWaDialogOpen(true)}
                   className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-border px-4 py-2.5 rounded-full text-sm shadow-xs font-medium cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
                 >
-                  {waStatus?.ready || waStatus?.status === "connected" ? (
+                  {waStatus?.data.connected ? (
                     <>
                       <span className="relative flex h-2 w-2">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
@@ -613,7 +614,7 @@ export default function ApprovalUserPage() {
             </div>
 
             {/* WhatsApp Warning Banner */}
-            {waStatus && !waStatus.ready && waStatus.status !== "connected" && (
+            {waStatus && !waStatus.data.connected && (
               <Alert className="border-amber-200 dark:border-amber-900/40 bg-amber-50/50 dark:bg-amber-950/10 text-amber-800 dark:text-amber-300">
                 <AlertCircle className="size-4 text-amber-600 dark:text-amber-400" />
                 <AlertTitle className="text-amber-900 dark:text-amber-400 font-semibold">
@@ -644,7 +645,7 @@ export default function ApprovalUserPage() {
             />
 
             {/* ── Content gated on WA connection ── */}
-            {waStatus && !waStatus.ready && waStatus.status !== 'connected' ?  (
+            {waStatus && !waStatus.data.connected ? (
               // ── Disconnected placeholder ──
               <div className="rounded-xl border border-border bg-card shadow-xs overflow-hidden">
                 <div className="flex flex-col items-center justify-center py-20 px-6 text-center space-y-4">
@@ -669,8 +670,6 @@ export default function ApprovalUserPage() {
                   </Button>
                 </div>
               </div>
-
-              
             ) : (
               <>
                 {/* ── Connected: show action bar, table, pagination ── */}
@@ -1089,7 +1088,7 @@ export default function ApprovalUserPage() {
             </DialogDescription>
           </DialogHeader>
 
-          {waStatus?.ready || waStatus?.status === "connected" ? (
+          {waStatus?.data.connected ? (
             <div className="flex flex-col items-center justify-center p-6 space-y-4">
               <div className="h-16 w-16 bg-emerald-100 dark:bg-emerald-950/40 rounded-full flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                 <svg
@@ -1111,7 +1110,8 @@ export default function ApprovalUserPage() {
                   Terhubung
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  {waStatus?.message || "Sistem WhatsApp siap mengirimkan notifikasi."}
+                  {waStatus?.data.message ||
+                    "Sistem WhatsApp siap mengirimkan notifikasi."}
                 </p>
               </div>
             </div>
@@ -1156,10 +1156,9 @@ export default function ApprovalUserPage() {
 
               <div className="md:col-span-5 flex flex-col items-center justify-center space-y-2">
                 <div className="w-full max-w-[180px] aspect-square rounded-xl border border-border bg-white p-3 flex items-center justify-center shadow-xs">
-                  {waStatus?.qr ? (
-                    // eslint-disable-next-line @next/next/no-img-element
+                  {waStatus?.data.qrCode ? (
                     <img
-                      src={waStatus.qr}
+                      src={waStatus.data.qrCode}
                       alt="WhatsApp QR Code"
                       className="w-full h-full object-contain"
                       draggable={false}
