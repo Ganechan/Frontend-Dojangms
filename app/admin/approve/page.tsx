@@ -47,6 +47,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea"; // pastikan komponen Textarea tersedia
 import { toast } from "sonner";
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SiteHeader } from "@/components/admin/site-header";
@@ -427,7 +428,15 @@ export default function ApprovalUserPage() {
   // Confirmation dialogs
   const [approveDialog, setApproveDialog] = useState<PendingUser | null>(null);
   const [rejectDialog, setRejectDialog] = useState<PendingUser | null>(null);
+  const [rejectReason, setRejectReason] = useState(""); // <-- tambahan state untuk alasan
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Reset alasan saat dialog reject dibuka
+  useEffect(() => {
+    if (rejectDialog) {
+      setRejectReason("");
+    }
+  }, [rejectDialog]);
 
   // Debounce search
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -456,7 +465,7 @@ export default function ApprovalUserPage() {
         params.append("search", debouncedSearch.trim());
       }
 
-      // 🔥 Gunakan internal API
+      // Gunakan internal API
       const res = await fetch(`${API_BASE}?${params}`, {
         credentials: "include",
       });
@@ -497,8 +506,7 @@ export default function ApprovalUserPage() {
     if (!approveDialog) return;
     setActionLoading(true);
     try {
-      // 🔥 Gunakan internal API
-      const res = await fetch(`${API_BASE}/${approveDialog.id}/approve`, {
+      const res = await fetch(`/api/auth/approve/${approveDialog.id}`, {
         method: "POST",
         credentials: "include",
       });
@@ -516,17 +524,28 @@ export default function ApprovalUserPage() {
 
   async function handleReject() {
     if (!rejectDialog) return;
+    // Validasi alasan
+    const reason = rejectReason.trim();
+    if (!reason) {
+      toast.error("Alasan penolakan harus diisi");
+      return;
+    }
+
     setActionLoading(true);
     try {
-      // 🔥 Gunakan internal API
-      const res = await fetch(`${API_BASE}/${rejectDialog.id}/reject`, {
+      const res = await fetch(`/api/auth/reject/${rejectDialog.id}`, {
         method: "POST",
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ alasan_reject: reason }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Gagal menolak");
       toast.success(data.message || "Akun berhasil ditolak");
       setRejectDialog(null);
+      setRejectReason("");
       fetchUsers();
     } catch (err: any) {
       toast.error(err.message || "Terjadi kesalahan");
@@ -1063,19 +1082,81 @@ export default function ApprovalUserPage() {
         loading={actionLoading}
       />
 
-      {/* Reject Confirmation */}
-      <ConfirmDialog
+      {/* ─── REJECT DIALOG DENGAN ALASAN ─── */}
+      <Dialog
         open={!!rejectDialog}
         onOpenChange={(v) => {
-          if (!v) setRejectDialog(null);
+          if (!v) {
+            setRejectDialog(null);
+            setRejectReason("");
+          }
         }}
-        title="Tolak Akun?"
-        description={`Apakah Anda yakin ingin menolak akun ini?`}
-        confirmLabel="Tolak"
-        confirmVariant="destructive"
-        onConfirm={handleReject}
-        loading={actionLoading}
-      />
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Tolak Akun</DialogTitle>
+            <DialogDescription>
+              Berikan alasan penolakan agar pengguna mengetahui mengapa
+              pendaftarannya ditolak.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-foreground">
+                Nama: <span className="font-normal">{rejectDialog?.name}</span>
+              </p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Email: <span className="font-normal">{rejectDialog?.email}</span>
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="reject-reason"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Alasan Penolakan <span className="text-destructive">*</span>
+              </label>
+              <Textarea
+                id="reject-reason"
+                placeholder="Tuliskan alasan penolakan dengan jelas..."
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                rows={4}
+                className="resize-none"
+                disabled={actionLoading}
+              />
+              <p className="text-[10px] text-muted-foreground">
+                Alasan akan dikirimkan ke pengguna sebagai notifikasi.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setRejectDialog(null);
+                setRejectReason("");
+              }}
+              disabled={actionLoading}
+            >
+              Batal
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleReject}
+              disabled={actionLoading || !rejectReason.trim()}
+            >
+              {actionLoading ? (
+                <RefreshCw className="size-4 animate-spin mr-2" />
+              ) : null}
+              Tolak Akun
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* WhatsApp Status Dialog */}
       <Dialog open={waDialogOpen} onOpenChange={setWaDialogOpen}>

@@ -365,6 +365,9 @@ export default function RegisterPage() {
                         className="h-10 rounded-l-none"
                       />
                     </div>
+                    <p className="text-xs text-muted-foreground">
+                      * Nomor HP wajib yang sudah terdaftar di WhatsApp
+                    </p>
                   </div>
 
                   {/* Tanggal Lahir */}
