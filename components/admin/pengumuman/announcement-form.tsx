@@ -47,11 +47,6 @@ interface User {
   name: string;
 }
 
-interface WhatsAppGroup {
-  id: number;
-  nama_grup: string;
-}
-
 export function AnnouncementForm({
   form,
   onSubmit,
@@ -60,15 +55,11 @@ export function AnnouncementForm({
   const [roles, setRoles] = useState<Role[]>([]);
   const [kelases, setKelases] = useState<Kelas[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [whatsappGroups, setWhatsappGroups] = useState<WhatsAppGroup[]>([]);
   const [loadingRoles, setLoadingRoles] = useState(false);
   const [loadingKelas, setLoadingKelas] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
-  const [loadingGroups, setLoadingGroups] = useState(false);
 
   const targetType = form.watch("target_type");
-  const kirimWhatsapp = form.watch("kirim_whatsapp");
-  const whatsappScope = form.watch("whatsapp_scope");
   const userIndividuRole = form.watch("user_individu_role");
   const selectedUserIds = form.watch("user_ids");
   const status = form.watch("status");
@@ -93,13 +84,6 @@ export function AnnouncementForm({
       fetchUsers(userIndividuRole);
     }
   }, [targetType, userIndividuRole]);
-
-  // Fetch whatsapp groups
-  useEffect(() => {
-    if (kirimWhatsapp && whatsappScope === "grup_tertentu") {
-      fetchWhatsappGroups();
-    }
-  }, [kirimWhatsapp, whatsappScope]);
 
   const fetchRoles = async () => {
     try {
@@ -155,23 +139,6 @@ export function AnnouncementForm({
       console.error("Failed to fetch users:", err);
     } finally {
       setLoadingUsers(false);
-    }
-  };
-
-  const fetchWhatsappGroups = async () => {
-    try {
-      setLoadingGroups(true);
-      const response = await fetch("/api/admin/whatsapp-groups/terdaftar");
-      const data = await response.json();
-      if (response.ok) {
-        setWhatsappGroups(data.data || []);
-      } else {
-        console.error(data.message);
-      }
-    } catch (err) {
-      console.error("Failed to fetch whatsapp groups:", err);
-    } finally {
-      setLoadingGroups(false);
     }
   };
 
@@ -492,133 +459,7 @@ export function AnnouncementForm({
         </CardContent>
       </Card>
 
-      {/* Section 3: WhatsApp */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Pengiriman WhatsApp</CardTitle>
-          <CardDescription>
-            Pilih untuk mengirim ke grup WhatsApp
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <Controller
-              name="kirim_whatsapp"
-              control={form.control}
-              render={({ field }) => (
-                <Checkbox
-                  id="kirim_whatsapp"
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              )}
-            />
-            <Label
-              htmlFor="kirim_whatsapp"
-              className="font-normal cursor-pointer"
-            >
-              Kirim ke WhatsApp
-            </Label>
-          </div>
-
-          {kirimWhatsapp && (
-            <div className="mt-4 pl-6 space-y-3 border-l-2 border-border">
-              <Controller
-                name="whatsapp_scope"
-                control={form.control}
-                render={({ field }) => (
-                  <RadioGroup
-                    value={field.value || ""}
-                    onValueChange={field.onChange}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="semua_grup" id="scope_semua" />
-                      <Label
-                        htmlFor="scope_semua"
-                        className="font-normal cursor-pointer"
-                      >
-                        Semua Grup
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem
-                        value="grup_besar_saja"
-                        id="scope_besar"
-                      />
-                      <Label
-                        htmlFor="scope_besar"
-                        className="font-normal cursor-pointer"
-                      >
-                        Grup Besar Saja
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem
-                        value="grup_tertentu"
-                        id="scope_tertentu"
-                      />
-                      <Label
-                        htmlFor="scope_tertentu"
-                        className="font-normal cursor-pointer"
-                      >
-                        Grup Tertentu
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                )}
-              />
-
-              {/* Grup Tertentu */}
-              {whatsappScope === "grup_tertentu" && (
-                <div className="mt-3 space-y-2">
-                  <Label htmlFor="group_select">Pilih Grup</Label>
-                  <Controller
-                    name="whatsapp_group_id"
-                    control={form.control}
-                    render={({ field, fieldState: { error } }) => (
-                      <>
-                        <Select
-                          value={field.value ? String(field.value) : ""}
-                          onValueChange={(v) => field.onChange(parseInt(v))}
-                          disabled={loadingGroups}
-                        >
-                          <SelectTrigger
-                            id="group_select"
-                            className={error ? "border-red-500" : ""}
-                          >
-                            <SelectValue
-                              placeholder={
-                                loadingGroups ? "Memuat..." : "Pilih grup"
-                              }
-                            />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {whatsappGroups.map((group) => (
-                              <SelectItem
-                                key={group.id}
-                                value={String(group.id)}
-                              >
-                                {group.nama_grup}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {error && (
-                          <p className="text-sm text-red-500">
-                            {error.message}
-                          </p>
-                        )}
-                      </>
-                    )}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Section 4: Publikasi */}
+      {/* Section 3: Publikasi */}
       <Card>
         <CardHeader>
           <CardTitle>Publikasi</CardTitle>
