@@ -38,7 +38,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { format } from "date-fns";
 
 interface Jadwal {
   id: number;
@@ -59,6 +58,23 @@ interface Jadwal {
     nama: string;
     status: string;
   } | null;
+}
+
+interface GlobalHoliday {
+  id: number;
+  tanggal: string;
+  keterangan: string;
+  created_at: string;
+}
+
+interface ScheduleHoliday {
+  id: number;
+  jadwal_id: number;
+  tanggal: string;
+  keterangan: string;
+  created_at: string;
+  jadwal_nama: string;
+  jadwal_tipe: string;
 }
 
 interface ApiResponse {
@@ -98,6 +114,50 @@ const fetchSchedules = async (
     throw new Error(errorData.message || "Gagal memuat data");
   }
   return await response.json();
+};
+
+const API_BASE_URL = "https://api.jokotingkir-tc.online";
+
+const fetchHolidayPages = async <T,>(url: string): Promise<T[]> => {
+  let page = 1;
+  let hasNext = true;
+  const allData: T[] = [];
+
+  while (hasNext) {
+    const separator = url.includes("?") ? "&" : "?";
+
+    const response = await fetch(`${url}${separator}page=${page}&limit=100`, {
+      cache: "no-store",
+    });
+
+    const result = await response
+      .json()
+      .catch(() => ({ message: "Gagal memuat data libur", data: [] }));
+
+    if (!response.ok) {
+      throw new Error(result.message || "Gagal memuat data libur");
+    }
+
+    allData.push(...(result.data || []));
+    hasNext = Boolean(result.pagination?.has_next);
+    page += 1;
+  }
+
+  return allData;
+};
+
+const fetchGlobalHolidays = async (): Promise<GlobalHoliday[]> => {
+  return fetchHolidayPages<GlobalHoliday>(
+    `${API_BASE_URL}/api/admin/jadwal/libur-global/get`,
+  );
+};
+
+const fetchScheduleHolidays = async (
+  jadwalId: number,
+): Promise<ScheduleHoliday[]> => {
+  return fetchHolidayPages<ScheduleHoliday>(
+    `${API_BASE_URL}/api/admin/jadwal/libur/all?jadwal_id=${jadwalId}`,
+  );
 };
 
 const formatDate = (dateString: string | null): string => {
@@ -155,6 +215,188 @@ const getHariLabel = (hari: string) => {
   return map[hari] || hari;
 };
 
+const TIMEZONE = "Asia/Jakarta";
+
+const getNowJakarta = () => {
+  const parts = new Intl.DateTimeFormat("id-ID", {
+    timeZone: TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    weekday: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date());
+
+  const getPart = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value || "";
+
+  const year = getPart("year");
+  const month = getPart("month");
+  const day = getPart("day");
+  const hour = getPart("hour");
+  const minute = getPart("minute");
+  const second = getPart("second");
+  const weekday = getPart("weekday").toLowerCase();
+
+  return {
+    date: `${year}-${month}-${day}`,
+    hari: weekday,
+    minutes: Number(hour) * 60 + Number(minute),
+    time: `${hour}:${minute}:${second}`,
+  };
+};
+
+const normalizeDateOnly = (value: string | null) => {
+  if (!value) return null;
+  return value.slice(0, 10);
+};
+
+const timeToMinutes = (time: string) => {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
+};
+
+const isDateInRange = (
+  selectedDate: string,
+  startDate: string | null,
+  endDate: string | null,
+) => {
+  const start = normalizeDateOnly(startDate);
+  const end = normalizeDateOnly(endDate);
+
+  if (start && selectedDate < start) return false;
+  if (end && selectedDate > end) return false;
+
+  return true;
+};
+
+const isTimeInRange = (
+  currentMinutes: number,
+  startTime: string,
+  endTime: string,
+) => {
+  const start = timeToMinutes(startTime);
+  const end = timeToMinutes(endTime);
+
+  // Normal: 08:00 - 10:00
+  if (start <= end) {
+    return currentMinutes >= start && currentMinutes <= end;
+  }
+
+  // Kalau jadwal melewati tengah malam, contoh: 22:00 - 01:00
+  return currentMinutes >= start || currentMinutes <= end;
+};
+
+const getHolidayStatus = (
+  selectedDate: string,
+  globalHolidays: GlobalHoliday[],
+  scheduleHolidays: ScheduleHoliday[],
+) => {
+  const globalHoliday = globalHolidays.find(
+    (holiday) => holiday.tanggal.slice(0, 10) === selectedDate,
+  );
+
+  if (globalHoliday) {
+    return {
+      isHoliday: true,
+      reason: `Libur global: ${globalHoliday.keterangan}`,
+    };
+  }
+
+  const scheduleHoliday = scheduleHolidays.find(
+    (holiday) => holiday.tanggal.slice(0, 10) === selectedDate,
+  );
+
+  if (scheduleHoliday) {
+    return {
+      isHoliday: true,
+      reason: `Libur jadwal: ${scheduleHoliday.keterangan}`,
+    };
+  }
+
+  return {
+    isHoliday: false,
+    reason: "",
+  };
+};
+
+const getAttendanceButtonStatus = (
+  jadwal: Jadwal,
+  selectedDate: string,
+  now: ReturnType<typeof getNowJakarta>,
+  globalHolidays: GlobalHoliday[],
+  scheduleHolidays: ScheduleHoliday[],
+) => {
+  if (jadwal.status !== "aktif") {
+    return {
+      allowed: false,
+      reason: "Jadwal nonaktif",
+    };
+  }
+
+  const holidayStatus = getHolidayStatus(
+    selectedDate,
+    globalHolidays,
+    scheduleHolidays,
+  );
+
+  if (holidayStatus.isHoliday) {
+    return {
+      allowed: false,
+      reason: holidayStatus.reason,
+    };
+  }
+
+  if (selectedDate !== now.date) {
+    return {
+      allowed: false,
+      reason: "Absensi hanya aktif untuk tanggal hari ini",
+    };
+  }
+
+  if (jadwal.hari.toLowerCase() !== now.hari) {
+    return {
+      allowed: false,
+      reason: `Absensi hanya aktif hari ${getHariLabel(jadwal.hari)}`,
+    };
+  }
+
+  if (
+    !isDateInRange(selectedDate, jadwal.effective_from, jadwal.effective_until)
+  ) {
+    return {
+      allowed: false,
+      reason: "Tanggal di luar periode jadwal aktif",
+    };
+  }
+
+  if (
+    !isDateInRange(selectedDate, jadwal.tanggal_mulai, jadwal.tanggal_selesai)
+  ) {
+    return {
+      allowed: false,
+      reason: "Tanggal di luar rentang jadwal",
+    };
+  }
+
+  if (!isTimeInRange(now.minutes, jadwal.jam_mulai, jadwal.jam_selesai)) {
+    return {
+      allowed: false,
+      reason: `Aktif pukul ${formatTime(jadwal.jam_mulai)} - ${formatTime(
+        jadwal.jam_selesai,
+      )} WIB`,
+    };
+  }
+
+  return {
+    allowed: true,
+    reason: "Bisa absensi",
+  };
+};
+
 export default function SchedulesPage() {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>("");
@@ -162,20 +404,42 @@ export default function SchedulesPage() {
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState<string>(
+    () => getNowJakarta().date,
+  );
+
+  const [nowJakarta, setNowJakarta] = useState(() => getNowJakarta());
+  const [globalHolidays, setGlobalHolidays] = useState<GlobalHoliday[]>([]);
+
+  const [scheduleHolidaysByJadwalId, setScheduleHolidaysByJadwalId] = useState<
+    Record<number, ScheduleHoliday[]>
+  >({});
   const limit = 10;
 
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
+
       const result = await fetchSchedules(
         page,
         limit,
         statusFilter,
         hariFilter,
       );
+
+      const globalHolidayData = await fetchGlobalHolidays();
+
+      const scheduleHolidayEntries = await Promise.all(
+        result.data.map(async (jadwal) => {
+          const holidays = await fetchScheduleHolidays(jadwal.id);
+          return [jadwal.id, holidays] as const;
+        }),
+      );
+
       setData(result);
+      setGlobalHolidays(globalHolidayData);
+      setScheduleHolidaysByJadwalId(Object.fromEntries(scheduleHolidayEntries));
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Gagal memuat data"));
     } finally {
@@ -186,6 +450,14 @@ export default function SchedulesPage() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNowJakarta(getNowJakarta());
+    }, 30_000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const pagination = data?.meta?.pagination;
   const schedules = data?.data || [];
@@ -243,11 +515,8 @@ export default function SchedulesPage() {
                           </label>
                           <Input
                             type="date"
-                            value={format(selectedDate, "yyyy-MM-dd")}
-                            onChange={(e) => {
-                              const date = new Date(e.target.value);
-                              if (!isNaN(date.getTime())) setSelectedDate(date);
-                            }}
+                            value={selectedDate}
+                            onChange={(e) => setSelectedDate(e.target.value)}
                           />
                           <label className="block text-sm font-medium text-slate-700 mb-2">
                             Status
@@ -404,12 +673,6 @@ export default function SchedulesPage() {
                                     Kelas
                                   </th>
                                   <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">
-                                    Status
-                                  </th>
-                                  <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">
-                                    Efektif
-                                  </th>
-                                  <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">
                                     Aksi
                                   </th>
                                 </tr>
@@ -437,36 +700,48 @@ export default function SchedulesPage() {
                                       {jadwal.kelas?.nama || "-"}
                                     </td>
                                     <td className="px-6 py-4">
-                                      <Badge
-                                        variant={getStatusBadgeVariant(
-                                          jadwal.status,
-                                        )}
-                                      >
-                                        {getStatusLabel(jadwal.status)}
-                                      </Badge>
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-slate-600">
-                                      {formatDate(jadwal.effective_from)}
-                                      {jadwal.effective_until && (
-                                        <span className="text-xs text-slate-400 block">
-                                          s/d{" "}
-                                          {formatDate(jadwal.effective_until)}
-                                        </span>
-                                      )}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                      <Link
-                                        href={`/pelatih/absensi/${jadwal.id}?tanggal=${format(selectedDate, "yyyy-MM-dd")}`}
-                                      >
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          className="text-blue-600 hover:text-blue-700"
-                                        >
-                                          <CheckSquare className="h-4 w-4 mr-1" />
-                                          Absensi
-                                        </Button>
-                                      </Link>
+                                      {(() => {
+                                        const attendanceStatus =
+                                          getAttendanceButtonStatus(
+                                            jadwal,
+                                            selectedDate,
+                                            nowJakarta,
+                                            globalHolidays,
+                                            scheduleHolidaysByJadwalId[
+                                              jadwal.id
+                                            ] || [],
+                                          );
+
+                                        if (!attendanceStatus.allowed) {
+                                          return (
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              disabled
+                                              title={attendanceStatus.reason}
+                                              className="text-slate-400 cursor-not-allowed"
+                                            >
+                                              <CheckSquare className="h-4 w-4 mr-1" />
+                                              Absensi
+                                            </Button>
+                                          );
+                                        }
+
+                                        return (
+                                          <Link
+                                            href={`/pelatih/absensi/${jadwal.id}?tanggal=${selectedDate}`}
+                                          >
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              className="text-blue-600 hover:text-blue-700"
+                                            >
+                                              <CheckSquare className="h-4 w-4 mr-1" />
+                                              Absensi
+                                            </Button>
+                                          </Link>
+                                        );
+                                      })()}
                                     </td>
                                   </tr>
                                 ))}

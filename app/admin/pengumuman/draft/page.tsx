@@ -21,6 +21,9 @@ import {
   Loader2,
   Plus,
   ArrowLeft,
+  Send,
+  ChevronDown,
+  CalendarClock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppSidebar } from "@/components/admin/app-sidebar";
@@ -36,6 +39,23 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+import { Label } from "@/components/ui/label";
 
 interface Announcement {
   id: number;
@@ -89,27 +109,11 @@ export default function DraftAnnouncementsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const [sendingId, setSendingId] = useState<number | null>(null);
-
-  // Fungsi kirim draft
-  const handleSendDraft = async (id: number) => {
-    setSendingId(id);
-    try {
-      const response = await fetch(`/api/admin/pengumuman/${id}/kirim`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "terkirim" }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Gagal mengirim");
-      toast.success("Pengumuman berhasil dikirim");
-      // refresh daftar draft
-      fetchDrafts(1);
-    } catch (error: any) {
-      toast.error(error.message || "Terjadi kesalahan");
-    } finally {
-      setSendingId(null);
-    }
-  };
+  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
+  const [selectedScheduleId, setSelectedScheduleId] = useState<number | null>(
+    null,
+  );
+  const [scheduledAt, setScheduledAt] = useState("");
 
   const fetchDrafts = async (page: number = 1) => {
     try {
@@ -139,6 +143,106 @@ export default function DraftAnnouncementsPage() {
       toast.error(error.message || "Gagal memuat data draft");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getMinDateTimeLocal = () => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    return now.toISOString().slice(0, 16);
+  };
+
+  const formatDateTimeForApi = (value: string) => {
+    if (!value) return "";
+    return value.replace("T", " ").length === 16
+      ? `${value.replace("T", " ")}:00`
+      : value.replace("T", " ");
+  };
+
+  const handleSendNow = async (id: number) => {
+    setSendingId(id);
+
+    try {
+      const response = await fetch(`/api/admin/pengumuman/${id}/kirim`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "sekarang",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Gagal mengirim pengumuman");
+      }
+
+      toast.success(data.message || "Pengumuman berhasil dikirim");
+      fetchDrafts(1);
+    } catch (error: any) {
+      toast.error(error.message || "Terjadi kesalahan");
+    } finally {
+      setSendingId(null);
+    }
+  };
+
+  const handleOpenScheduleDialog = (id: number) => {
+    setSelectedScheduleId(id);
+    setScheduledAt("");
+    setScheduleDialogOpen(true);
+  };
+
+  const handleScheduleDialogChange = (open: boolean) => {
+    setScheduleDialogOpen(open);
+
+    if (!open) {
+      setSelectedScheduleId(null);
+      setScheduledAt("");
+    }
+  };
+
+  const handleSendScheduled = async () => {
+    if (!selectedScheduleId) return;
+
+    if (!scheduledAt) {
+      toast.error("Tanggal dan waktu pengiriman wajib diisi");
+      return;
+    }
+
+    setSendingId(selectedScheduleId);
+
+    try {
+      const response = await fetch(
+        `/api/admin/pengumuman/${selectedScheduleId}/kirim`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            action: "terjadwal",
+            scheduled_at: formatDateTimeForApi(scheduledAt),
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Gagal menjadwalkan pengumuman");
+      }
+
+      toast.success(data.message || "Pengumuman berhasil dijadwalkan");
+      setScheduleDialogOpen(false);
+      setSelectedScheduleId(null);
+      setScheduledAt("");
+      fetchDrafts(1);
+    } catch (error: any) {
+      toast.error(error.message || "Terjadi kesalahan");
+    } finally {
+      setSendingId(null);
     }
   };
 
@@ -306,19 +410,45 @@ export default function DraftAnnouncementsPage() {
                           {formatDate(item.created_at)}
                         </TableCell>
                         <TableCell className="text-center">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-green-600 border-green-600 hover:bg-green-50"
-                            onClick={() => handleSendDraft(item.id)}
-                            disabled={sendingId === item.id}
-                          >
-                            {sendingId === item.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              "Kirim"
-                            )}
-                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-green-600 border-green-600 hover:bg-green-50"
+                                disabled={sendingId === item.id}
+                              >
+                                {sendingId === item.id ? (
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Send className="mr-2 h-4 w-4" />
+                                )}
+                                Kirim
+                                <ChevronDown className="ml-2 h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                              align="center"
+                              className="w-48"
+                            >
+                              <DropdownMenuItem
+                                onClick={() => handleSendNow(item.id)}
+                                disabled={sendingId === item.id}
+                              >
+                                <Send className="mr-2 h-4 w-4" />
+                                Kirim sekarang
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleOpenScheduleDialog(item.id)
+                                }
+                                disabled={sendingId === item.id}
+                              >
+                                <CalendarClock className="mr-2 h-4 w-4" />
+                                Jadwalkan
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex gap-2 justify-end">
@@ -378,6 +508,58 @@ export default function DraftAnnouncementsPage() {
           </div>
         </div>
       </SidebarInset>
+
+      {/* Schedule Send Dialog */}
+      <Dialog
+        open={scheduleDialogOpen}
+        onOpenChange={handleScheduleDialogChange}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Jadwalkan Pengiriman</DialogTitle>
+            <DialogDescription>
+              Pilih tanggal dan waktu untuk mengirim pengumuman secara
+              terjadwal.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2 py-2">
+            <Label htmlFor="scheduled-at">Tanggal dan Waktu</Label>
+            <Input
+              id="scheduled-at"
+              type="datetime-local"
+              value={scheduledAt}
+              min={getMinDateTimeLocal()}
+              onChange={(e) => setScheduledAt(e.target.value)}
+            />
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleScheduleDialogChange(false)}
+              disabled={sendingId === selectedScheduleId}
+            >
+              Batal
+            </Button>
+            <Button
+              type="button"
+              onClick={handleSendScheduled}
+              disabled={!scheduledAt || sendingId === selectedScheduleId}
+            >
+              {sendingId === selectedScheduleId ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Menjadwalkan...
+                </>
+              ) : (
+                "Jadwalkan"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

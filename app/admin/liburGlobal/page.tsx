@@ -25,6 +25,7 @@ import type {
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SiteHeader } from "@/components/admin/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { AddHolidayModal } from "@/components/admin/liburGlobal/add-modal-popup";
 
 export default function GlobalHolidayPage() {
   const [data, setData] = useState<GlobalHoliday[]>([]);
@@ -35,6 +36,7 @@ export default function GlobalHolidayPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showAddDialog, setShowAddDialog] = useState(false);
 
   // Fungsi fetch data yang bisa dipanggil ulang
   const fetchData = useCallback(async () => {
@@ -102,6 +104,14 @@ export default function GlobalHolidayPage() {
     }
   };
 
+  const handleAddSuccess = async () => {
+    if (page === 1) {
+      await fetchData();
+    } else {
+      setPage(1);
+    }
+  };
+
   const handleNextPage = () => {
     if (meta?.has_next) {
       setPage((prev) => prev + 1);
@@ -144,15 +154,14 @@ export default function GlobalHolidayPage() {
                     Kelola hari libur nasional yang berlaku untuk semua jadwal
                   </p>
                 </div>
-                <Link
-                  href="/admin/libur-global/create"
-                  className="w-full sm:w-auto"
+                <Button
+                  type="button"
+                  className="w-full sm:w-auto shadow-sm"
+                  onClick={() => setShowAddDialog(true)}
                 >
-                  <Button className="w-full sm:w-auto shadow-sm">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Tambah Libur Global
-                  </Button>
-                </Link>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Tambah Libur Global
+                </Button>
               </div>
 
               {/* Main Content Card Container */}
@@ -191,6 +200,12 @@ export default function GlobalHolidayPage() {
           </div>
         </div>
       </SidebarInset>
+
+      <AddHolidayModal
+        open={showAddDialog}
+        onOpenChange={setShowAddDialog}
+        onSuccess={handleAddSuccess}
+      />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
