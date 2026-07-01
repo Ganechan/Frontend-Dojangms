@@ -3,14 +3,16 @@ import { CheckCircle2 } from "lucide-react";
 
 export default function AboutSection() {
   const highlights = [
-    "Pelatih bersertifikasi nasional & internasional",
+    "Pelatih bersertifikasi nasional",
     "Kurikulum latihan terstruktur berbasis WTF",
     "Lingkungan aman & ramah untuk semua usia",
-    "Fasilitas modern dan terawat",
   ];
 
   return (
-    <section id="about" className="py-24 px-4 bg-white relative overflow-hidden">
+    <section
+      id="about"
+      className="py-24 px-4 bg-white relative overflow-hidden"
+    >
       {/* Decorative background */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-red-50 rounded-full blur-3xl opacity-60 -translate-y-1/2 translate-x-1/2" />
 
@@ -32,18 +34,22 @@ export default function AboutSection() {
           {/* Image */}
           <div className="relative">
             <div className="absolute -inset-4 bg-gradient-to-br from-red-500/20 to-orange-400/10 rounded-3xl blur-2xl" />
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl h-[260px] sm:h-[320px] md:h-[360px] lg:h-[380px]">
               <Image
-                src="/belt-ceremony.jpg"
+                src="/asset21.jpeg"
                 alt="Dojang Facility"
-                width={560}
-                height={420}
-                className="object-cover w-full h-full"
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover"
               />
+
               {/* Image overlay badge */}
               <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2 shadow-lg">
-                <p className="text-xs text-gray-500 font-medium">Berdiri sejak</p>
-                <p className="text-2xl font-black text-red-600">2004</p>
+                <p className="text-xs text-gray-500 font-medium">
+                  Berdiri sejak
+                </p>
+                <p className="text-2xl font-black text-red-600">2015</p>
               </div>
             </div>
           </div>
@@ -81,7 +87,10 @@ export default function AboutSection() {
             <div className="space-y-3">
               {highlights.map((h, i) => (
                 <div key={i} className="flex items-center gap-3">
-                  <CheckCircle2 size={18} className="text-red-500 flex-shrink-0" />
+                  <CheckCircle2
+                    size={18}
+                    className="text-red-500 flex-shrink-0"
+                  />
                   <span className="text-gray-700 text-sm">{h}</span>
                 </div>
               ))}
