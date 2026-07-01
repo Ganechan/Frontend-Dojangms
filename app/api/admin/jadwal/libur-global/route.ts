@@ -41,3 +41,26 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+
+    const data = await serverFetch<{ message: string }>(
+      "/api/admin/jadwal/libur-global",
+      {
+        method: "POST",
+        body: JSON.stringify(body),
+      },
+    );
+
+    return NextResponse.json(data);
+  } catch (err: any) {
+    console.error("[Add Libur Global API Error]:", err);
+
+    const status = err?.status ?? 500;
+    const message = err?.message ?? "Terjadi kesalahan internal server";
+
+    return NextResponse.json({ message }, { status });
+  }
+}

@@ -495,7 +495,9 @@ export default function ClassesPage() {
                                   Dibuat: {formatDate(kelas.created_at)}
                                 </div>
 
-                                <Link href={`/pelatih/kelas/${kelas.id}`}>
+                                <Link
+                                  href={`/pelatih/absensi/riwayat/${kelas.id}`}
+                                >
                                   <Button variant="outline" className="w-full">
                                     <Eye className="h-4 w-4 mr-2" />
                                     Detail
