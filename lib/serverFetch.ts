@@ -16,7 +16,7 @@ export async function serverFetch<T>(
   path: string,
   options: ServerFetchOptions = {},
 ): Promise<T> {
-  const { timeout = 10_000, ...fetchOptions } = options;
+  const { timeout = 30_000, ...fetchOptions } = options;
 
   // baca auth_token — nama cookie sesuai middleware.ts
   const cookieStore = await cookies();

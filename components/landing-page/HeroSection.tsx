@@ -15,7 +15,7 @@ export default function HeroSection() {
     >
       {/* Background Image */}
       <Image
-        src="/bg.jpg"
+        src="/bg-ground.jpeg"
         alt="Taekwondo Athletes Training"
         fill
         className="object-cover scale-105"
@@ -57,7 +57,8 @@ export default function HeroSection() {
           Membangun Karakter Melalui Seni Bela Diri
         </p>
         <p className="text-base md:text-lg mb-12 text-white/50 max-w-xl mx-auto">
-          Bergabunglah dengan komunitas taekwondo terpercaya dan raih prestasi terbaik bersama kami.
+          Bergabunglah dengan komunitas taekwondo terpercaya dan raih prestasi
+          terbaik bersama kami.
         </p>
 
         {/* CTA Buttons */}

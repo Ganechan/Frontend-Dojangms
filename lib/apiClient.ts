@@ -22,7 +22,7 @@ export async function apiFetch<T>(
   endpoint: string,
   options: FetchOptions = {},
 ): Promise<T> {
-  const { timeout = 10_000, ...fetchOptions } = options;
+  const { timeout = 30_000, ...fetchOptions } = options;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);

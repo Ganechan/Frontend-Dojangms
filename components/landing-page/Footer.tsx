@@ -1,6 +1,13 @@
 import Image from "next/image";
 import Logo from "@/public/logo_dojang.png";
-import { Instagram, Facebook, Youtube, Mail, Phone, MapPin } from "lucide-react";
+import {
+  Instagram,
+  Facebook,
+  Youtube,
+  Mail,
+  Phone,
+  MapPin,
+} from "lucide-react";
 
 interface FooterProps {
   scrollToSection: (id: string) => void;
@@ -16,7 +23,6 @@ const menuLinks = [
 const otherLinks = [
   { label: "Login", href: "/login" },
   { label: "Pendaftaran", href: "/register" },
-  { label: "FAQ", href: "#" },
 ];
 
 const socials = [
@@ -35,15 +41,24 @@ export default function Footer({ scrollToSection }: FooterProps) {
           <div className="md:col-span-1">
             <div className="flex items-center gap-3 mb-4">
               <div className="relative w-10 h-10">
-                <Image src={Logo} alt="Logo Dojang" fill className="object-contain" />
+                <Image
+                  src={Logo}
+                  alt="Logo Dojang"
+                  fill
+                  className="object-contain"
+                />
               </div>
               <div>
-                <p className="text-white font-bold text-sm leading-tight">Dojang</p>
-                <p className="text-red-400 font-bold text-sm leading-tight">Joko Tingkir</p>
+                <p className="text-white font-bold text-sm leading-tight">
+                  Dojang
+                </p>
+                <p className="text-red-400 font-bold text-sm leading-tight">
+                  Joko Tingkir
+                </p>
               </div>
             </div>
             <p className="text-white/50 text-sm leading-relaxed mb-5">
-              Membangun karakter melalui seni bela diri sejak tahun 2004.
+              Membangun karakter melalui seni bela diri sejak tahun 2015.
             </p>
             {/* Social */}
             <div className="flex gap-2">
@@ -105,7 +120,10 @@ export default function Footer({ scrollToSection }: FooterProps) {
             </h4>
             <ul className="space-y-3">
               <li className="flex items-start gap-2.5 text-sm text-white/60">
-                <MapPin size={14} className="text-red-400 flex-shrink-0 mt-0.5" />
+                <MapPin
+                  size={14}
+                  className="text-red-400 flex-shrink-0 mt-0.5"
+                />
                 Jl. Joko Tingkir No. 123, Salatiga
               </li>
               <li>
@@ -134,8 +152,7 @@ export default function Footer({ scrollToSection }: FooterProps) {
       {/* Bottom bar */}
       <div className="border-t border-white/10">
         <div className="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-white/30">
-          <p>&copy; 2024 Dojang Joko Tingkir Salatiga. Semua hak dilindungi.</p>
-          <p>Made with ❤️ in Salatiga</p>
+          <p>&copy; 2026 Dojang Joko Tingkir Salatiga. Semua hak dilindungi.</p>
         </div>
       </div>
     </footer>
